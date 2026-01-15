@@ -174,8 +174,10 @@ startBtn.onclick=async()=>{
 };
 
 async function enroll(i){
- const d=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions())
- .withFaceDescriptor();
+ const d=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({
+    inputSize:416,
+    scoreThreshold:0.3
+ })).withFaceDescriptor();
  if(!d) return alert("Face not detected");
  officers[i].desc.push(d.descriptor);
  matcher=new faceapi.FaceMatcher(
@@ -186,8 +188,11 @@ async function enroll(i){
 
 async function detectLoop(){
  setInterval(async()=>{
-  const ds=await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions())
-  .withFaceDescriptors();
+  const ds=await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions({
+    inputSize:416,
+    scoreThreshold:0.3
+  })).withFaceDescriptors();
+
   ctx.clearRect(0,0,320,240);
 
   faceSt.innerText=ds.length?"Yes":"No";
