@@ -5,21 +5,22 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<h2>Camp Face Identification System</h2>
 
-<h2>Face Identification & Entry Log</h2>
+<button id="startCamera">Start Camera</button>
 
-<p>Identified Officers: <span id="known">0</span></p>
-<p>Unknown Faces: <span id="unknown">0</span></p>
-<p>Total Faces: <span id="total">0</span></p>
-
-<video id="video" autoplay muted></video>
+<video id="video" autoplay muted width="320" height="240"></video>
 <canvas id="overlay"></canvas>
+
+<h3>Enroll Officers</h3>
+<div id="buttonsContainer"></div>
 
 <h3>Entry Log</h3>
 <ul id="log"></ul>
 
+<p>Known: <span id="known">0</span> | Unknown: <span id="unknown">0</span> | Total: <span id="total">0</span></p>
+
 <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>
