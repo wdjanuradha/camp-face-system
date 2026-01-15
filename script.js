@@ -1,8 +1,9 @@
 const video = document.getElementById("video");
 const canvas = document.getElementById("overlay");
 const logList = document.getElementById("log");
+const startButton = document.getElementById("startCamera");
+const buttonsContainer = document.getElementById("buttonsContainer");
 
-// List of 10 officers
 const officers = [
   { name: "Maj Perera", descriptors: [] },
   { name: "Capt Silva", descriptors: [] },
@@ -19,20 +20,38 @@ const officers = [
 let logged = new Set();
 let faceMatcher;
 
-// Load face-api models and start camera
+// --- Load models ---
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri('models'),
   faceapi.nets.faceLandmark68Net.loadFromUri('models'),
   faceapi.nets.faceRecognitionNet.loadFromUri('models')
-]).then(startVideo);
+]).then(() => {
+  console.log("Models loaded");
+  createOfficerButtons();
+});
 
-function startVideo() {
-  navigator.mediaDevices.getUserMedia({ video: {} })
-    .then(stream => video.srcObject = stream)
-    .catch(err => alert("Camera error: " + err));
+// --- Start camera when button is clicked ---
+startButton.addEventListener("click", async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+    video.srcObject = stream;
+    startDetection();
+  } catch (err) {
+    alert("Camera error: " + err);
+  }
+});
+
+// --- Create buttons for officer enrollment ---
+function createOfficerButtons() {
+  officers.forEach((off, index) => {
+    const btn = document.createElement("button");
+    btn.innerText = off.name;
+    btn.addEventListener("click", () => enrollOfficer(index));
+    buttonsContainer.appendChild(btn);
+  });
 }
 
-// --- ENROLL OFFICER DIRECTLY ON PHONE ---
+// --- Enroll officer when button is clicked ---
 async function enrollOfficer(index) {
   const detection = await faceapi
     .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
@@ -45,22 +64,18 @@ async function enrollOfficer(index) {
   }
 
   officers[index].descriptors.push(detection.descriptor);
-  alert("Face captured for " + officers[index].name);
-
-  // Update matcher after enrollment
+  alert(officers[index].name + " enrolled");
   updateFaceMatcher();
 }
 
-// Update faceMatcher with current descriptors
+// --- Update FaceMatcher ---
 function updateFaceMatcher() {
-  const labeledDescriptors = officers.map(off => {
-    return new faceapi.LabeledFaceDescriptors(off.name, off.descriptors);
-  });
+  const labeledDescriptors = officers.map(off => new faceapi.LabeledFaceDescriptors(off.name, off.descriptors));
   faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
 }
 
-// --- LIVE FACE DETECTION & LOGGING ---
-video.addEventListener("play", async () => {
+// --- Start detection and logging ---
+function startDetection() {
   const displaySize = { width: video.videoWidth, height: video.videoHeight };
   faceapi.matchDimensions(canvas, displaySize);
 
@@ -71,7 +86,7 @@ video.addEventListener("play", async () => {
       .withFaceDescriptors();
 
     const resized = faceapi.resizeResults(detections, displaySize);
-    canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
     let known = 0;
     let unknown = 0;
@@ -106,4 +121,4 @@ video.addEventListener("play", async () => {
     document.getElementById("total").innerText = resized.length;
 
   }, 800);
-});
+}
