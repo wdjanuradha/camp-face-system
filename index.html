@@ -1,27 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Camp Face Identification System</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Camp Face Detection System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body { font-family: Arial; text-align: center; }
+  video { border: 2px solid black; }
+  button { padding: 10px; margin: 5px; }
+</style>
 </head>
+
 <body>
-<h2>Camp Face Identification System</h2>
+
+<h2>Camp Face Detection & Count System</h2>
 
 <button id="startCamera">Start Camera</button>
 
-<video id="video" autoplay muted width="320" height="240"></video>
+<br><br>
+
+<video id="video" width="320" height="240" autoplay muted></video>
 <canvas id="overlay"></canvas>
 
-<h3>Enroll Officers</h3>
-<div id="buttonsContainer"></div>
+<p>
+Known: <span id="known">0</span> |
+Unknown: <span id="unknown">0</span> |
+Total: <span id="total">0</span>
+</p>
 
-<h3>Entry Log</h3>
 <ul id="log"></ul>
 
-<p>Known: <span id="known">0</span> | Unknown: <span id="unknown">0</span> | Total: <span id="total">0</span></p>
+<!-- Face API -->
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
-<script src="face-api.min.js"></script>
-<script src="script.js"></script>
+<script>
+const video = document.getElementById("video");
+const logList = document.getElementById("log");
+
+let faceMatcher = null;
+let logged = new Set();
+
+// Officers (initially empty)
+const officers = [
+  { name: "Officer 1", descriptors: [] },
+  { name: "Officer 2", descriptors: [] },
+  { name: "Officer 3", descriptors: [] }
+];
+
+// Load models
+Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri("models"),
+  faceapi.nets.faceLandmark68Net.loadFromUri("models"),
+  faceapi.nets.faceRecognitionNet.loadFromUri("models")
+]).then(() => {
+  alert("Models loaded successfully");
+});
+
+// Start camera ONLY on button click
+document.getElementById("startCamera").onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    startDetection();
+  } catch (e) {
+    alert("Camera error: " + e);
+  }
+};
+
+// Detect & count faces
+function startDetection() {
+  setInterval(async () => {
+    const detections = await faceapi
+      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+      .withFaceDescriptors();
+
+    let known = 0;
+    let unknown = 0;
+
+    detections.forEach(d => {
+      let label = "Unknown";
+
+      if (faceMatcher) {
+        const result = faceMatcher.findBestMatch(d.descriptor);
+        label = result.label;
+      }
+
+      if (label === "Unknown") {
+        unknown++;
+      } else {
+        known++;
+        if (!logged.has(label)) {
+          logged.add(label);
+          const li = document.createElement("li");
+          li.textContent = label + " entered at " + new Date().toLocaleTimeString();
+          logList.appendChild(li);
+        }
+      }
+    });
+
+    document.getElementById("known").innerText = known;
+    document.getElementById("unknown").innerText = unknown;
+    document.getElementById("total").innerText = detections.length;
+
+  }, 1000);
+}
+
+// Enroll officer (use console)
+async function enrollOfficer(index) {
+  const detection = await faceapi
+    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+    .withFaceDescriptor();
+
+  if (!detection) {
+    alert("No face detected");
+    return;
+  }
+
+  officers[index].descriptors.push(detection.descriptor);
+
+  faceMatcher = new faceapi.FaceMatcher(
+    officers.map(o => new faceapi.LabeledFaceDescriptors(o.name, o.descriptors)),
+    0.6
+  );
+
+  alert(officers[index].name + " enrolled");
+}
+</script>
+
 </body>
 </html>
-
