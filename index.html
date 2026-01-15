@@ -8,15 +8,26 @@
 <style>
 body { font-family: Arial; text-align: center; }
 video { border: 2px solid black; }
-button { padding: 10px; margin: 5px; }
+button { padding: 8px; margin: 5px; }
+input { margin: 5px; }
 table { margin: auto; border-collapse: collapse; }
 td, th { border: 1px solid black; padding: 5px; }
+.hidden { display: none; }
 </style>
 </head>
 
 <body>
 
 <h2>Camp Face Detection & Entry–Exit System</h2>
+
+<!-- PASSWORD LOCK -->
+<div id="lockScreen">
+  <h3>Enter Password</h3>
+  <input type="password" id="passwordInput">
+  <button onclick="unlock()">Unlock</button>
+</div>
+
+<div id="system" class="hidden">
 
 <button id="startCamera">Start Camera</button>
 <button id="downloadCSV">Download Log CSV</button>
@@ -27,6 +38,10 @@ td, th { border: 1px solid black; padding: 5px; }
 
 <h3>Enroll Officers</h3>
 <div id="enrollButtons"></div>
+
+<h3>Enroll via ID Photo</h3>
+<select id="photoOfficer"></select>
+<input type="file" accept="image/*" onchange="enrollFromPhoto(event)">
 
 <p>
 Known: <span id="known">0</span> |
@@ -42,14 +57,20 @@ Total: <span id="total">0</span>
 <tbody id="logTable"></tbody>
 </table>
 
-<!-- Face API -->
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
+/* ================= CONFIG ================= */
+const SYSTEM_PASSWORD = "camp123";
+const EXIT_TIMEOUT = 5000;
+/* ========================================== */
+
 const video = document.getElementById("video");
 const logTable = document.getElementById("logTable");
 
-const officers = [
+const officers = JSON.parse(localStorage.getItem("officers")) || [
   { name: "Officer 1", descriptors: [] },
   { name: "Officer 2", descriptors: [] },
   { name: "Officer 3", descriptors: [] },
@@ -59,128 +80,173 @@ const officers = [
 
 let faceMatcher = null;
 let lastSeen = {};
-let logs = [];
+let logs = JSON.parse(localStorage.getItem("logs")) || [];
 
-// Load models
+/* ===== DAILY AUTO RESET ===== */
+const today = new Date().toDateString();
+if (localStorage.getItem("date") !== today) {
+  logs = [];
+  localStorage.setItem("date", today);
+  localStorage.setItem("logs", JSON.stringify(logs));
+}
+
+/* ===== PASSWORD LOCK ===== */
+function unlock() {
+  if (document.getElementById("passwordInput").value === SYSTEM_PASSWORD) {
+    document.getElementById("lockScreen").classList.add("hidden");
+    document.getElementById("system").classList.remove("hidden");
+  } else {
+    alert("Wrong password");
+  }
+}
+
+/* ===== LOAD MODELS ===== */
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri("models"),
   faceapi.nets.faceLandmark68Net.loadFromUri("models"),
   faceapi.nets.faceRecognitionNet.loadFromUri("models")
 ]).then(() => {
   createEnrollButtons();
-  alert("Models loaded");
+  updateMatcher();
+  loadLogTable();
 });
 
-// Start camera
+/* ===== CAMERA ===== */
 document.getElementById("startCamera").onclick = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
-    startDetection();
-  } catch (e) {
-    alert("Camera error: " + e);
-  }
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = stream;
+  startDetection();
 };
 
-// Create enroll buttons
+/* ===== ENROLL BUTTONS ===== */
 function createEnrollButtons() {
   const div = document.getElementById("enrollButtons");
+  const select = document.getElementById("photoOfficer");
+  div.innerHTML = "";
+  select.innerHTML = "";
+
   officers.forEach((o, i) => {
     const btn = document.createElement("button");
     btn.innerText = "Enroll " + o.name;
-    btn.onclick = () => enrollOfficer(i);
+    btn.onclick = () => enrollLive(i);
     div.appendChild(btn);
+
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.text = o.name;
+    select.appendChild(opt);
   });
 }
 
-// Enroll officer (tap 3–5 times)
-async function enrollOfficer(index) {
-  const detection = await faceapi
+/* ===== LIVE ENROLL ===== */
+async function enrollLive(index) {
+  const det = await faceapi
     .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.6 }))
     .withFaceDescriptor();
 
-  if (!detection) {
-    alert("No face detected");
-    return;
-  }
+  if (!det) return alert("No face detected");
 
-  officers[index].descriptors.push(detection.descriptor);
-
-  faceMatcher = new faceapi.FaceMatcher(
-    officers.map(o => new faceapi.LabeledFaceDescriptors(o.name, o.descriptors)),
-    0.55 // better accuracy
-  );
-
+  officers[index].descriptors.push(det.descriptor);
+  saveData();
+  updateMatcher();
   alert(officers[index].name + " enrolled");
 }
 
-// Detection loop
+/* ===== PHOTO ENROLL ===== */
+async function enrollFromPhoto(event) {
+  const file = event.target.files[0];
+  const index = document.getElementById("photoOfficer").value;
+
+  const img = await faceapi.bufferToImage(file);
+  const det = await faceapi
+    .detectSingleFace(img)
+    .withFaceDescriptor();
+
+  if (!det) return alert("Face not detected in photo");
+
+  officers[index].descriptors.push(det.descriptor);
+  saveData();
+  updateMatcher();
+  alert("Photo enrolled");
+}
+
+/* ===== MATCHER ===== */
+function updateMatcher() {
+  faceMatcher = new faceapi.FaceMatcher(
+    officers.map(o => new faceapi.LabeledFaceDescriptors(o.name, o.descriptors)),
+    0.55
+  );
+}
+
+/* ===== DETECTION LOOP ===== */
 function startDetection() {
   setInterval(async () => {
     const detections = await faceapi
       .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.6 }))
       .withFaceDescriptors();
 
-    let known = 0;
-    let unknown = 0;
     const now = Date.now();
+    let known = 0, unknown = 0;
 
     detections.forEach(d => {
       let label = "Unknown";
+      if (faceMatcher) label = faceMatcher.findBestMatch(d.descriptor).label;
 
-      if (faceMatcher) {
-        const result = faceMatcher.findBestMatch(d.descriptor);
-        label = result.label;
-      }
-
-      if (label === "Unknown") {
-        unknown++;
-      } else {
+      if (label === "Unknown") unknown++;
+      else {
         known++;
-        if (!lastSeen[label]) {
-          logAction(label, "ENTER");
-        }
+        if (!lastSeen[label]) log(label, "ENTER");
         lastSeen[label] = now;
       }
     });
 
-    // Exit detection (if not seen for 5 seconds)
-    for (let name in lastSeen) {
-      if (now - lastSeen[name] > 5000) {
-        logAction(name, "EXIT");
-        delete lastSeen[name];
+    for (let n in lastSeen) {
+      if (now - lastSeen[n] > EXIT_TIMEOUT) {
+        log(n, "EXIT");
+        delete lastSeen[n];
       }
     }
 
-    document.getElementById("known").innerText = known;
-    document.getElementById("unknown").innerText = unknown;
-    document.getElementById("total").innerText = detections.length;
+    knownSpan.innerText = known;
+    unknownSpan.innerText = unknown;
+    totalSpan.innerText = detections.length;
   }, 1000);
 }
 
-// Log entry / exit
-function logAction(name, action) {
+/* ===== LOGGING ===== */
+function log(name, action) {
   const time = new Date().toLocaleString();
   logs.push({ name, action, time });
-
-  const row = document.createElement("tr");
-  row.innerHTML = `<td>${name}</td><td>${action}</td><td>${time}</td>`;
-  logTable.appendChild(row);
+  saveData();
+  addRow(name, action, time);
 }
 
-// Download CSV
+function addRow(n, a, t) {
+  const r = document.createElement("tr");
+  r.innerHTML = `<td>${n}</td><td>${a}</td><td>${t}</td>`;
+  logTable.appendChild(r);
+}
+
+function loadLogTable() {
+  logs.forEach(l => addRow(l.name, l.action, l.time));
+}
+
+/* ===== CSV ===== */
 document.getElementById("downloadCSV").onclick = () => {
   let csv = "Name,Action,Time\n";
-  logs.forEach(l => {
-    csv += `${l.name},${l.action},${l.time}\n`;
-  });
-
-  const blob = new Blob([csv], { type: "text/csv" });
+  logs.forEach(l => csv += `${l.name},${l.action},${l.time}\n`);
+  const b = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "camp_entry_exit_log.csv";
+  a.href = URL.createObjectURL(b);
+  a.download = "camp_log.csv";
   a.click();
 };
+
+/* ===== OFFLINE STORAGE ===== */
+function saveData() {
+  localStorage.setItem("officers", JSON.stringify(officers));
+  localStorage.setItem("logs", JSON.stringify(logs));
+}
 </script>
 
 </body>
