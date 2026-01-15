@@ -128,6 +128,7 @@ th,td {
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
+// PASSWORD PROTECTION
 const PASSWORD="camp123";
 const video=document.getElementById("video");
 const ctx=document.getElementById("canvas").getContext("2d");
@@ -149,6 +150,7 @@ function unlock(){
  }
 }
 
+// VOICE ALERT
 function speakOnce(msg){
  if(speaking) return;
  speaking=true;
@@ -156,15 +158,17 @@ function speakOnce(msg){
  setTimeout(()=>speaking=false,3000);
 }
 
+// LOAD MODELS FROM GITHUB (FULL URL)
 Promise.all([
- faceapi.nets.tinyFaceDetector.loadFromUri("models"),
- faceapi.nets.faceLandmark68Net.loadFromUri("models"),
- faceapi.nets.faceRecognitionNet.loadFromUri("models")
+ faceapi.nets.tinyFaceDetector.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models"),
+ faceapi.nets.faceLandmark68Net.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models"),
+ faceapi.nets.faceRecognitionNet.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models")
 ]).then(()=>{
  modelSt.innerText="Loaded";
  modelSt.className="ok";
 });
 
+// START CAMERA
 startBtn.onclick=async()=>{
  const s=await navigator.mediaDevices.getUserMedia({video:true});
  video.srcObject=s;
@@ -173,6 +177,7 @@ startBtn.onclick=async()=>{
  detectLoop();
 };
 
+// ENROLL OFFICERS
 async function enroll(i){
  const d=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({
     inputSize:416,
@@ -186,6 +191,7 @@ async function enroll(i){
  alert(officers[i].name+" enrolled");
 }
 
+// DETECTION LOOP
 async function detectLoop(){
  setInterval(async()=>{
   const ds=await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions({
@@ -198,6 +204,7 @@ async function detectLoop(){
   faceSt.innerText=ds.length?"Yes":"No";
   faceSt.className=ds.length?"ok":"bad";
 
+  // ENABLE ENROLL BUTTONS IF FACE DETECTED
   document.querySelectorAll("button[onclick^='enroll']")
     .forEach(b=>b.disabled=!ds.length);
 
@@ -209,6 +216,7 @@ async function detectLoop(){
    ctx.strokeRect(b.x,b.y,b.width,b.height);
    ctx.fillText(label,b.x,b.y-5);
 
+   // LOG ENTRY & VOICE ALERT
    if(label!=="Unknown" && !lastEntry[label]){
     logEntry(label);
     speakOnce("Officer entered");
@@ -219,6 +227,7 @@ async function detectLoop(){
  },1000);
 }
 
+// LOG FUNCTION
 function logEntry(name){
  const t=new Date().toLocaleString();
  log.innerHTML+=`<tr><td>${name}</td><td>${t}</td></tr>`;
