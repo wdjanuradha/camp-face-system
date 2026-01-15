@@ -10,74 +10,29 @@
   --bg:#0f172a;
   --card:#111827;
   --accent:#22c55e;
-  --danger:#ef4444;
   --text:#e5e7eb;
+  --danger:#ef4444;
 }
 
 body {
   margin:0;
-  font-family: "Segoe UI", sans-serif;
+  font-family:"Segoe UI",sans-serif;
   background:var(--bg);
   color:var(--text);
   text-align:center;
 }
 
 h2 { margin:15px 0; }
-
-.card {
-  background:var(--card);
-  border-radius:12px;
-  padding:15px;
-  margin:10px auto;
-  width:360px;
-  box-shadow:0 10px 30px rgba(0,0,0,.4);
-}
-
-button {
-  background:var(--accent);
-  border:none;
-  color:black;
-  padding:10px 14px;
-  border-radius:8px;
-  font-weight:600;
-  cursor:pointer;
-  margin:5px;
-}
-
-button:disabled {
-  background:#374151;
-  color:#9ca3af;
-}
-
-.status span {
-  font-weight:600;
-}
-
+.card { background:var(--card); border-radius:12px; padding:15px; margin:10px auto; width:360px; box-shadow:0 10px 30px rgba(0,0,0,.4); }
+button { background:var(--accent); border:none; color:black; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; margin:5px; }
+button:disabled { background:#374151; color:#9ca3af; }
+.status span { font-weight:600; }
 .ok { color:var(--accent); }
 .bad { color:var(--danger); }
-
-video, canvas {
-  border-radius:10px;
-}
-
-canvas {
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-}
-
-table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-  font-size:13px;
-}
-
-th,td {
-  padding:6px;
-  border-bottom:1px solid #374151;
-}
-
+video, canvas { border-radius:10px; }
+canvas { position:absolute; left:50%; transform:translateX(-50%); }
+table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+th,td { padding:6px; border-bottom:1px solid #374151; }
 .hidden { display:none; }
 </style>
 </head>
@@ -128,7 +83,7 @@ th,td {
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
-// PASSWORD PROTECTION
+// PASSWORD
 const PASSWORD="camp123";
 const video=document.getElementById("video");
 const ctx=document.getElementById("canvas").getContext("2d");
@@ -158,72 +113,73 @@ function speakOnce(msg){
  setTimeout(()=>speaking=false,3000);
 }
 
-// LOAD MODELS FROM GITHUB (FULL URL)
-Promise.all([
- faceapi.nets.tinyFaceDetector.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models"),
- faceapi.nets.faceLandmark68Net.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models"),
- faceapi.nets.faceRecognitionNet.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models")
-]).then(()=>{
+// LOAD MODELS FROM GITHUB
+async function loadModels(){
+ await faceapi.nets.ssdMobilenetv1.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models");
+ await faceapi.nets.faceLandmark68Net.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models");
+ await faceapi.nets.faceRecognitionNet.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models");
  modelSt.innerText="Loaded";
  modelSt.className="ok";
-});
+}
+loadModels();
 
 // START CAMERA
 startBtn.onclick=async()=>{
- const s=await navigator.mediaDevices.getUserMedia({video:true});
- video.srcObject=s;
- camSt.innerText="ON";
- camSt.className="ok";
- detectLoop();
+ try{
+   const s=await navigator.mediaDevices.getUserMedia({video:true});
+   video.srcObject=s;
+   camSt.innerText="ON";
+   camSt.className="ok";
+   detectLoop();
+ }catch(e){
+   alert("Camera not available. Close other apps/tabs.");
+ }
 };
 
 // ENROLL OFFICERS
 async function enroll(i){
- const d=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({
-    inputSize:416,
-    scoreThreshold:0.3
- })).withFaceDescriptor();
- if(!d) return alert("Face not detected");
- officers[i].desc.push(d.descriptor);
- matcher=new faceapi.FaceMatcher(
-   officers.map(o=>new faceapi.LabeledFaceDescriptors(o.name,o.desc)),0.55
- );
+ const detection=await faceapi.detectSingleFace(video,new faceapi.SsdMobilenetv1Options({minConfidence:0.3})).withFaceLandmarks().withFaceDescriptor();
+ if(!detection) return alert("Face not detected");
+ officers[i].desc.push(detection.descriptor);
+ matcher=new faceapi.FaceMatcher(officers.map(o=>new faceapi.LabeledFaceDescriptors(o.name,o.desc)),0.55);
  alert(officers[i].name+" enrolled");
 }
 
 // DETECTION LOOP
 async function detectLoop(){
+ const canvasEl=document.getElementById("canvas");
+ const displaySize={width:video.width,height:video.height};
+ faceapi.matchDimensions(canvasEl,displaySize);
+
  setInterval(async()=>{
-  const ds=await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions({
-    inputSize:416,
-    scoreThreshold:0.3
-  })).withFaceDescriptors();
+   const detections=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:0.3}))
+     .withFaceLandmarks()
+     .withFaceDescriptors();
 
-  ctx.clearRect(0,0,320,240);
+   ctx.clearRect(0,0,canvasEl.width,canvasEl.height);
+   faceSt.innerText=detections.length?"Yes":"No";
+   faceSt.className=detections.length?"ok":"bad";
 
-  faceSt.innerText=ds.length?"Yes":"No";
-  faceSt.className=ds.length?"ok":"bad";
+   // enable enroll buttons
+   document.querySelectorAll("button[onclick^='enroll']").forEach(b=>b.disabled=!detections.length);
 
-  // ENABLE ENROLL BUTTONS IF FACE DETECTED
-  document.querySelectorAll("button[onclick^='enroll']")
-    .forEach(b=>b.disabled=!ds.length);
+   detections.forEach(d=>{
+     let label="Unknown";
+     if(matcher) label=matcher.findBestMatch(d.descriptor).label;
+     const b=d.detection.box;
+     ctx.strokeStyle=label==="Unknown"?"red":"lime";
+     ctx.strokeRect(b.x,b.y,b.width,b.height);
+     ctx.fillStyle="lime";
+     ctx.fillText(label,b.x,b.y-5);
 
-  ds.forEach(d=>{
-   let label="Unknown";
-   if(matcher) label=matcher.findBestMatch(d.descriptor).label;
-   const b=d.detection.box;
-   ctx.strokeStyle=label==="Unknown"?"red":"lime";
-   ctx.strokeRect(b.x,b.y,b.width,b.height);
-   ctx.fillText(label,b.x,b.y-5);
-
-   // LOG ENTRY & VOICE ALERT
-   if(label!=="Unknown" && !lastEntry[label]){
-    logEntry(label);
-    speakOnce("Officer entered");
-    lastEntry[label]=true;
-    setTimeout(()=>delete lastEntry[label],5000);
-   }
-  });
+     // log entry & voice alert
+     if(label!=="Unknown" && !lastEntry[label]){
+       logEntry(label);
+       speakOnce("Officer entered");
+       lastEntry[label]=true;
+       setTimeout(()=>delete lastEntry[label],5000);
+     }
+   });
  },1000);
 }
 
