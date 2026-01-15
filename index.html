@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Camp Face Identification System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Face Identification & Entry Log</h2>
+
+<p>Identified Officers: <span id="known">0</span></p>
+<p>Unknown Faces: <span id="unknown">0</span></p>
+<p>Total Faces: <span id="total">0</span></p>
+
+<video id="video" autoplay muted></video>
+<canvas id="overlay"></canvas>
+
+<h3>Entry Log</h3>
+<ul id="log"></ul>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

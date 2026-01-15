@@ -1,0 +1,18 @@
+body {
+  font-family: Arial;
+  text-align: center;
+}
+
+video, canvas {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+canvas {
+  top: 150px;
+}
+
+ul {
+  list-style: none;
+}
