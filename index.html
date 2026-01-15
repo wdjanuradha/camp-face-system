@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Camp Face Detection System</title>
+<title>Camp Face System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: Arial; text-align: center; }
-video { border: 2px solid black; }
+body { font-family: Arial; text-align:center; }
+video, canvas { border:2px solid black; }
 canvas { position:absolute; left:50%; transform:translateX(-50%); }
-button { padding: 8px; margin: 5px; }
-table { margin:auto; border-collapse: collapse; }
-td, th { border:1px solid black; padding:5px; }
+button { margin:4px; padding:8px; }
 .hidden { display:none; }
-.status { font-weight:bold; }
 .green { color:green; }
 .red { color:red; }
 .orange { color:orange; }
@@ -22,48 +19,44 @@ td, th { border:1px solid black; padding:5px; }
 
 <body>
 
-<h2>Camp Face Detection & Entry–Exit System</h2>
+<h2>Camp Face Detection System</h2>
 
-<!-- PASSWORD -->
-<div id="lockScreen">
-  <h3>Password</h3>
-  <input type="password" id="passwordInput">
-  <button onclick="unlock()">Unlock</button>
+<div id="lock">
+<input type="password" id="pwd" placeholder="Password">
+<button onclick="unlock()">Unlock</button>
 </div>
 
 <div id="system" class="hidden">
 
-<!-- STATUS PANEL -->
-<h3>System Status</h3>
-<p class="status">Models: <span id="modelStatus" class="orange">Loading...</span></p>
-<p class="status">Camera: <span id="cameraStatus" class="red">OFF</span></p>
-<p class="status">Face: <span id="faceStatus" class="red">Not Detected</span></p>
-
-<button id="startCamera">Start Camera</button>
-<button id="downloadCSV">Download CSV</button>
+<h3>Status</h3>
+Models: <span id="modelSt" class="orange">Loading</span><br>
+Camera: <span id="camSt" class="red">OFF</span><br>
+Face: <span id="faceSt" class="red">No</span><br>
+Face Condition: <span id="maskSt" class="orange">Unknown</span><br>
+Gate Mode: <span id="gateSt" class="green">IN</span>
 
 <br><br>
 
-<div style="position:relative; width:320px; margin:auto;">
-  <video id="video" width="320" height="240" autoplay muted></video>
-  <canvas id="overlay" width="320" height="240"></canvas>
+<button onclick="setGate('IN')">IN Gate</button>
+<button onclick="setGate('OUT')">OUT Gate</button>
+<br><br>
+
+<button onclick="startCam()">Start Camera</button>
+
+<div style="position:relative;width:320px;margin:auto;">
+<video id="video" width="320" height="240" autoplay muted></video>
+<canvas id="can" width="320" height="240"></canvas>
 </div>
 
 <h3>Enroll Officers</h3>
-<div id="enrollButtons"></div>
+<button disabled onclick="enroll(0)">Enroll Officer 1</button>
+<button disabled onclick="enroll(1)">Enroll Officer 2</button>
+<button disabled onclick="enroll(2)">Enroll Officer 3</button>
 
-<p>
-Known: <span id="known">0</span> |
-Unknown: <span id="unknown">0</span> |
-Total: <span id="total">0</span>
-</p>
-
-<h3>Entry / Exit Log</h3>
-<table>
-<thead>
+<h3>Logs</h3>
+<table border="1" align="center">
 <tr><th>Name</th><th>Action</th><th>Time</th></tr>
-</thead>
-<tbody id="logTable"></tbody>
+<tbody id="log"></tbody>
 </table>
 
 </div>
@@ -71,157 +64,114 @@ Total: <span id="total">0</span>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
-/* CONFIG */
-const SYSTEM_PASSWORD = "camp123";
-const EXIT_TIMEOUT = 5000;
-
-const video = document.getElementById("video");
-const canvas = document.getElementById("overlay");
-const ctx = canvas.getContext("2d");
-
-const officers = [
-  { name: "Officer 1", descriptors: [] },
-  { name: "Officer 2", descriptors: [] },
-  { name: "Officer 3", descriptors: [] }
+const PASS="camp123";
+let gate="IN";
+let matcher=null;
+let lastSeen={};
+let officers=[
+ {name:"Officer 1",desc:[]},
+ {name:"Officer 2",desc:[]},
+ {name:"Officer 3",desc:[]}
 ];
 
-let faceMatcher = null;
-let lastSeen = {};
-let logs = [];
-let modelsLoaded = false;
-let cameraOn = false;
-let faceDetected = false;
+const video=document.getElementById("video");
+const ctx=document.getElementById("can").getContext("2d");
 
-/* PASSWORD */
-function unlock() {
-  if (passwordInput.value === SYSTEM_PASSWORD) {
-    lockScreen.classList.add("hidden");
-    system.classList.remove("hidden");
-  } else alert("Wrong password");
+function speak(t){
+  speechSynthesis.speak(new SpeechSynthesisUtterance(t));
 }
 
-/* LOAD MODELS */
+function unlock(){
+ if(pwd.value===PASS){
+  lock.classList.add("hidden");
+  system.classList.remove("hidden");
+ }
+}
+
+function setGate(g){
+ gate=g;
+ gateSt.innerText=g;
+}
+
 Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri("models"),
-  faceapi.nets.faceLandmark68Net.loadFromUri("models"),
-  faceapi.nets.faceRecognitionNet.loadFromUri("models")
-]).then(() => {
-  modelsLoaded = true;
-  modelStatus.innerText = "Loaded";
-  modelStatus.className = "green";
-  createEnrollButtons();
+ faceapi.nets.tinyFaceDetector.loadFromUri("models"),
+ faceapi.nets.faceLandmark68Net.loadFromUri("models"),
+ faceapi.nets.faceRecognitionNet.loadFromUri("models")
+]).then(()=>{
+ modelSt.innerText="Loaded";
+ modelSt.className="green";
 });
 
-/* CAMERA */
-startCamera.onclick = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ video:true });
-  video.srcObject = stream;
-  cameraOn = true;
-  cameraStatus.innerText = "ON";
-  cameraStatus.className = "green";
-  startDetection();
-};
-
-/* ENROLL BUTTONS */
-function createEnrollButtons() {
-  enrollButtons.innerHTML = "";
-  officers.forEach((o,i) => {
-    const btn = document.createElement("button");
-    btn.innerText = "Enroll " + o.name;
-    btn.disabled = true;
-    btn.onclick = () => enrollOfficer(i);
-    enrollButtons.appendChild(btn);
-  });
+async function startCam(){
+ const s=await navigator.mediaDevices.getUserMedia({video:true});
+ video.srcObject=s;
+ camSt.innerText="ON";
+ camSt.className="green";
+ detectLoop();
 }
 
-/* ENABLE BUTTONS WHEN FACE DETECTED */
-function updateEnrollButtons() {
-  document.querySelectorAll("#enrollButtons button")
-    .forEach(b => b.disabled = !faceDetected);
+function checkMaskHelmet(lm){
+ if(!lm.getMouth().length || !lm.getNose().length) return "MASK";
+ if(lm.getJawOutline()[0].y < lm.getLeftEye()[0].y) return "HELMET";
+ return "CLEAR";
 }
 
-/* ENROLL */
-async function enrollOfficer(index) {
-  const det = await faceapi
-    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold:0.6 }))
-    .withFaceDescriptor();
-
-  if (!det) return alert("No face detected");
-
-  officers[index].descriptors.push(det.descriptor);
-  faceMatcher = new faceapi.FaceMatcher(
-    officers.map(o => new faceapi.LabeledFaceDescriptors(o.name, o.descriptors)), 0.55
-  );
-
-  alert(officers[index].name + " enrolled");
+async function enroll(i){
+ const d=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions())
+ .withFaceLandmarks().withFaceDescriptor();
+ if(!d) return alert("No face");
+ if(checkMaskHelmet(d.landmarks)!=="CLEAR")
+   return alert("Remove mask/helmet");
+ officers[i].desc.push(d.descriptor);
+ matcher=new faceapi.FaceMatcher(
+   officers.map(o=>new faceapi.LabeledFaceDescriptors(o.name,o.desc)),0.55
+ );
+ alert(officers[i].name+" enrolled");
 }
 
-/* DETECTION LOOP */
-function startDetection() {
-  setInterval(async () => {
-    const detections = await faceapi
-      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold:0.6 }))
-      .withFaceDescriptors();
+async function detectLoop(){
+ setInterval(async()=>{
+  const ds=await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions())
+  .withFaceLandmarks().withFaceDescriptors();
+  ctx.clearRect(0,0,320,240);
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+  faceSt.innerText=ds.length?"Yes":"No";
+  faceSt.className=ds.length?"green":"red";
 
-    faceDetected = detections.length > 0;
-    faceStatus.innerText = faceDetected ? "Detected" : "Not Detected";
-    faceStatus.className = faceDetected ? "green" : "red";
-    updateEnrollButtons();
+  document.querySelectorAll("button[onclick^='enroll']")
+   .forEach(b=>b.disabled=!ds.length);
 
-    let known = 0, unknown = 0;
-    const now = Date.now();
+  ds.forEach(d=>{
+   let label="Unknown";
+   let cond=checkMaskHelmet(d.landmarks);
+   maskSt.innerText=cond;
+   maskSt.className=cond==="CLEAR"?"green":"red";
 
-    detections.forEach(d => {
-      let label = "Unknown";
-      if (faceMatcher) label = faceMatcher.findBestMatch(d.descriptor).label;
+   if(cond!=="CLEAR") return;
 
-      const box = d.detection.box;
-      ctx.strokeStyle = label === "Unknown" ? "red" : "green";
-      ctx.strokeRect(box.x, box.y, box.width, box.height);
-      ctx.fillText(label, box.x, box.y - 5);
+   if(matcher) label=matcher.findBestMatch(d.descriptor).label;
+   const b=d.detection.box;
+   ctx.strokeStyle=label==="Unknown"?"red":"green";
+   ctx.strokeRect(b.x,b.y,b.width,b.height);
+   ctx.fillText(label,b.x,b.y-5);
 
-      if (label === "Unknown") unknown++;
-      else {
-        known++;
-        if (!lastSeen[label]) log(label,"ENTER");
-        lastSeen[label] = now;
-      }
-    });
-
-    for (let n in lastSeen) {
-      if (now - lastSeen[n] > EXIT_TIMEOUT) {
-        log(n,"EXIT");
-        delete lastSeen[n];
-      }
+   if(label!=="Unknown"){
+    if(!lastSeen[label]){
+     log(label,gate);
+     speak(`Officer ${gate.toLowerCase()}`);
     }
-
-    knownSpan.innerText = known;
-    unknownSpan.innerText = unknown;
-    totalSpan.innerText = detections.length;
-  }, 800);
+    lastSeen[label]=Date.now();
+   }else{
+    speak("Unknown person detected");
+   }
+  });
+ },900);
 }
 
-/* LOGGING */
-function log(name, action) {
-  const time = new Date().toLocaleString();
-  logs.push({name,action,time});
-  const r = document.createElement("tr");
-  r.innerHTML = `<td>${name}</td><td>${action}</td><td>${time}</td>`;
-  logTable.appendChild(r);
+function log(n,a){
+ const t=new Date().toLocaleString();
+ log.innerHTML+=`<tr><td>${n}</td><td>${a}</td><td>${t}</td></tr>`;
 }
-
-/* CSV */
-downloadCSV.onclick = () => {
-  let csv = "Name,Action,Time\n";
-  logs.forEach(l => csv += `${l.name},${l.action},${l.time}\n`);
-  const b = new Blob([csv],{type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(b);
-  a.download = "camp_log.csv";
-  a.click();
-};
 </script>
 
 </body>
