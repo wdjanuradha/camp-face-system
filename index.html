@@ -1,193 +1,1284 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
 <meta charset="UTF-8">
-<title>Camp Face Entry System</title>
+<title>මුහුණු රැක - Camp Security System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
 :root {
-  --bg:#0f172a;
-  --card:#111827;
-  --accent:#22c55e;
-  --text:#e5e7eb;
-  --danger:#ef4444;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #334155;
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border: #475569;
 }
 
 body {
-  margin:0;
-  font-family:"Segoe UI",sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  text-align:center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #1e3a8a 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 20px;
 }
 
-h2 { margin:15px 0; }
-.card { background:var(--card); border-radius:12px; padding:15px; margin:10px auto; width:360px; box-shadow:0 10px 30px rgba(0,0,0,.4); }
-button { background:var(--accent); border:none; color:black; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; margin:5px; }
-button:disabled { background:#374151; color:#9ca3af; }
-.status span { font-weight:600; }
-.ok { color:var(--accent); }
-.bad { color:var(--danger); }
-video, canvas { border-radius:10px; }
-canvas { position:absolute; left:50%; transform:translateX(-50%); }
-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
-th,td { padding:6px; border-bottom:1px solid #374151; }
-.hidden { display:none; }
+.container { max-width: 1400px; margin: 0 auto; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.header h1 {
+  font-size: 2em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.header p {
+  opacity: 0.9;
+  margin-top: 5px;
+}
+
+.lock-status {
+  background: rgba(255,255,255,0.2);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+/* Lock Screen */
+.lock-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15,23,42,0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.lock-card {
+  background: var(--bg-secondary);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.lock-card h2 {
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.lock-card input {
+  width: 100%;
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 1em;
+  margin-bottom: 20px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 12px 25px;
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: 10px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.tab:hover { background: var(--bg-card); }
+.tab.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  box-shadow: 0 5px 15px rgba(59,130,246,0.4);
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+/* Card */
+.card {
+  background: var(--bg-secondary);
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+}
+
+.card h3 {
+  margin-bottom: 20px;
+  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Status Indicators */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.status-item {
+  background: var(--bg-card);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.status-item label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  margin-bottom: 5px;
+}
+
+.status-item .value {
+  font-size: 1.2em;
+  font-weight: 700;
+}
+
+.status-ok { color: var(--accent-green); }
+.status-bad { color: var(--danger); }
+.status-warning { color: var(--warning); }
+
+/* Video Container */
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+video, canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  backdrop-filter: blur(5px);
+}
+
+/* Buttons */
+button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95em;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-green), #059669);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16,185,129,0.4);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #dc2626);
+  color: white;
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+button:disabled {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Officer Cards */
+.officer-list {
+  display: grid;
+  gap: 15px;
+}
+
+.officer-card {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.officer-card.enrolled {
+  border-color: var(--accent-green);
+  background: rgba(16,185,129,0.1);
+}
+
+.officer-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+.officer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.officer-info {
+  flex: 1;
+}
+
+.officer-info input {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+  font-size: 1em;
+}
+
+.officer-info select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.officer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.officer-actions button {
+  padding: 8px 16px;
+  font-size: 0.85em;
+}
+
+/* Log Table */
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.log-table thead {
+  background: var(--bg-card);
+}
+
+.log-table th,
+.log-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-table tbody tr:hover {
+  background: var(--bg-card);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: rgba(16,185,129,0.2);
+  color: var(--accent-green);
+}
+
+.badge-danger {
+  background: rgba(239,68,68,0.2);
+  color: var(--danger);
+}
+
+/* Stats Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  border-left: 4px solid var(--accent-blue);
+}
+
+.stat-card.green { border-left-color: var(--accent-green); }
+.stat-card.red { border-left-color: var(--danger); }
+.stat-card.purple { border-left-color: var(--accent-purple); }
+
+.stat-value {
+  font-size: 2.5em;
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+/* Alert */
+.alert {
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.alert-success {
+  background: rgba(16,185,129,0.2);
+  border-left: 4px solid var(--accent-green);
+}
+
+.alert-danger {
+  background: rgba(239,68,68,0.2);
+  border-left: 4px solid var(--danger);
+}
+
+.alert-info {
+  background: rgba(59,130,246,0.2);
+  border-left: 4px solid var(--accent-blue);
+}
+
+.hidden { display: none !important; }
+
+/* Export Buttons */
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Camp Face Entry System</h2>
-
-<div class="card" id="lock">
-  <input type="password" id="pwd" placeholder="Enter password">
-  <br><br>
-  <button onclick="unlock()">Unlock</button>
-</div>
-
-<div id="system" class="hidden">
-
-<div class="card status">
-  Models: <span id="modelSt">Loading…</span><br>
-  Camera: <span id="camSt" class="bad">OFF</span><br>
-  Face: <span id="faceSt" class="bad">No</span>
-</div>
-
-<div class="card">
-  <button id="startBtn">Start Camera</button>
-  <div style="position:relative;width:320px;margin:auto;">
-    <video id="video" width="320" height="240" autoplay muted></video>
-    <canvas id="canvas" width="320" height="240"></canvas>
+<!-- Lock Screen -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <h2>🔒 මුහුණු රැක</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+      Camp Security System
+    </p>
+    <input type="password" id="pwdInput" placeholder="මුරපදය ඇතුලත් කරන්න" onkeypress="if(event.key==='Enter')unlock()">
+    <button class="btn-primary" onclick="unlock()" style="width: 100%;">
+      🔓 විවෘත කරන්න
+    </button>
+    <p style="color: var(--text-secondary); margin-top: 15px; font-size: 0.85em;">
+      Default: camp123
+    </p>
   </div>
 </div>
 
-<div class="card">
-  <h3>Enroll Officers</h3>
-  <button disabled onclick="enroll(0)">Officer 1</button>
-  <button disabled onclick="enroll(1)">Officer 2</button>
-  <button disabled onclick="enroll(2)">Officer 3</button>
-</div>
+<!-- Main System -->
+<div id="mainSystem" class="hidden">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>🛡️ මුහුණු රැක</h1>
+        <p>AI මුහුණු හඳුනාගැනීමේ ස්මාර්ට් කඳවුරු ආරක්ෂණ පද්ධතිය</p>
+      </div>
+      <div class="lock-status" id="lockStatus">
+        🔒 පද්ධතිය ආරක්ෂිතයි
+      </div>
+    </div>
 
-<div class="card">
-  <h3>Entry Log</h3>
-  <table>
-    <thead><tr><th>Name</th><th>Time</th></tr></thead>
-    <tbody id="log"></tbody>
-  </table>
-</div>
+    <!-- Alert Area -->
+    <div id="alertArea"></div>
 
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('dashboard')">📊 උපකරණ පුවරුව</button>
+      <button class="tab" onclick="switchTab('camera')">📹 සජීවී නිරීක්ෂණය</button>
+      <button class="tab" onclick="switchTab('officers')">👥 නිලධාරී කළමනාකරණය</button>
+      <button class="tab" onclick="switchTab('logs')">📋 ඇතුළත් වීම් ලොගය</button>
+      <button class="tab" onclick="switchTab('settings')">⚙️ සැකසුම්</button>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div id="dashboardTab" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">ලියාපදිංචි නිලධාරීන්</div>
+          <div class="stat-value" id="statEnrolled">0</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">අද අනුමත ඇතුළු වීම්</div>
+          <div class="stat-value" id="statApproved">0</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">අද ප්‍රතික්ෂේප</div>
+          <div class="stat-value" id="statRejected">0</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">මුළු ලොග එන්ට්‍රි</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h3>📊 පද්ධති තත්වය</h3>
+        <div class="status-grid">
+          <div class="status-item">
+            <label>AI Models</label>
+            <div class="value" id="modelStatus">පූරණය වෙමින්...</div>
+          </div>
+          <div class="status-item">
+            <label>කැමරාව</label>
+            <div class="value status-bad" id="cameraStatus">OFF</div>
+          </div>
+          <div class="status-item">
+            <label>මුහුණ හඳුනාගැනීම</label>
+            <div class="value status-bad" id="faceStatus">නැත</div>
+          </div>
+          <div class="status-item">
+            <label>අන්තර්ජාල සම්බන්ධතාව</label>
+            <div class="value status-ok">සක්‍රීයයි</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camera Tab -->
+    <div id="cameraTab" class="tab-content hidden">
+      <div class="grid">
+        <div>
+          <div class="card">
+            <h3>📹 සජීවී මුහුණු හඳුනාගැනීම</h3>
+            <div style="text-align: center; margin-bottom: 15px;">
+              <button id="startBtn" class="btn-primary">🎥 කැමරාව ආරම්භ කරන්න</button>
+            </div>
+            <div class="video-container">
+              <video id="video" width="640" height="480" autoplay muted></video>
+              <canvas id="canvas" width="640" height="480"></canvas>
+              <div class="video-overlay" id="videoOverlay">
+                <span id="detectionInfo">හඳුනාගැනීම අක්‍රියයි</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3>🎯 හඳුනාගත් පුද්ගලයා</h3>
+            <div id="detectedPerson" style="text-align: center; padding: 30px 0; color: var(--text-secondary);">
+              මුහුණක් අනාවරණය වී නැත
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Officers Tab -->
+    <div id="officersTab" class="tab-content hidden">
+      <div class="card">
+        <h3>👥 නිලධාරී ලියාපදිංචි කිරීම</h3>
+        <button class="btn-primary" onclick="addOfficer()" style="margin-bottom: 20px;">
+          ➕ නව නිලධාරියෙකු එක් කරන්න
+        </button>
+        <div class="officer-list" id="officerList"></div>
+      </div>
+    </div>
+
+    <!-- Logs Tab -->
+    <div id="logsTab" class="tab-content hidden">
+      <div class="card">
+        <h3>📋 ඇතුළත් වීම් ලොගය</h3>
+        
+        <div class="export-buttons">
+          <button class="btn-primary" onclick="exportToCSV()">
+            📥 CSV බාගත කරන්න
+          </button>
+          <button class="btn-primary" onclick="exportToGoogleSheets()">
+            📊 Google Sheets වෙත යවන්න
+          </button>
+          <button class="btn-secondary" onclick="filterLogs('today')">
+            අද දත්ත පෙන්වන්න
+          </button>
+          <button class="btn-secondary" onclick="filterLogs('all')">
+            සියල්ල පෙන්වන්න
+          </button>
+          <button class="btn-danger" onclick="clearLogs()">
+            🗑️ ලොගය හිස් කරන්න
+          </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>නම</th>
+                <th>තනතුර</th>
+                <th>දිනය</th>
+                <th>වේලාව</th>
+                <th>තත්වය</th>
+                <th>විශ්වාසනීයත්වය</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 30px;">
+                  තවම ඇතුළත් වීම් නොමැත
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settingsTab" class="tab-content hidden">
+      <div class="card">
+        <h3>⚙️ පද්ධති සැකසුම්</h3>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+            හඳුනාගැනීමේ විශ්වාසනීයත්ව සීමාව (0.0 - 1.0)
+          </label>
+          <input type="number" id="confidenceThreshold" value="0.55" min="0" max="1" step="0.05" 
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
+          <p style="color: var(--text-secondary); font-size: 0.85em; margin-top: 5px;">
+            අඩු අගයක් = වඩා සංවේදී, වැඩි අගයක් = වඩා නිවැරදි
+          </p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+            හඬ නිවේදන
+          </label>
+          <select id="voiceAlerts" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
+            <option value="enabled">සක්‍රීය</option>
+            <option value="disabled">අක්‍රීය</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+            ස්වයංක්‍රීය අගුළු දැමීමේ කාලය (තත්පර)
+          </label>
+          <input type="number" id="autoLockTime" value="5" min="3" max="30" 
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+            Google Sheets API Key (Optional)
+          </label>
+          <input type="text" id="googleSheetsKey" placeholder="ඔබේ API key ඇතුලත් කරන්න" 
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
+          <p style="color: var(--text-secondary); font-size: 0.85em; margin-top: 5px;">
+            Google Sheets වෙත ස්වයංක්‍රීයව දත්ත යැවීම සඳහා
+          </p>
+        </div>
+
+        <button class="btn-primary" onclick="saveSettings()">
+          💾 සැකසුම් සුරකින්න
+        </button>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
-// PASSWORD
-const PASSWORD="camp123";
-const video=document.getElementById("video");
-const ctx=document.getElementById("canvas").getContext("2d");
+// CONFIGURATION
+const PASSWORD = "camp123";
+const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models";
 
-let matcher=null;
-let lastEntry={};
-let speaking=false;
-
-const officers=[
- {name:"Officer 1",desc:[]},
- {name:"Officer 2",desc:[]},
- {name:"Officer 3",desc:[]}
-];
-
-function unlock(){
- if(pwd.value===PASSWORD){
-  lock.classList.add("hidden");
-  system.classList.remove("hidden");
- }
-}
-
-// VOICE ALERT
-function speakOnce(msg){
- if(speaking) return;
- speaking=true;
- speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
- setTimeout(()=>speaking=false,3000);
-}
-
-// LOAD MODELS FROM GITHUB
-async function loadModels(){
- await faceapi.nets.ssdMobilenetv1.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models");
- await faceapi.nets.faceLandmark68Net.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models");
- await faceapi.nets.faceRecognitionNet.loadFromUri("https://wdjanuradha.github.io/camp-face-system/models");
- modelSt.innerText="Loaded";
- modelSt.className="ok";
-}
-loadModels();
-
-// START CAMERA
-startBtn.onclick=async()=>{
- try{
-   const s=await navigator.mediaDevices.getUserMedia({video:true});
-   video.srcObject=s;
-   camSt.innerText="ON";
-   camSt.className="ok";
-   detectLoop();
- }catch(e){
-   alert("Camera not available. Close other apps/tabs.");
- }
+// STATE
+let matcher = null;
+let lastEntry = {};
+let speaking = false;
+let officers = [];
+let entryLogs = [];
+let cameraStream = null;
+let detectionLoop = null;
+let settings = {
+  confidenceThreshold: 0.55,
+  voiceAlerts: true,
+  autoLockTime: 5
 };
 
-// ENROLL OFFICERS
-async function enroll(i){
- const detection=await faceapi.detectSingleFace(video,new faceapi.SsdMobilenetv1Options({minConfidence:0.3})).withFaceLandmarks().withFaceDescriptor();
- if(!detection) return alert("Face not detected");
- officers[i].desc.push(detection.descriptor);
- matcher=new faceapi.FaceMatcher(officers.map(o=>new faceapi.LabeledFaceDescriptors(o.name,o.desc)),0.55);
- alert(officers[i].name+" enrolled");
+// DOM ELEMENTS
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+// INITIALIZATION
+async function init() {
+  loadFromStorage();
+  renderOfficers();
+  renderLogs();
+  updateStats();
+  await loadModels();
 }
 
-// DETECTION LOOP
-async function detectLoop(){
- const canvasEl=document.getElementById("canvas");
- const displaySize={width:video.width,height:video.height};
- faceapi.matchDimensions(canvasEl,displaySize);
-
- setInterval(async()=>{
-   const detections=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:0.3}))
-     .withFaceLandmarks()
-     .withFaceDescriptors();
-
-   ctx.clearRect(0,0,canvasEl.width,canvasEl.height);
-   faceSt.innerText=detections.length?"Yes":"No";
-   faceSt.className=detections.length?"ok":"bad";
-
-   // enable enroll buttons
-   document.querySelectorAll("button[onclick^='enroll']").forEach(b=>b.disabled=!detections.length);
-
-   detections.forEach(d=>{
-     let label="Unknown";
-     if(matcher) label=matcher.findBestMatch(d.descriptor).label;
-     const b=d.detection.box;
-     ctx.strokeStyle=label==="Unknown"?"red":"lime";
-     ctx.strokeRect(b.x,b.y,b.width,b.height);
-     ctx.fillStyle="lime";
-     ctx.fillText(label,b.x,b.y-5);
-
-     // log entry & voice alert
-     if(label!=="Unknown" && !lastEntry[label]){
-       logEntry(label);
-       speakOnce("Officer entered");
-       lastEntry[label]=true;
-       setTimeout(()=>delete lastEntry[label],5000);
-     }
-   });
- },1000);
+// STORAGE FUNCTIONS
+function saveToStorage() {
+  const data = {
+    officers: officers.map(o => ({
+      id: o.id,
+      name: o.name,
+      rank: o.rank,
+      serviceNo: o.serviceNo,
+      descriptors: o.descriptors ? Array.from(o.descriptors) : null
+    })),
+    logs: entryLogs,
+    settings: settings
+  };
+  localStorage.setItem('campFaceData', JSON.stringify(data));
 }
 
-// LOG FUNCTION
-function logEntry(name){
- const t=new Date().toLocaleString();
- log.innerHTML+=`<tr><td>${name}</td><td>${t}</td></tr>`;
+function loadFromStorage() {
+  const stored = localStorage.getItem('campFaceData');
+  if (stored) {
+    const data = JSON.parse(stored);
+    officers = data.officers || [];
+    entryLogs = data.logs || [];
+    settings = data.settings || settings;
+    
+    // Load settings to UI
+    if (document.getElementById('confidenceThreshold')) {
+      document.getElementById('confidenceThreshold').value = settings.confidenceThreshold;
+      document.getElementById('voiceAlerts').value = settings.voiceAlerts ? 'enabled' : 'disabled';
+      document.getElementById('autoLockTime').value = settings.autoLockTime;
+    }
+  }
 }
+
+// AUTHENTICATION
+function unlock() {
+  const pwd = document.getElementById('pwdInput').value;
+  if (pwd === PASSWORD) {
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('mainSystem').classList.remove('hidden');
+    showAlert('පද්ධතියට සාදරයෙන් පිළිගනිමු!', 'success');
+    init();
+  } else {
+    showAlert('වැරදි මුරපදයකි!', 'danger');
+  }
+}
+
+// LOAD AI MODELS
+async function loadModels() {
+  try {
+    showAlert('AI models පූරණය වෙමින්...', 'info');
+    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+    
+    document.getElementById('modelStatus').textContent = 'පූරණය වී ඇත';
+    document.getElementById('modelStatus').className = 'value status-ok';
+    showAlert('AI models සාර්ථකව පූරණය විය', 'success');
+  } catch (error) {
+    showAlert('Models පූරණය අසාර්ථකයි. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කරන්න.', 'danger');
+    console.error(error);
+  }
+}
+
+// CAMERA CONTROL
+document.getElementById('startBtn').onclick = async () => {
+  const btn = document.getElementById('startBtn');
+  
+  if (cameraStream) {
+    // Stop camera
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+    video.srcObject = null;
+    
+    if (detectionLoop) {
+      clearInterval(detectionLoop);
+      detectionLoop = null;
+    }
+    
+    btn.textContent = '🎥 කැමරාව ආරම්භ කරන්න';
+    btn.className = 'btn-primary';
+    document.getElementById('cameraStatus').textContent = 'OFF';
+    document.getElementById('cameraStatus').className = 'value status-bad';
+    document.getElementById('faceStatus').textContent = 'නැත';
+    document.getElementById('faceStatus').className = 'value status-bad';
+    document.getElementById('detectionInfo').textContent = 'හඳුනාගැනීම අක්‍රියයි';
+    
+  } else {
+    // Start camera
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
+      });
+      video.srcObject = cameraStream;
+      
+      btn.textContent = '⏹️ කැමරාව නවත්වන්න';
+      btn.className = 'btn-danger';
+      document.getElementById('cameraStatus').textContent = 'ON';
+      document.getElementById('cameraStatus').className = 'value status-ok';
+      showAlert('කැමරාව සක්‍රීය කරන ලදී', 'success');
+      
+      startDetection();
+      
+    } catch (error) {
+      showAlert('කැමරාව ප්‍රවේශ කිරීමට අසමත්. අනෙකුත් යෙදුම් වසා දමන්න.', 'danger');
+      console.error(error);
+    }
+  }
+};
+
+// FACE DETECTION
+async function startDetection() {
+  const displaySize = { width: video.width, height: video.height };
+  faceapi.matchDimensions(canvas, displaySize);
+  
+  detectionLoop = setInterval(async () => {
+    const detections = await faceapi
+      .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const faceCount = detections.length;
+    document.getElementById('faceStatus').textContent = faceCount > 0 ? 'ඔව්' : 'නැත';
+    document.getElementById('faceStatus').className = faceCount > 0 ? 'value status-ok' : 'value status-bad';
+    document.getElementById('detectionInfo').textContent = `${faceCount} මුහුණු අනාවරණය විය`;
+    
+    detections.forEach(detection => {
+      let label = "Unknown";
+      let confidence = 0;
+      let matchedOfficer = null;
+      
+      if (matcher) {
+        const bestMatch = matcher.findBestMatch(detection.descriptor);
+        label = bestMatch.label;
+        confidence = 1 - bestMatch.distance;
+        
+        if (label !== "Unknown") {
+          matchedOfficer = officers.find(o => o.name === label);
+        }
+      }
+      
+      const box = detection.detection.box;
+      
+      // Draw rectangle
+      ctx.strokeStyle = label === "Unknown" ? "#ef4444" : "#10b981";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
+      
+      // Draw label background
+      ctx.fillStyle = label === "Unknown" ? "#ef4444" : "#10b981";
+      ctx.fillRect(box.x, box.y - 30, box.width, 30);
+      
+      // Draw label text
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "16px Arial";
+      ctx.fillText(label, box.x + 5, box.y - 10);
+      
+      // Update detected person card
+      if (label !== "Unknown" && matchedOfficer) {
+        updateDetectedPersonCard(matchedOfficer, confidence);
+        
+        // Log entry
+        if (!lastEntry[label]) {
+          logEntry(matchedOfficer, 'approved', confidence);
+          speak('නිලධාරියා ඇතුළු විය');
+          lastEntry[label] = true;
+          setTimeout(() => delete lastEntry[label], 5000);
+        }
+      } else if (label === "Unknown") {
+        showUnknownPerson();
+        
+        // Log unauthorized attempt
+        if (!lastEntry['unknown']) {
+          logEntry({ name: 'නොදන්නා පුද්ගලයා', rank: 'N/A', serviceNo: 'N/A' }, 'rejected', confidence);
+          speak('අනවසර ප්‍රවේශ උත්සාහයක්');
+          lastEntry['unknown'] = true;
+          setTimeout(() => delete lastEntry['unknown'], 5000);
+        }
+      }
+    });
+    
+    if (faceCount === 0) {
+      clearDetectedPersonCard();
+    }
+    
+  }, 1000);
+}
+
+// OFFICER MANAGEMENT
+function addOfficer() {
+  const newOfficer = {
+    id: Date.now(),
+    name: `නිලධාරී ${officers.length + 1}`,
+    rank: 'කොන්ස්ටේබල්',
+    serviceNo: '',
+    descriptors: null
+  };
+  officers.push(newOfficer);
+  renderOfficers();
+  saveToStorage();
+  showAlert('නව නිලධාරියෙකු එකතු කරන ලදී', 'success');
+}
+
+function updateOfficer(id, field, value) {
+  const officer = officers.find(o => o.id === id);
+  if (officer) {
+    officer[field] = value;
+    saveToStorage();
+  }
+}
+
+async function enrollOfficer(id) {
+  if (!cameraStream) {
+    showAlert('පළමුව කැමරාව ආරම්භ කරන්න', 'danger');
+    return;
+  }
+  
+  const detection = await faceapi
+    .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+    .withFaceLandmarks()
+    .withFaceDescriptor();
+  
+  if (!detection) {
+    showAlert('මුහුණක් අනාවරණය වී නැත. කැමරාව දෙස බලන්න.', 'danger');
+    return;
+  }
+  
+  const officer = officers.find(o => o.id === id);
+  if (!officer.descriptors) {
+    officer.descriptors = [];
+  }
+  officer.descriptors.push(detection.descriptor);
+  
+  // Update matcher
+  updateMatcher();
+  
+  saveToStorage();
+  renderOfficers();
+  updateStats();
+  showAlert(`${officer.name} සාර්ථකව ලියාපදිංචි කරන ලදී`, 'success');
+}
+
+function deleteOfficer(id) {
+  if (confirm('මෙම නිලධාරියා මකා දැමීමට විශ්වාසද?')) {
+    officers = officers.filter(o => o.id !== id);
+    updateMatcher();
+    saveToStorage();
+    renderOfficers();
+    updateStats();
+    showAlert('නිලධාරියා මකා දමන ලදී', 'info');
+  }
+}
+
+function updateMatcher() {
+  const enrolledOfficers = officers.filter(o => o.descriptors && o.descriptors.length > 0);
+  
+  if (enrolledOfficers.length > 0) {
+    matcher = new faceapi.FaceMatcher(
+      enrolledOfficers.map(o => new faceapi.LabeledFaceDescriptors(o.name, o.descriptors)),
+      settings.confidenceThreshold
+    );
+  } else {
+    matcher = null;
+  }
+}
+
+function renderOfficers() {
+  const list = document.getElementById('officerList');
+  
+  if (officers.length === 0) {
+    list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 30px;">තවම නිලධාරීන් එකතු කර නොමැත</p>';
+    return;
+  }
+  
+  list.innerHTML = officers.map(o => `
+    <div class="officer-card ${o.descriptors ? 'enrolled' : ''}">
+      <div class="officer-avatar">
+        ${o.name.charAt(0)}
+      </div>
+      <div class="officer-info">
+        <input type="text" value="${o.name}" placeholder="නම" 
+               onchange="updateOfficer(${o.id}, 'name', this.value); renderOfficers();">
+        <select onchange="updateOfficer(${o.id}, 'rank', this.value)">
+          <option value="කොන්ස්ටේබල්" ${o.rank === 'කොන්ස්ටේබල්' ? 'selected' : ''}>කොන්ස්ටේබල්</option>
+          <option value="සර්ජන්ට්" ${o.rank === 'සර්ජන්ට්' ? 'selected' : ''}>සර්ජන්ට්</option>
+          <option value="IP" ${o.rank === 'IP' ? 'selected' : ''}>IP</option>
+          <option value="SI" ${o.rank === 'SI' ? 'selected' : ''}>SI</option>
+          <option value="ASP" ${o.rank === 'ASP' ? 'selected' : ''}>ASP</option>
+          <option value="SP" ${o.rank === 'SP' ? 'selected' : ''}>SP</option>
+        </select>
+        <input type="text" value="${o.serviceNo || ''}" placeholder="සේවා අංකය" 
+               onchange="updateOfficer(${o.id}, 'serviceNo', this.value);">
+        <small style="color: var(--text-secondary);">
+          ${o.descriptors ? '✅ ලියාපදිංචි කර ඇත' : '⚠️ ලියාපදිංචි කර නැත'}
+        </small>
+      </div>
+      <div class="officer-actions">
+        <button class="btn-primary" onclick="enrollOfficer(${o.id})">
+          📸 ${o.descriptors ? 'යළි ' : ''}ලියාපදිංචි කරන්න
+        </button>
+        <button class="btn-danger" onclick="deleteOfficer(${o.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// LOGGING
+function logEntry(officer, status, confidence) {
+  const entry = {
+    id: Date.now(),
+    name: officer.name,
+    rank: officer.rank || 'N/A',
+    serviceNo: officer.serviceNo || 'N/A',
+    date: new Date().toLocaleDateString('si-LK'),
+    time: new Date().toLocaleTimeString('si-LK'),
+    status: status,
+    confidence: (confidence * 100).toFixed(1)
+  };
+  
+  entryLogs.unshift(entry);
+  saveToStorage();
+  renderLogs();
+  updateStats();
+}
+
+function renderLogs(filter = 'all') {
+  const tbody = document.getElementById('logTableBody');
+  
+  let filteredLogs = entryLogs;
+  if (filter === 'today') {
+    const today = new Date().toLocaleDateString('si-LK');
+    filteredLogs = entryLogs.filter(log => log.date === today);
+  }
+  
+  if (filteredLogs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 30px;">දත්ත නොමැත</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filteredLogs.map((log, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${log.name}</td>
+      <td>${log.rank}</td>
+      <td>${log.date}</td>
+      <td>${log.time}</td>
+      <td>
+        <span class="badge ${log.status === 'approved' ? 'badge-success' : 'badge-danger'}">
+          ${log.status === 'approved' ? 'අනුමත' : 'ප්‍රතික්ෂේප'}
+        </span>
+      </td>
+      <td>${log.confidence}%</td>
+    </tr>
+  `).join('');
+}
+
+function filterLogs(filter) {
+  renderLogs(filter);
+}
+
+function clearLogs() {
+  if (confirm('සියලු ලොග දත්ත මකා දැමීමට විශ්වාසද?')) {
+    entryLogs = [];
+    saveToStorage();
+    renderLogs();
+    updateStats();
+    showAlert('ලොග දත්ත මකා දමන ලදී', 'info');
+  }
+}
+
+// EXPORT FUNCTIONS
+function exportToCSV() {
+  if (entryLogs.length === 0) {
+    showAlert('Export කිරීමට දත්ත නොමැත', 'danger');
+    return;
+  }
+  
+  const headers = ['අංකය', 'නම', 'තනතුර', 'දිනය', 'වේලාව', 'තත්වය', 'විශ්වාසනීයත්වය'];
+  const rows = entryLogs.map((log, i) => [
+    i + 1,
+    log.name,
+    log.rank,
+    log.date,
+    log.time,
+    log.status === 'approved' ? 'අනුමත' : 'ප්‍රතික්ෂේප',
+    log.confidence + '%'
+  ]);
+  
+  const csvContent = [headers, ...rows]
+    .map(row => row.join(','))
+    .join('\n');
+  
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', `camp_entry_log_${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showAlert('CSV ගොනුව බාගත කරන ලදී', 'success');
+}
+
+async function exportToGoogleSheets() {
+  showAlert('Google Sheets integration සකසා නොමැත. Settings හි API key එකතු කරන්න.', 'info');
+  
+  // In a real implementation, you would:
+  // 1. Use Google Sheets API with credentials
+  // 2. Create/update a spreadsheet
+  // 3. Append the log data
+  
+  // Example structure for future implementation:
+  /*
+  const apiKey = document.getElementById('googleSheetsKey').value;
+  if (!apiKey) {
+    showAlert('Google Sheets API key නොමැත', 'danger');
+    return;
+  }
+  
+  // Use Google Sheets API to append data
+  // This requires setting up OAuth and using gapi library
+  */
+}
+
+// UI UPDATES
+function updateDetectedPersonCard(officer, confidence) {
+  const card = document.getElementById('detectedPerson');
+  card.innerHTML = `
+    <div style="padding: 20px;">
+      <div style="width: 80px; height: 80px; background: var(--accent-green); border-radius: 50%; 
+                  display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; 
+                  font-size: 2em; font-weight: bold; color: white;">
+        ${officer.name.charAt(0)}
+      </div>
+      <h3 style="margin: 10px 0;">${officer.name}</h3>
+      <p style="color: var(--text-secondary); margin: 5px 0;">${officer.rank}</p>
+      <p style="color: var(--text-secondary); margin: 5px 0;">සේවා අංකය: ${officer.serviceNo || 'N/A'}</p>
+      <div style="margin-top: 15px;">
+        <span class="badge badge-success">හඳුනාගන්නා ලදී</span>
+        <p style="color: var(--accent-green); margin-top: 10px; font-weight: 600;">
+          විශ්වාසනීයත්වය: ${(confidence * 100).toFixed(1)}%
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+function showUnknownPerson() {
+  const card = document.getElementById('detectedPerson');
+  card.innerHTML = `
+    <div style="padding: 20px;">
+      <div style="width: 80px; height: 80px; background: var(--danger); border-radius: 50%; 
+                  display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; 
+                  font-size: 2em; color: white;">
+        ⚠️
+      </div>
+      <h3 style="margin: 10px 0; color: var(--danger);">නොදන්නා පුද්ගලයෙකු</h3>
+      <p style="color: var(--text-secondary); margin: 5px 0;">ලියාපදිංචි නිලධාරියෙකු නොවේ</p>
+      <div style="margin-top: 15px;">
+        <span class="badge badge-danger">අනවසර ප්‍රවේශය</span>
+      </div>
+    </div>
+  `;
+}
+
+function clearDetectedPersonCard() {
+  const card = document.getElementById('detectedPerson');
+  card.innerHTML = '<p style="text-align: center; padding: 30px 0; color: var(--text-secondary);">මුහුණක් අනාවරණය වී නැත</p>';
+}
+
+function updateStats() {
+  const today = new Date().toLocaleDateString('si-LK');
+  const todayLogs = entryLogs.filter(log => log.date === today);
+  
+  document.getElementById('statEnrolled').textContent = officers.filter(o => o.descriptors).length;
+  document.getElementById('statApproved').textContent = todayLogs.filter(log => log.status === 'approved').length;
+  document.getElementById('statRejected').textContent = todayLogs.filter(log => log.status === 'rejected').length;
+  document.getElementById('statTotal').textContent = entryLogs.length;
+}
+
+// VOICE ALERTS
+function speak(message) {
+  if (!settings.voiceAlerts || speaking) return;
+  
+  speaking = true;
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.lang = 'si-LK';
+  speechSynthesis.speak(utterance);
+  
+  setTimeout(() => speaking = false, 3000);
+}
+
+// ALERTS
+function showAlert(message, type = 'info') {
+  const alertArea = document.getElementById('alertArea');
+  const alertId = Date.now();
+  
+  const alertHTML = `
+    <div id="alert-${alertId}" class="alert alert-${type}">
+      <span style="font-size: 1.2em;">
+        ${type === 'success' ? '✅' : type === 'danger' ? '❌' : 'ℹ️'}
+      </span>
+      <span>${message}</span>
+    </div>
+  `;
+  
+  alertArea.insertAdjacentHTML('beforeend', alertHTML);
+  
+  setTimeout(() => {
+    const alert = document.getElementById(`alert-${alertId}`);
+    if (alert) alert.remove();
+  }, 4000);
+}
+
+// TABS
+function switchTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Hide all tab contents
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+  
+  // Show selected tab
+  document.getElementById(tabName + 'Tab').classList.remove('hidden');
+}
+
+// SETTINGS
+function saveSettings() {
+  settings.confidenceThreshold = parseFloat(document.getElementById('confidenceThreshold').value);
+  settings.voiceAlerts = document.getElementById('voiceAlerts').value === 'enabled';
+  settings.autoLockTime = parseInt(document.getElementById('autoLockTime').value);
+  
+  saveToStorage();
+  updateMatcher();
+  showAlert('සැකසුම් සුරකින ලදී', 'success');
+}
+
+// Initialize on page load
+window.addEventListener('load', () => {
+  // Check if already logged in (for development)
+  // Remove this in production
+});
 </script>
 
 </body>
