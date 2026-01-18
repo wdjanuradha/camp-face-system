@@ -478,7 +478,7 @@ hr{border:0;border-top:1px solid var(--border);margin:14px 0}
 ========================= */
 const SUPABASE_URL = "https://hhmchdaqlwghdgultkgf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_a7boZvmQp7JWOC8S6G_McA_yGW8zVpy";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models"; // your models path
 
@@ -563,14 +563,14 @@ function setOnlinePill(){
    AUTH
 ========================= */
 async function loadSession(){
-  const { data } = await supabase.auth.getSession();
+  const { data } = await sb.auth.getSession();
   session = data.session || null;
   return session;
 }
 
 async function loadProfile(){
   if(!session?.user) return null;
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("profiles")
     .select("role, unit, full_name")
     .eq("user_id", session.user.id)
@@ -591,7 +591,7 @@ async function login(){
   const password = el("password").value;
   if(!email || !password){ showAlert("ඊමේල්/මුරපදය ඇතුලත් කරන්න", "danger"); return; }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ showAlert(error.message, "danger"); return; }
   session = data.session;
   showAlert("Logged in", "success");
@@ -600,7 +600,7 @@ async function login(){
 
 async function logout(){
   await stopCamera();
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   session=null; profile=null;
   app.classList.add("hidden");
   loginCard.classList.remove("hidden");
@@ -705,13 +705,13 @@ async function loadModels(){
 ========================= */
 async function refreshPersonsAndTemplates(){
   // persons
-  const { data: p, error: pe } = await supabase
+  const { data: p, error: pe } = await sb
     .from("persons").select("*").order("created_at",{ascending:false});
   if(pe){ showAlert(pe.message, "danger"); return; }
   persons = p || [];
 
   // templates
-  const { data: t, error: te } = await supabase
+  const { data: t, error: te } = await sb
     .from("face_templates").select("id, person_id, descriptor, model_version, created_at");
   if(te){ showAlert(te.message, "danger"); return; }
   templates = t || [];
@@ -753,7 +753,7 @@ function buildMatcher(){
 }
 
 async function refreshDevices(){
-  const { data, error } = await supabase.from("devices").select("*").eq("is_active", true).order("created_at",{ascending:false});
+  const { data, error } = await sb.from("devices").select("*").eq("is_active", true).order("created_at",{ascending:false});
   if(error){ showAlert(error.message, "danger"); return; }
   const select = el("deviceSelect");
   select.innerHTML = "";
@@ -784,7 +784,7 @@ async function refreshStats(){
 
   // today approved/rejected:
   const start = new Date(); start.setHours(0,0,0,0);
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("access_events")
     .select("status, created_at")
     .gte("created_at", start.toISOString());
@@ -794,7 +794,7 @@ async function refreshStats(){
   el("statApproved").textContent = today.filter(x=>x.status==="approved").length;
   el("statRejected").textContent = today.filter(x=>x.status==="rejected").length;
 
-  const { count, error: ce } = await supabase
+  const { count, error: ce } = await sb
     .from("access_events")
     .select("*", { count:"exact", head:true });
   if(ce){ showAlert(ce.message, "danger"); return; }
@@ -1007,7 +1007,7 @@ async function tryUploadSnapshot(person, status){
     const fileName = `${new Date().toISOString()}_${person?.service_no||"unknown"}_${status}.png`.replaceAll(":","-");
     const path = `snapshots/${session.user.id}/${fileName}`;
 
-    const { error } = await supabase.storage.from("snapshots").upload(path, blob, { upsert:true, contentType:"image/png" });
+    const { error } = await sb.storage.from("snapshots").upload(path, blob, { upsert:true, contentType:"image/png" });
     if(error){
       // If bucket is private or policy blocks, just skip
       return null;
@@ -1022,17 +1022,17 @@ async function tryUploadSnapshot(person, status){
 /* Insert event with offline queue */
 async function insertAccessEvent(payload, kind){
   try{
-    const { data, error } = await supabase.from("access_events").insert(payload).select("id").single();
+    const { data, error } = await sb.from("access_events").insert(payload).select("id").single();
     if(error) throw error;
 
     // create alerts if needed
     if(kind==="watchlist"){
-      await supabase.from("alerts").insert({ access_event_id: data.id, alert_type:"watchlist", note:"Watchlist detected" });
+      await sb.from("alerts").insert({ access_event_id: data.id, alert_type:"watchlist", note:"Watchlist detected" });
     }else if(kind==="unknown"){
-      await supabase.from("alerts").insert({ access_event_id: data.id, alert_type:"unknown", note:"Unknown person detected" });
+      await sb.from("alerts").insert({ access_event_id: data.id, alert_type:"unknown", note:"Unknown person detected" });
     }
 
-    await supabase.from("audit_logs").insert({ action:"access_event_insert", detail: payload });
+    await sb.from("audit_logs").insert({ action:"access_event_insert", detail: payload });
 
     await refreshStats();
     await refreshLogs();
@@ -1149,14 +1149,14 @@ async function savePerson(){
 
   try{
     if(id){
-      const { error } = await supabase.from("persons").update(payload).eq("id", id);
+      const { error } = await sb.from("persons").update(payload).eq("id", id);
       if(error) throw error;
-      await supabase.from("audit_logs").insert({ action:"person_update", detail:{ id, payload } });
+      await sb.from("audit_logs").insert({ action:"person_update", detail:{ id, payload } });
       showAlert("Person updated", "success");
     }else{
-      const { error } = await supabase.from("persons").insert(payload);
+      const { error } = await sb.from("persons").insert(payload);
       if(error) throw error;
-      await supabase.from("audit_logs").insert({ action:"person_insert", detail:{ payload } });
+      await sb.from("audit_logs").insert({ action:"person_insert", detail:{ payload } });
       showAlert("Person added", "success");
     }
     await refreshPersonsAndTemplates();
@@ -1173,9 +1173,9 @@ async function deletePerson(){
   if(!id) return;
   if(!confirm("Delete this person?")) return;
   try{
-    const { error } = await supabase.from("persons").delete().eq("id", id);
+    const { error } = await sb.from("persons").delete().eq("id", id);
     if(error) throw error;
-    await supabase.from("audit_logs").insert({ action:"person_delete", detail:{ id } });
+    await sb.from("audit_logs").insert({ action:"person_delete", detail:{ id } });
     showAlert("Deleted", "info");
     await refreshPersonsAndTemplates();
     await refreshStats();
@@ -1211,9 +1211,9 @@ async function enrollSelectedPerson(){
 
   try{
     const rows = captures.map(desc=>({ person_id: id, descriptor: desc, model_version: "faceapi-0.22.2" }));
-    const { error } = await supabase.from("face_templates").insert(rows);
+    const { error } = await sb.from("face_templates").insert(rows);
     if(error) throw error;
-    await supabase.from("audit_logs").insert({ action:"face_enroll", detail:{ person_id:id, count: rows.length } });
+    await sb.from("audit_logs").insert({ action:"face_enroll", detail:{ person_id:id, count: rows.length } });
     showAlert("Enrollment saved (3 templates)", "success");
     overlay.textContent = "Detecting…";
     await refreshPersonsAndTemplates();
@@ -1228,9 +1228,9 @@ async function clearTemplatesForSelected(){
   const id = el("personId").value;
   if(!id) return;
   if(!confirm("Clear all templates for this person?")) return;
-  const { error } = await supabase.from("face_templates").delete().eq("person_id", id);
+  const { error } = await sb.from("face_templates").delete().eq("person_id", id);
   if(error){ showAlert(error.message, "danger"); return; }
-  await supabase.from("audit_logs").insert({ action:"face_clear", detail:{ person_id:id } });
+  await sb.from("audit_logs").insert({ action:"face_clear", detail:{ person_id:id } });
   showAlert("Templates cleared", "info");
   await refreshPersonsAndTemplates();
 }
@@ -1256,7 +1256,7 @@ function daysAgoISO(days){
 
 async function refreshLogs(){
   const f = el("logFilter").value;
-  let q = supabase.from("access_events").select("id,created_at,person_id,device_id,event_type,status,confidence,extra,persons(name,service_no,person_type),devices(gate_name,name)").order("created_at",{ascending:false}).limit(300);
+  let q = sb.from("access_events").select("id,created_at,person_id,device_id,event_type,status,confidence,extra,persons(name,service_no,person_type),devices(gate_name,name)").order("created_at",{ascending:false}).limit(300);
 
   if(f==="today"){
     const start = new Date(); start.setHours(0,0,0,0);
@@ -1299,7 +1299,7 @@ async function refreshLogs(){
 }
 
 async function refreshAlerts(){
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("alerts")
     .select("id,created_at,alert_type,note,resolved,access_event_id")
     .order("created_at",{ascending:false})
@@ -1322,7 +1322,7 @@ async function refreshAudit(){
   const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
   if(!canAudit) return;
 
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("audit_logs")
     .select("id,created_at,action,detail,user_id")
     .order("created_at",{ascending:false})
@@ -1367,9 +1367,9 @@ async function addDevice(){
   const gate = el("dGate").value.trim();
   const loc  = el("dLoc").value.trim();
   if(!name){ showAlert("Device name required", "warn"); return; }
-  const { error } = await supabase.from("devices").insert({ name, gate_name: gate || null, location: loc || null });
+  const { error } = await sb.from("devices").insert({ name, gate_name: gate || null, location: loc || null });
   if(error){ showAlert(error.message, "danger"); return; }
-  await supabase.from("audit_logs").insert({ action:"device_insert", detail:{ name, gate, loc } });
+  await sb.from("audit_logs").insert({ action:"device_insert", detail:{ name, gate, loc } });
   showAlert("Device added", "success");
   el("dName").value=""; el("dGate").value=""; el("dLoc").value="";
   await refreshDevices();
@@ -1505,3 +1505,4 @@ el("btnRefreshDevices").addEventListener("click", refreshDevices);
 
 </body>
 </html>
+
