@@ -478,7 +478,7 @@ hr{border:0;border-top:1px solid var(--border);margin:14px 0}
 ========================= */
 const SUPABASE_URL = "https://hhmchdaqlwghdgultkgf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_a7boZvmQp7JWOC8S6G_McA_yGW8zVpy";
-const sb = window.sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = (window.supabase || window.supabaseJs).createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models"; // your models path
 
@@ -1505,4 +1505,5 @@ el("btnRefreshDevices").addEventListener("click", refreshDevices);
 
 </body>
 </html>
+
 
