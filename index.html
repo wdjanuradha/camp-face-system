@@ -1,1284 +1,1506 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-<meta charset="UTF-8">
-<title>මුහුණු රැක - Camp Security System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>මුහුණු රැක - Camp Security System (DB Edition)</title>
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-primary:#0f172a; --bg-secondary:#1e293b; --bg-card:#334155;
+  --accent-green:#10b981; --accent-blue:#3b82f6; --accent-purple:#8b5cf6;
+  --danger:#ef4444; --warning:#f59e0b; --text-primary:#f1f5f9; --text-secondary:#94a3b8; --border:#475569;
+}
+body{
+  font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  background:linear-gradient(135deg,var(--bg-primary) 0%,#1e3a8a 100%);
+  color:var(--text-primary);
+  min-height:100vh;
+  padding:20px;
+}
+.container{max-width:1400px;margin:0 auto}
+.hidden{display:none!important}
 
-:root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-card: #334155;
-  --accent-green: #10b981;
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --border: #475569;
+.header{
+  background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+  padding:20px;border-radius:15px;margin-bottom:20px;
+  box-shadow:0 10px 40px rgba(0,0,0,.3);
+  display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;
+}
+.header h1{font-size:2em;text-shadow:2px 2px 4px rgba(0,0,0,.3)}
+.header p{opacity:.9;margin-top:5px}
+.pills{display:flex;gap:10px;flex-wrap:wrap}
+.pill{background:rgba(255,255,255,.2);padding:10px 14px;border-radius:10px;font-weight:700;backdrop-filter:blur(10px)}
+
+.tabs{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}
+.tab{padding:12px 20px;background:var(--bg-secondary);border:none;border-radius:10px;color:var(--text-primary);cursor:pointer;font-weight:700;transition:.2s}
+.tab:hover{background:var(--bg-card)}
+.tab.active{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));box-shadow:0 5px 15px rgba(59,130,246,.35)}
+
+.card{
+  background:var(--bg-secondary);
+  border-radius:15px;padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+  border:1px solid var(--border);
+}
+.card h3{margin-bottom:15px;font-size:1.2em;display:flex;align-items:center;gap:10px}
+
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:15px}
+@media(max-width:1024px){.grid{grid-template-columns:1fr}}
+
+button{
+  padding:12px 20px;border:none;border-radius:10px;font-weight:800;cursor:pointer;transition:.2s;font-size:.95em
+}
+.btn-primary{background:linear-gradient(135deg,var(--accent-green),#059669);color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(16,185,129,.35)}
+.btn-danger{background:linear-gradient(135deg,var(--danger),#dc2626);color:#fff}
+.btn-secondary{background:var(--bg-card);color:var(--text-primary)}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+input,select,textarea{
+  width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bg-card);color:var(--text-primary);
+}
+label{display:block;margin-bottom:6px;font-weight:800}
+.small{color:var(--text-secondary);font-size:.85em}
+
+.alert{
+  padding:14px 18px;border-radius:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;
+  border-left:4px solid var(--accent-blue);background:rgba(59,130,246,.18)
+}
+.alert.success{border-left-color:var(--accent-green);background:rgba(16,185,129,.18)}
+.alert.danger{border-left-color:var(--danger);background:rgba(239,68,68,.18)}
+.alert.warn{border-left-color:var(--warning);background:rgba(245,158,11,.18)}
+
+.video-container{
+  position:relative;width:100%;max-width:720px;margin:0 auto;background:#000;border-radius:15px;overflow:hidden;
+  box-shadow:0 10px 40px rgba(0,0,0,.45)
+}
+video,canvas{width:100%;height:auto;display:block}
+canvas{position:absolute;top:0;left:0}
+.overlay{
+  position:absolute;top:12px;left:12px;background:rgba(0,0,0,.65);padding:10px 12px;border-radius:10px;font-size:.9em
 }
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, #1e3a8a 100%);
-  color: var(--text-primary);
-  min-height: 100vh;
-  padding: 20px;
-}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--bg-card)}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+tbody tr:hover{background:rgba(255,255,255,.06)}
 
-.container { max-width: 1400px; margin: 0 auto; }
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.82em;font-weight:900}
+.badge.ok{background:rgba(16,185,129,.2);color:var(--accent-green)}
+.badge.no{background:rgba(239,68,68,.2);color:var(--danger)}
+.badge.warn{background:rgba(245,158,11,.2);color:var(--warning)}
 
-/* Header */
-.header {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 25px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.stat{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));padding:16px;border-radius:14px;border-left:4px solid var(--accent-blue)}
+.stat .v{font-size:2.2em;font-weight:900;margin-top:6px}
+.stat.green{border-left-color:var(--accent-green)}
+.stat.red{border-left-color:var(--danger)}
+.stat.purple{border-left-color:var(--accent-purple)}
 
-.header h1 {
-  font-size: 2em;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.row{grid-template-columns:1fr}}
+hr{border:0;border-top:1px solid var(--border);margin:14px 0}
 
-.header p {
-  opacity: 0.9;
-  margin-top: 5px;
-}
-
-.lock-status {
-  background: rgba(255,255,255,0.2);
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-}
-
-/* Lock Screen */
-.lock-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15,23,42,0.95);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.lock-card {
-  background: var(--bg-secondary);
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-}
-
-.lock-card h2 {
-  margin-bottom: 20px;
-  font-size: 1.8em;
-}
-
-.lock-card input {
-  width: 100%;
-  padding: 15px;
-  border-radius: 10px;
-  border: 2px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 1em;
-  margin-bottom: 20px;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.tab {
-  padding: 12px 25px;
-  background: var(--bg-secondary);
-  border: none;
-  border-radius: 10px;
-  color: var(--text-primary);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-}
-
-.tab:hover { background: var(--bg-card); }
-.tab.active {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  box-shadow: 0 5px 15px rgba(59,130,246,0.4);
-}
-
-/* Grid Layout */
-.grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 1024px) {
-  .grid { grid-template-columns: 1fr; }
-}
-
-/* Card */
-.card {
-  background: var(--bg-secondary);
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  border: 1px solid var(--border);
-}
-
-.card h3 {
-  margin-bottom: 20px;
-  font-size: 1.3em;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Status Indicators */
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.status-item {
-  background: var(--bg-card);
-  padding: 15px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-.status-item label {
-  display: block;
-  color: var(--text-secondary);
-  font-size: 0.85em;
-  margin-bottom: 5px;
-}
-
-.status-item .value {
-  font-size: 1.2em;
-  font-weight: 700;
-}
-
-.status-ok { color: var(--accent-green); }
-.status-bad { color: var(--danger); }
-.status-warning { color: var(--warning); }
-
-/* Video Container */
-.video-container {
-  position: relative;
-  width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
-  background: #000;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-
-video, canvas {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.video-overlay {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  background: rgba(0,0,0,0.7);
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 0.9em;
-  backdrop-filter: blur(5px);
-}
-
-/* Buttons */
-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.95em;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent-green), #059669);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(16,185,129,0.4);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, var(--danger), #dc2626);
-  color: white;
-}
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-button:disabled {
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* Officer Cards */
-.officer-list {
-  display: grid;
-  gap: 15px;
-}
-
-.officer-card {
-  background: var(--bg-card);
-  padding: 20px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border: 2px solid transparent;
-  transition: all 0.3s;
-}
-
-.officer-card.enrolled {
-  border-color: var(--accent-green);
-  background: rgba(16,185,129,0.1);
-}
-
-.officer-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5em;
-  font-weight: 700;
-  color: var(--accent-blue);
-  flex-shrink: 0;
-}
-
-.officer-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.officer-info {
-  flex: 1;
-}
-
-.officer-info input {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  padding: 8px 12px;
-  border-radius: 8px;
-  width: 100%;
-  margin-bottom: 8px;
-  font-size: 1em;
-}
-
-.officer-info select {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  padding: 8px 12px;
-  border-radius: 8px;
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.officer-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.officer-actions button {
-  padding: 8px 16px;
-  font-size: 0.85em;
-}
-
-/* Log Table */
-.log-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
-
-.log-table thead {
-  background: var(--bg-card);
-}
-
-.log-table th,
-.log-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-.log-table tbody tr:hover {
-  background: var(--bg-card);
-}
-
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.85em;
-  font-weight: 600;
-}
-
-.badge-success {
-  background: rgba(16,185,129,0.2);
-  color: var(--accent-green);
-}
-
-.badge-danger {
-  background: rgba(239,68,68,0.2);
-  color: var(--danger);
-}
-
-/* Stats Cards */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-}
-
-.stat-card {
-  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  border-left: 4px solid var(--accent-blue);
-}
-
-.stat-card.green { border-left-color: var(--accent-green); }
-.stat-card.red { border-left-color: var(--danger); }
-.stat-card.purple { border-left-color: var(--accent-purple); }
-
-.stat-value {
-  font-size: 2.5em;
-  font-weight: 700;
-  margin: 10px 0;
-}
-
-.stat-label {
-  color: var(--text-secondary);
-  font-size: 0.9em;
-}
-
-/* Alert */
-.alert {
-  padding: 15px 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.alert-success {
-  background: rgba(16,185,129,0.2);
-  border-left: 4px solid var(--accent-green);
-}
-
-.alert-danger {
-  background: rgba(239,68,68,0.2);
-  border-left: 4px solid var(--danger);
-}
-
-.alert-info {
-  background: rgba(59,130,246,0.2);
-  border-left: 4px solid var(--accent-blue);
-}
-
-.hidden { display: none !important; }
-
-/* Export Buttons */
-.export-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  vertical-align: middle;
-}
+.kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,"Liberation Mono","Courier New", monospace;
+  background:rgba(255,255,255,.12);padding:3px 8px;border-radius:8px;font-weight:800}
 </style>
 </head>
 
 <body>
+<div class="container">
 
-<!-- Lock Screen -->
-<div class="lock-screen" id="lockScreen">
-  <div class="lock-card">
-    <h2>🔒 මුහුණු රැක</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">
-      Camp Security System
+  <div id="alertArea"></div>
+
+  <!-- LOGIN -->
+  <div id="loginCard" class="card" style="max-width:520px;margin:40px auto;">
+    <h3>🔐 ලොග්-ඉන් (Database Edition)</h3>
+    <p class="small" style="margin-bottom:12px;">
+      GitHub Pages එකෙන් ඉදිරිපත් කළත්, දත්ත ගබඩාව/අයිතිවාසිකම් <b>Supabase</b> මඟින් පාලනය වේ.
     </p>
-    <input type="password" id="pwdInput" placeholder="මුරපදය ඇතුලත් කරන්න" onkeypress="if(event.key==='Enter')unlock()">
-    <button class="btn-primary" onclick="unlock()" style="width: 100%;">
-      🔓 විවෘත කරන්න
-    </button>
-    <p style="color: var(--text-secondary); margin-top: 15px; font-size: 0.85em;">
-      Default: camp123
-    </p>
+    <div class="row">
+      <div>
+        <label>ඊමේල්</label>
+        <input id="email" type="email" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label>මුරපදය</label>
+        <input id="password" type="password" placeholder="••••••••" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn-primary" id="btnLogin">➡️ ඇතුල්වන්න</button>
+      <button class="btn-secondary" id="btnLogout" disabled>🚪 ඉවත් වන්න</button>
+    </div>
+    <div style="margin-top:12px" class="small">
+      Admin user එක Supabase තුළ සෑදූ පසු, ඔබට roles සකස් කරන්න පුළුවන්.
+      <br/>Tip: Admin role යනු <span class="kbd">profiles.role = 'admin'</span>
+    </div>
   </div>
-</div>
 
-<!-- Main System -->
-<div id="mainSystem" class="hidden">
-  <div class="container">
-    
-    <!-- Header -->
+  <!-- MAIN APP -->
+  <div id="app" class="hidden">
+
     <div class="header">
       <div>
         <h1>🛡️ මුහුණු රැක</h1>
-        <p>AI මුහුණු හඳුනාගැනීමේ ස්මාර්ට් කඳවුරු ආරක්ෂණ පද්ධතිය</p>
+        <p>AI මුහුණු හඳුනාගැනීම + DB + Roles + Audit (Competition Edition)</p>
       </div>
-      <div class="lock-status" id="lockStatus">
-        🔒 පද්ධතිය ආරක්ෂිතයි
+      <div class="pills">
+        <div class="pill" id="pillRole">Role: -</div>
+        <div class="pill" id="pillOnline">🌐 Online</div>
+        <div class="pill" id="pillDevice">📍 Device: -</div>
       </div>
     </div>
 
-    <!-- Alert Area -->
-    <div id="alertArea"></div>
-
-    <!-- Tabs -->
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('dashboard')">📊 උපකරණ පුවරුව</button>
-      <button class="tab" onclick="switchTab('camera')">📹 සජීවී නිරීක්ෂණය</button>
-      <button class="tab" onclick="switchTab('officers')">👥 නිලධාරී කළමනාකරණය</button>
-      <button class="tab" onclick="switchTab('logs')">📋 ඇතුළත් වීම් ලොගය</button>
-      <button class="tab" onclick="switchTab('settings')">⚙️ සැකසුම්</button>
+      <button class="tab active" data-tab="dashboard">📊 උපකරණ පුවරුව</button>
+      <button class="tab" data-tab="camera">📹 සජීවී නිරීක්ෂණය</button>
+      <button class="tab" data-tab="persons">👥 පුද්ගල කළමනාකරණය</button>
+      <button class="tab" data-tab="logs">📋 ඇතුළත් වීම් ලොග</button>
+      <button class="tab" data-tab="alerts">🚨 Alerts</button>
+      <button class="tab" data-tab="settings">⚙️ සැකසුම්</button>
+      <button class="tab" data-tab="audit" id="auditTabBtn">🧾 Audit</button>
     </div>
 
-    <!-- Dashboard Tab -->
-    <div id="dashboardTab" class="tab-content">
-      <div class="stats-grid">
-        <div class="stat-card blue">
-          <div class="stat-label">ලියාපදිංචි නිලධාරීන්</div>
-          <div class="stat-value" id="statEnrolled">0</div>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-label">අද අනුමත ඇතුළු වීම්</div>
-          <div class="stat-value" id="statApproved">0</div>
-        </div>
-        <div class="stat-card red">
-          <div class="stat-label">අද ප්‍රතික්ෂේප</div>
-          <div class="stat-value" id="statRejected">0</div>
-        </div>
-        <div class="stat-card purple">
-          <div class="stat-label">මුළු ලොග එන්ට්‍රි</div>
-          <div class="stat-value" id="statTotal">0</div>
-        </div>
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="stats">
+        <div class="stat"><div class="small">ලියාපදිංචි පුද්ගලයින්</div><div class="v" id="statPersons">0</div></div>
+        <div class="stat green"><div class="small">අද Approved</div><div class="v" id="statApproved">0</div></div>
+        <div class="stat red"><div class="small">අද Rejected</div><div class="v" id="statRejected">0</div></div>
+        <div class="stat purple"><div class="small">මුළු Events</div><div class="v" id="statTotal">0</div></div>
       </div>
 
-      <div class="card" style="margin-top: 20px;">
-        <h3>📊 පද්ධති තත්වය</h3>
-        <div class="status-grid">
-          <div class="status-item">
+      <div class="card" style="margin-top:15px;">
+        <h3>🧠 පද්ධති තත්ත්වය</h3>
+        <div class="row">
+          <div>
             <label>AI Models</label>
-            <div class="value" id="modelStatus">පූරණය වෙමින්...</div>
+            <div id="modelStatus" class="badge warn">Loading…</div>
           </div>
-          <div class="status-item">
-            <label>කැමරාව</label>
-            <div class="value status-bad" id="cameraStatus">OFF</div>
+          <div>
+            <label>Camera</label>
+            <div id="cameraStatus" class="badge no">OFF</div>
           </div>
-          <div class="status-item">
-            <label>මුහුණ හඳුනාගැනීම</label>
-            <div class="value status-bad" id="faceStatus">නැත</div>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <div>
+            <label>Recognition</label>
+            <div id="recStatus" class="badge no">Inactive</div>
           </div>
-          <div class="status-item">
-            <label>අන්තර්ජාල සම්බන්ධතාව</label>
-            <div class="value status-ok">සක්‍රීයයි</div>
+          <div>
+            <label>Offline Queue</label>
+            <div id="queueStatus" class="badge warn">0 pending</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Camera Tab -->
-    <div id="cameraTab" class="tab-content hidden">
+    <!-- CAMERA -->
+    <div id="tab-camera" class="tab-content hidden">
       <div class="grid">
-        <div>
-          <div class="card">
-            <h3>📹 සජීවී මුහුණු හඳුනාගැනීම</h3>
-            <div style="text-align: center; margin-bottom: 15px;">
-              <button id="startBtn" class="btn-primary">🎥 කැමරාව ආරම්භ කරන්න</button>
+        <div class="card">
+          <h3>📹 Live Recognition</h3>
+
+          <div class="row">
+            <div>
+              <label>Event Type</label>
+              <select id="eventType">
+                <option value="IN">IN (ඇතුල්වීම)</option>
+                <option value="OUT">OUT (පිටවීම)</option>
+              </select>
             </div>
-            <div class="video-container">
-              <video id="video" width="640" height="480" autoplay muted></video>
-              <canvas id="canvas" width="640" height="480"></canvas>
-              <div class="video-overlay" id="videoOverlay">
-                <span id="detectionInfo">හඳුනාගැනීම අක්‍රියයි</span>
+            <div>
+              <label>Mode</label>
+              <select id="mode">
+                <option value="auto">Auto Log (Recommended)</option>
+                <option value="manual">Manual Verify</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+            <button id="btnStartCam" class="btn-primary">🎥 කැමරාව ආරම්භ කරන්න</button>
+            <button id="btnStopCam" class="btn-danger" disabled>⏹️ නවත්වන්න</button>
+            <button id="btnSyncQueue" class="btn-secondary">🔁 Sync Offline Queue</button>
+          </div>
+
+          <div class="video-container" style="margin-top:12px;">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div class="overlay" id="overlay">Ready</div>
+          </div>
+
+          <p class="small" style="margin-top:10px;">
+            Note: “Confidence” යනු distance එකෙන් අනුමාන කරන value එකක්. Competition demo සඳහා threshold එක Settings තුළ tune කරන්න.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>🎯 Detected</h3>
+          <div id="detectedBox" class="small" style="padding:8px;color:var(--text-secondary);text-align:center;">
+            මුහුණක් අනාවරණය වී නැත
+          </div>
+          <hr/>
+          <div>
+            <label>Manual Log (Unknown / Visitor)</label>
+            <div class="row">
+              <div>
+                <input id="manualSearch" placeholder="Service No / Name search…" />
+              </div>
+              <div>
+                <button id="btnManualPick" class="btn-secondary">🔎 Search</button>
+              </div>
+            </div>
+            <div id="manualResults" style="margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONS -->
+    <div id="tab-persons" class="tab-content hidden">
+      <div class="card">
+        <h3>👥 පුද්ගල කළමනාකරණය (Admin)</h3>
+        <div id="personsGuard" class="alert warn">
+          ⚠️ මෙම tab එක Admin role එකට පමණයි.
+        </div>
+
+        <div id="personsArea" class="hidden">
+          <div class="row">
+            <div>
+              <label>Search</label>
+              <input id="personSearch" placeholder="Service No / Name / Unit…" />
+            </div>
+            <div>
+              <label>Actions</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="btnRefreshPersons" class="btn-secondary">🔄 Refresh</button>
+                <button id="btnAddPerson" class="btn-primary">➕ Add Person</button>
               </div>
             </div>
           </div>
-        </div>
 
-        <div>
-          <div class="card">
-            <h3>🎯 හඳුනාගත් පුද්ගලයා</h3>
-            <div id="detectedPerson" style="text-align: center; padding: 30px 0; color: var(--text-secondary);">
-              මුහුණක් අනාවරණය වී නැත
+          <div id="personForm" class="hidden" style="margin-top:12px;">
+            <hr/>
+            <h3>➕ / ✏️ Person Form</h3>
+            <input type="hidden" id="personId" />
+            <div class="row">
+              <div><label>Service No</label><input id="pService" placeholder="e.g., SLLI/12345" /></div>
+              <div><label>Name</label><input id="pName" placeholder="Full name" /></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div><label>Rank</label><input id="pRank" placeholder="Rank" /></div>
+              <div><label>Unit</label><input id="pUnit" placeholder="Unit" /></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div>
+                <label>Type</label>
+                <select id="pType">
+                  <option value="soldier">soldier</option>
+                  <option value="visitor">visitor</option>
+                </select>
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="pStatus">
+                  <option value="active">active</option>
+                  <option value="leave">leave</option>
+                  <option value="suspended">suspended</option>
+                  <option value="visitor">visitor</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <label>Watchlist</label>
+              <select id="pWatch">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+            <div style="margin-top:10px;">
+              <label>Notes</label>
+              <textarea id="pNotes" rows="3" placeholder="Reason / note…"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+              <button id="btnSavePerson" class="btn-primary">💾 Save</button>
+              <button id="btnCancelPerson" class="btn-secondary">✖ Cancel</button>
+              <button id="btnDeletePerson" class="btn-danger">🗑 Delete</button>
+            </div>
+
+            <hr/>
+            <h3>📸 Face Enrollment (Admin)</h3>
+            <p class="small">Enroll requires camera ON + face visible. We store multiple descriptors in DB.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button id="btnEnroll1" class="btn-primary">📸 Capture x3 & Save Templates</button>
+              <button id="btnClearTemplates" class="btn-danger">🧹 Clear Templates</button>
+            </div>
+            <div class="small" id="templateInfo" style="margin-top:10px;color:var(--text-secondary);"></div>
+          </div>
+
+          <hr/>
+          <div id="personsList" class="small" style="color:var(--text-secondary);">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div id="tab-logs" class="tab-content hidden">
+      <div class="card">
+        <h3>📋 Access Events</h3>
+        <div class="row">
+          <div>
+            <label>Date Filter</label>
+            <select id="logFilter">
+              <option value="today">Today</option>
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="all">All</option>
+            </select>
+          </div>
+          <div>
+            <label>Export</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button id="btnExportCSV" class="btn-primary">📥 CSV</button>
+              <button id="btnRefreshLogs" class="btn-secondary">🔄 Refresh</button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Officers Tab -->
-    <div id="officersTab" class="tab-content hidden">
-      <div class="card">
-        <h3>👥 නිලධාරී ලියාපදිංචි කිරීම</h3>
-        <button class="btn-primary" onclick="addOfficer()" style="margin-bottom: 20px;">
-          ➕ නව නිලධාරියෙකු එක් කරන්න
-        </button>
-        <div class="officer-list" id="officerList"></div>
-      </div>
-    </div>
-
-    <!-- Logs Tab -->
-    <div id="logsTab" class="tab-content hidden">
-      <div class="card">
-        <h3>📋 ඇතුළත් වීම් ලොගය</h3>
-        
-        <div class="export-buttons">
-          <button class="btn-primary" onclick="exportToCSV()">
-            📥 CSV බාගත කරන්න
-          </button>
-          <button class="btn-primary" onclick="exportToGoogleSheets()">
-            📊 Google Sheets වෙත යවන්න
-          </button>
-          <button class="btn-secondary" onclick="filterLogs('today')">
-            අද දත්ත පෙන්වන්න
-          </button>
-          <button class="btn-secondary" onclick="filterLogs('all')">
-            සියල්ල පෙන්වන්න
-          </button>
-          <button class="btn-danger" onclick="clearLogs()">
-            🗑️ ලොගය හිස් කරන්න
-          </button>
-        </div>
-
-        <div style="overflow-x: auto;">
-          <table class="log-table">
+        <div class="table-wrap" style="margin-top:12px;">
+          <table>
             <thead>
               <tr>
-                <th>#</th>
-                <th>නම</th>
-                <th>තනතුර</th>
-                <th>දිනය</th>
-                <th>වේලාව</th>
-                <th>තත්වය</th>
-                <th>විශ්වාසනීයත්වය</th>
+                <th>#</th><th>Time</th><th>Service</th><th>Name</th><th>Type</th><th>Gate</th><th>Event</th><th>Status</th><th>Conf</th>
               </tr>
             </thead>
-            <tbody id="logTableBody">
-              <tr>
-                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 30px;">
-                  තවම ඇතුළත් වීම් නොමැත
-                </td>
-              </tr>
+            <tbody id="logsBody">
+              <tr><td colspan="9" class="small" style="padding:18px;color:var(--text-secondary);text-align:center;">Loading…</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Settings Tab -->
-    <div id="settingsTab" class="tab-content hidden">
+    <!-- ALERTS -->
+    <div id="tab-alerts" class="tab-content hidden">
       <div class="card">
-        <h3>⚙️ පද්ධති සැකසුම්</h3>
-        
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
-            හඳුනාගැනීමේ විශ්වාසනීයත්ව සීමාව (0.0 - 1.0)
-          </label>
-          <input type="number" id="confidenceThreshold" value="0.55" min="0" max="1" step="0.05" 
-                 style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
-          <p style="color: var(--text-secondary); font-size: 0.85em; margin-top: 5px;">
-            අඩු අගයක් = වඩා සංවේදී, වැඩි අගයක් = වඩා නිවැරදි
-          </p>
+        <h3>🚨 Alerts</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button id="btnRefreshAlerts" class="btn-secondary">🔄 Refresh</button>
+        </div>
+        <div id="alertsList" class="small" style="margin-top:12px;color:var(--text-secondary);">Loading…</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="tab-content hidden">
+      <div class="card">
+        <h3>⚙️ Settings</h3>
+
+        <div class="row">
+          <div>
+            <label>Device / Gate (for logs)</label>
+            <select id="deviceSelect"></select>
+            <p class="small">Admin tab එකෙන් Devices manage කරන්න පුළුවන් (or create one row in DB).</p>
+          </div>
+          <div>
+            <label>Recognition Threshold (0–1)</label>
+            <input id="confThr" type="number" min="0" max="1" step="0.05" value="0.55" />
+            <p class="small">අඩු අග = more sensitive. (We map it to FaceMatcher distance internally.)</p>
+          </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
-            හඬ නිවේදන
-          </label>
-          <select id="voiceAlerts" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
-            <option value="enabled">සක්‍රීය</option>
-            <option value="disabled">අක්‍රීය</option>
-          </select>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>Voice Alerts</label>
+            <select id="voice">
+              <option value="on">On</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+          <div>
+            <label>Auto Lock Seconds (UI only)</label>
+            <input id="autolock" type="number" min="3" max="60" step="1" value="8" />
+          </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
-            ස්වයංක්‍රීය අගුළු දැමීමේ කාලය (තත්පර)
-          </label>
-          <input type="number" id="autoLockTime" value="5" min="3" max="30" 
-                 style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <button id="btnSaveSettings" class="btn-primary">💾 Save</button>
         </div>
 
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
-            Google Sheets API Key (Optional)
-          </label>
-          <input type="text" id="googleSheetsKey" placeholder="ඔබේ API key ඇතුලත් කරන්න" 
-                 style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary);">
-          <p style="color: var(--text-secondary); font-size: 0.85em; margin-top: 5px;">
-            Google Sheets වෙත ස්වයංක්‍රීයව දත්ත යැවීම සඳහා
-          </p>
-        </div>
+        <hr/>
+        <h3>📟 Devices (Admin)</h3>
+        <div id="devicesGuard" class="alert warn">⚠️ Devices manage කිරීම Admin role එකට පමණයි.</div>
 
-        <button class="btn-primary" onclick="saveSettings()">
-          💾 සැකසුම් සුරකින්න
-        </button>
+        <div id="devicesArea" class="hidden">
+          <div class="row">
+            <div><label>Name</label><input id="dName" placeholder="Gate-1 Tablet"/></div>
+            <div><label>Gate</label><input id="dGate" placeholder="Gate-1"/></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div><label>Location</label><input id="dLoc" placeholder="HQ Entrance"/></div>
+            <div style="display:flex;align-items:flex-end;gap:10px;">
+              <button id="btnAddDevice" class="btn-primary">➕ Add Device</button>
+              <button id="btnRefreshDevices" class="btn-secondary">🔄 Refresh</button>
+            </div>
+          </div>
+          <div id="devicesList" class="small" style="margin-top:12px;color:var(--text-secondary);">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIT -->
+    <div id="tab-audit" class="tab-content hidden">
+      <div class="card">
+        <h3>🧾 Audit Logs</h3>
+        <p class="small">මෙය Admin / Commander / Investigator සඳහා පමණයි.</p>
+        <button id="btnRefreshAudit" class="btn-secondary">🔄 Refresh</button>
+        <div id="auditList" class="small" style="margin-top:12px;color:var(--text-secondary);">Loading…</div>
       </div>
     </div>
 
   </div>
 </div>
 
+<!-- Face API -->
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-// CONFIGURATION
-const PASSWORD = "camp123";
-const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models";
+/* =========================
+   CONFIG
+========================= */
+const SUPABASE_URL = "https://hhmchdaqlwghdgultkgf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_a7boZvmQp7JWOC8S6G_McA_yGW8zVpy";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// STATE
+const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models"; // your models path
+
+/* =========================
+   STATE
+========================= */
+let session = null;
+let profile = null; // { role, unit, full_name }
+let persons = [];   // from DB
+let templates = []; // from DB
 let matcher = null;
-let lastEntry = {};
-let speaking = false;
-let officers = [];
-let entryLogs = [];
-let cameraStream = null;
-let detectionLoop = null;
+
 let settings = {
   confidenceThreshold: 0.55,
   voiceAlerts: true,
-  autoLockTime: 5
+  autoLockTime: 8,
+  deviceId: null
 };
 
-// DOM ELEMENTS
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
+let cameraStream = null;
+let detectTimer = null;
+let speaking = false;
+let lastLogKey = ""; // anti-spam
+let selectedPersonId = null;
+let currentDevice = null;
+
+/* Offline queue (events when network fails) */
+const QUEUE_KEY = "camp_offline_queue_v1";
+function queueGet(){ try{ return JSON.parse(localStorage.getItem(QUEUE_KEY)||"[]"); }catch{ return []; } }
+function queueSet(q){ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateQueueBadge(); }
+function queuePush(item){ const q=queueGet(); q.push(item); queueSet(q); }
+function queueShift(){ const q=queueGet(); const item=q.shift(); queueSet(q); return item; }
+function queueLen(){ return queueGet().length; }
+
+/* =========================
+   DOM
+========================= */
+const el = (id)=>document.getElementById(id);
+const alertArea = el("alertArea");
+
+const loginCard = el("loginCard");
+const app = el("app");
+
+const pillRole = el("pillRole");
+const pillOnline = el("pillOnline");
+const pillDevice = el("pillDevice");
+
+const video = el("video");
+const canvas = el("canvas");
 const ctx = canvas.getContext("2d");
 
-// INITIALIZATION
-async function init() {
-  loadFromStorage();
-  renderOfficers();
-  renderLogs();
-  updateStats();
+const overlay = el("overlay");
+const detectedBox = el("detectedBox");
+
+/* =========================
+   UI HELPERS
+========================= */
+function showAlert(msg, type="info"){
+  const div=document.createElement("div");
+  div.className="alert "+(type==="success"?"success":type==="danger"?"danger":type==="warn"?"warn":"");
+  div.innerHTML = `${type==="success"?"✅":type==="danger"?"❌":type==="warn"?"⚠️":"ℹ️"} <span>${msg}</span>`;
+  alertArea.appendChild(div);
+  setTimeout(()=>div.remove(), 4500);
+}
+
+function speak(msg){
+  if(!settings.voiceAlerts || speaking) return;
+  speaking=true;
+  const u = new SpeechSynthesisUtterance(msg);
+  u.lang="si-LK";
+  speechSynthesis.speak(u);
+  setTimeout(()=>speaking=false, 2500);
+}
+
+function setOnlinePill(){
+  const on = navigator.onLine;
+  pillOnline.textContent = on ? "🌐 Online" : "📴 Offline";
+  pillOnline.style.opacity = on ? "1" : ".8";
+}
+
+/* =========================
+   AUTH
+========================= */
+async function loadSession(){
+  const { data } = await supabase.auth.getSession();
+  session = data.session || null;
+  return session;
+}
+
+async function loadProfile(){
+  if(!session?.user) return null;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role, unit, full_name")
+    .eq("user_id", session.user.id)
+    .single();
+  if(error){
+    // If profile doesn't exist, ask admin to create it
+    profile = { role:"operator", unit:"", full_name:"" };
+    showAlert("Profile row එක නොමැත. Admin එකට profiles table එකෙන් role සකස් කරන්න.", "warn");
+  }else{
+    profile = data;
+  }
+  pillRole.textContent = `Role: ${profile.role || "-"}`;
+  return profile;
+}
+
+async function login(){
+  const email = el("email").value.trim();
+  const password = el("password").value;
+  if(!email || !password){ showAlert("ඊමේල්/මුරපදය ඇතුලත් කරන්න", "danger"); return; }
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error){ showAlert(error.message, "danger"); return; }
+  session = data.session;
+  showAlert("Logged in", "success");
+  await afterLogin();
+}
+
+async function logout(){
+  await stopCamera();
+  await supabase.auth.signOut();
+  session=null; profile=null;
+  app.classList.add("hidden");
+  loginCard.classList.remove("hidden");
+  el("btnLogout").disabled = true;
+  showAlert("Logged out", "info");
+}
+
+/* =========================
+   INIT / AFTER LOGIN
+========================= */
+function loadSettings(){
+  const s = localStorage.getItem("camp_settings_v1");
+  if(s){
+    try{ settings = { ...settings, ...JSON.parse(s) }; }catch{}
+  }
+  el("confThr").value = settings.confidenceThreshold;
+  el("voice").value = settings.voiceAlerts ? "on" : "off";
+  el("autolock").value = settings.autoLockTime;
+  updateQueueBadge();
+}
+
+function saveSettingsLocal(){
+  localStorage.setItem("camp_settings_v1", JSON.stringify(settings));
+}
+
+function updateQueueBadge(){
+  el("queueStatus").textContent = `${queueLen()} pending`;
+  el("queueStatus").className = queueLen()>0 ? "badge warn" : "badge ok";
+}
+
+async function afterLogin(){
+  loginCard.classList.add("hidden");
+  app.classList.remove("hidden");
+  el("btnLogout").disabled = false;
+
+  setOnlinePill();
+  loadSettings();
+  await loadProfile();
+  applyRoleGuards();
+
   await loadModels();
+  await refreshDevices();
+  await refreshPersonsAndTemplates();
+  await refreshStats();
+  await refreshLogs();
+  await refreshAlerts();
+  await refreshAudit();
+
+  window.addEventListener("online", async ()=>{
+    setOnlinePill();
+    showAlert("Online - syncing queue…", "info");
+    await syncQueue();
+  });
+  window.addEventListener("offline", ()=>{
+    setOnlinePill();
+    showAlert("Offline mode - events will queue locally", "warn");
+  });
 }
 
-// STORAGE FUNCTIONS
-function saveToStorage() {
-  const data = {
-    officers: officers.map(o => ({
-      id: o.id,
-      name: o.name,
-      rank: o.rank,
-      serviceNo: o.serviceNo,
-      descriptors: o.descriptors ? Array.from(o.descriptors) : null
-    })),
-    logs: entryLogs,
-    settings: settings
-  };
-  localStorage.setItem('campFaceData', JSON.stringify(data));
-}
+function applyRoleGuards(){
+  const isAdmin = profile?.role === "admin";
+  const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
+  el("personsGuard").classList.toggle("hidden", isAdmin);
+  el("personsArea").classList.toggle("hidden", !isAdmin);
 
-function loadFromStorage() {
-  const stored = localStorage.getItem('campFaceData');
-  if (stored) {
-    const data = JSON.parse(stored);
-    officers = data.officers || [];
-    entryLogs = data.logs || [];
-    settings = data.settings || settings;
-    
-    // Load settings to UI
-    if (document.getElementById('confidenceThreshold')) {
-      document.getElementById('confidenceThreshold').value = settings.confidenceThreshold;
-      document.getElementById('voiceAlerts').value = settings.voiceAlerts ? 'enabled' : 'disabled';
-      document.getElementById('autoLockTime').value = settings.autoLockTime;
-    }
+  el("devicesGuard").classList.toggle("hidden", isAdmin);
+  el("devicesArea").classList.toggle("hidden", !isAdmin);
+
+  el("auditTabBtn").classList.toggle("hidden", !canAudit);
+  // If not allowed, hide audit tab content too
+  if(!canAudit){
+    el("tab-audit").classList.add("hidden");
   }
 }
 
-// AUTHENTICATION
-function unlock() {
-  const pwd = document.getElementById('pwdInput').value;
-  if (pwd === PASSWORD) {
-    document.getElementById('lockScreen').classList.add('hidden');
-    document.getElementById('mainSystem').classList.remove('hidden');
-    showAlert('පද්ධතියට සාදරයෙන් පිළිගනිමු!', 'success');
-    init();
-  } else {
-    showAlert('වැරදි මුරපදයකි!', 'danger');
-  }
-}
+/* =========================
+   MODELS
+========================= */
+async function loadModels(){
+  try{
+    el("modelStatus").textContent = "Loading…";
+    el("modelStatus").className = "badge warn";
 
-// LOAD AI MODELS
-async function loadModels() {
-  try {
-    showAlert('AI models පූරණය වෙමින්...', 'info');
-    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+    // More stable than SSD on weak GPUs; keep SSD if you prefer
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
     await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
     await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    
-    document.getElementById('modelStatus').textContent = 'පූරණය වී ඇත';
-    document.getElementById('modelStatus').className = 'value status-ok';
-    showAlert('AI models සාර්ථකව පූරණය විය', 'success');
-  } catch (error) {
-    showAlert('Models පූරණය අසාර්ථකයි. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කරන්න.', 'danger');
-    console.error(error);
+
+    el("modelStatus").textContent = "Loaded";
+    el("modelStatus").className = "badge ok";
+    showAlert("AI models loaded", "success");
+  }catch(e){
+    console.error(e);
+    el("modelStatus").textContent = "Error";
+    el("modelStatus").className = "badge no";
+    showAlert("Models load failed. MODEL_URL check කරන්න.", "danger");
   }
 }
 
-// CAMERA CONTROL
-document.getElementById('startBtn').onclick = async () => {
-  const btn = document.getElementById('startBtn');
-  
-  if (cameraStream) {
-    // Stop camera
-    cameraStream.getTracks().forEach(track => track.stop());
-    cameraStream = null;
-    video.srcObject = null;
-    
-    if (detectionLoop) {
-      clearInterval(detectionLoop);
-      detectionLoop = null;
-    }
-    
-    btn.textContent = '🎥 කැමරාව ආරම්භ කරන්න';
-    btn.className = 'btn-primary';
-    document.getElementById('cameraStatus').textContent = 'OFF';
-    document.getElementById('cameraStatus').className = 'value status-bad';
-    document.getElementById('faceStatus').textContent = 'නැත';
-    document.getElementById('faceStatus').className = 'value status-bad';
-    document.getElementById('detectionInfo').textContent = 'හඳුනාගැනීම අක්‍රියයි';
-    
-  } else {
-    // Start camera
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        } 
-      });
-      video.srcObject = cameraStream;
-      
-      btn.textContent = '⏹️ කැමරාව නවත්වන්න';
-      btn.className = 'btn-danger';
-      document.getElementById('cameraStatus').textContent = 'ON';
-      document.getElementById('cameraStatus').className = 'value status-ok';
-      showAlert('කැමරාව සක්‍රීය කරන ලදී', 'success');
-      
-      startDetection();
-      
-    } catch (error) {
-      showAlert('කැමරාව ප්‍රවේශ කිරීමට අසමත්. අනෙකුත් යෙදුම් වසා දමන්න.', 'danger');
-      console.error(error);
-    }
-  }
-};
+/* =========================
+   DATA LOADERS
+========================= */
+async function refreshPersonsAndTemplates(){
+  // persons
+  const { data: p, error: pe } = await supabase
+    .from("persons").select("*").order("created_at",{ascending:false});
+  if(pe){ showAlert(pe.message, "danger"); return; }
+  persons = p || [];
 
-// FACE DETECTION
-async function startDetection() {
-  const displaySize = { width: video.width, height: video.height };
-  faceapi.matchDimensions(canvas, displaySize);
-  
-  detectionLoop = setInterval(async () => {
-    const detections = await faceapi
-      .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+  // templates
+  const { data: t, error: te } = await supabase
+    .from("face_templates").select("id, person_id, descriptor, model_version, created_at");
+  if(te){ showAlert(te.message, "danger"); return; }
+  templates = t || [];
+
+  buildMatcher();
+  renderPersonsList();
+  updateTemplateInfo();
+}
+
+function buildMatcher(){
+  const thr = Number(settings.confidenceThreshold || 0.55);
+  // face-api FaceMatcher expects "maxDescriptorDistance" (typical ~0.6). We map 0-1 to distance:
+  // Higher confidenceThreshold => stricter => smaller distance.
+  const maxDistance = Math.max(0.35, Math.min(0.9, 1 - thr)); // simple mapping
+  const grouped = new Map(); // person_id -> [Float32Array,...]
+
+  for(const tpl of templates){
+    const arr = Array.isArray(tpl.descriptor) ? tpl.descriptor : (tpl.descriptor?.data || tpl.descriptor);
+    if(!arr || !Array.isArray(arr)) continue;
+    const f32 = new Float32Array(arr.map(Number));
+    if(!grouped.has(tpl.person_id)) grouped.set(tpl.person_id, []);
+    grouped.get(tpl.person_id).push(f32);
+  }
+
+  const labeled = [];
+  for(const [pid, descs] of grouped.entries()){
+    const person = persons.find(x=>x.id===pid);
+    if(!person) continue;
+    // label includes service + name for uniqueness
+    const label = `${person.service_no || "NO-SVC"} | ${person.name}`;
+    labeled.push(new faceapi.LabeledFaceDescriptors(label, descs));
+  }
+
+  matcher = labeled.length ? new faceapi.FaceMatcher(labeled, maxDistance) : null;
+
+  // update rec status
+  el("recStatus").textContent = matcher ? "Active" : "No templates";
+  el("recStatus").className = matcher ? "badge ok" : "badge warn";
+}
+
+async function refreshDevices(){
+  const { data, error } = await supabase.from("devices").select("*").eq("is_active", true).order("created_at",{ascending:false});
+  if(error){ showAlert(error.message, "danger"); return; }
+  const select = el("deviceSelect");
+  select.innerHTML = "";
+  (data||[]).forEach(d=>{
+    const opt=document.createElement("option");
+    opt.value=d.id;
+    opt.textContent=`${d.name} (${d.gate_name || "-"})`;
+    select.appendChild(opt);
+  });
+
+  if(!settings.deviceId && data?.[0]?.id){
+    settings.deviceId = data[0].id;
+    saveSettingsLocal();
+  }
+  if(settings.deviceId){
+    select.value = settings.deviceId;
+    currentDevice = (data||[]).find(d=>d.id===settings.deviceId) || null;
+  }else{
+    currentDevice = null;
+  }
+
+  pillDevice.textContent = currentDevice ? `📍 Device: ${currentDevice.gate_name || currentDevice.name}` : "📍 Device: -";
+}
+
+async function refreshStats(){
+  // persons count:
+  el("statPersons").textContent = persons.length;
+
+  // today approved/rejected:
+  const start = new Date(); start.setHours(0,0,0,0);
+  const { data, error } = await supabase
+    .from("access_events")
+    .select("status, created_at")
+    .gte("created_at", start.toISOString());
+  if(error){ showAlert(error.message, "danger"); return; }
+
+  const today = data || [];
+  el("statApproved").textContent = today.filter(x=>x.status==="approved").length;
+  el("statRejected").textContent = today.filter(x=>x.status==="rejected").length;
+
+  const { count, error: ce } = await supabase
+    .from("access_events")
+    .select("*", { count:"exact", head:true });
+  if(ce){ showAlert(ce.message, "danger"); return; }
+  el("statTotal").textContent = count || 0;
+
+  updateQueueBadge();
+}
+
+/* =========================
+   CAMERA + DETECTION
+========================= */
+async function startCamera(){
+  if(cameraStream) return;
+  try{
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:"user", width:{ideal:640}, height:{ideal:480} },
+      audio: false
+    });
+    video.srcObject = cameraStream;
+    await new Promise(r=>video.onloadedmetadata=r);
+
+    // match canvas size
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    el("cameraStatus").textContent = "ON";
+    el("cameraStatus").className = "badge ok";
+    overlay.textContent = "Detecting…";
+
+    el("btnStartCam").disabled = true;
+    el("btnStopCam").disabled = false;
+
+    startDetectionLoop();
+    showAlert("Camera started", "success");
+  }catch(e){
+    console.error(e);
+    showAlert("Camera access failed. Other apps close කරන්න.", "danger");
+  }
+}
+
+async function stopCamera(){
+  if(detectTimer){ clearInterval(detectTimer); detectTimer=null; }
+  if(cameraStream){
+    cameraStream.getTracks().forEach(t=>t.stop());
+    cameraStream=null;
+  }
+  video.srcObject=null;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  el("cameraStatus").textContent = "OFF";
+  el("cameraStatus").className = "badge no";
+  overlay.textContent="Ready";
+  el("btnStartCam").disabled = false;
+  el("btnStopCam").disabled = true;
+  detectedBox.innerHTML = "මුහුණක් අනාවරණය වී නැත";
+}
+
+function bestMatchToConfidence(distance){
+  // convert distance (0 good) to pseudo confidence
+  const conf = Math.max(0, Math.min(1, 1 - distance));
+  return conf;
+}
+
+function drawBox(box, color, text){
+  ctx.strokeStyle=color; ctx.lineWidth=3;
+  ctx.strokeRect(box.x, box.y, box.width, box.height);
+  ctx.fillStyle=color;
+  ctx.fillRect(box.x, Math.max(0, box.y-28), box.width, 28);
+  ctx.fillStyle="#fff"; ctx.font="16px Arial";
+  ctx.fillText(text, box.x+6, Math.max(18, box.y-8));
+}
+
+function startDetectionLoop(){
+  if(detectTimer) clearInterval(detectTimer);
+
+  detectTimer = setInterval(async ()=>{
+    if(!cameraStream) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const dets = await faceapi
+      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
       .withFaceLandmarks()
       .withFaceDescriptors();
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const faceCount = detections.length;
-    document.getElementById('faceStatus').textContent = faceCount > 0 ? 'ඔව්' : 'නැත';
-    document.getElementById('faceStatus').className = faceCount > 0 ? 'value status-ok' : 'value status-bad';
-    document.getElementById('detectionInfo').textContent = `${faceCount} මුහුණු අනාවරණය විය`;
-    
-    detections.forEach(detection => {
-      let label = "Unknown";
-      let confidence = 0;
-      let matchedOfficer = null;
-      
-      if (matcher) {
-        const bestMatch = matcher.findBestMatch(detection.descriptor);
-        label = bestMatch.label;
-        confidence = 1 - bestMatch.distance;
-        
-        if (label !== "Unknown") {
-          matchedOfficer = officers.find(o => o.name === label);
-        }
-      }
-      
-      const box = detection.detection.box;
-      
-      // Draw rectangle
-      ctx.strokeStyle = label === "Unknown" ? "#ef4444" : "#10b981";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(box.x, box.y, box.width, box.height);
-      
-      // Draw label background
-      ctx.fillStyle = label === "Unknown" ? "#ef4444" : "#10b981";
-      ctx.fillRect(box.x, box.y - 30, box.width, 30);
-      
-      // Draw label text
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "16px Arial";
-      ctx.fillText(label, box.x + 5, box.y - 10);
-      
-      // Update detected person card
-      if (label !== "Unknown" && matchedOfficer) {
-        updateDetectedPersonCard(matchedOfficer, confidence);
-        
-        // Log entry
-        if (!lastEntry[label]) {
-          logEntry(matchedOfficer, 'approved', confidence);
-          speak('නිලධාරියා ඇතුළු විය');
-          lastEntry[label] = true;
-          setTimeout(() => delete lastEntry[label], 5000);
-        }
-      } else if (label === "Unknown") {
-        showUnknownPerson();
-        
-        // Log unauthorized attempt
-        if (!lastEntry['unknown']) {
-          logEntry({ name: 'නොදන්නා පුද්ගලයා', rank: 'N/A', serviceNo: 'N/A' }, 'rejected', confidence);
-          speak('අනවසර ප්‍රවේශ උත්සාහයක්');
-          lastEntry['unknown'] = true;
-          setTimeout(() => delete lastEntry['unknown'], 5000);
-        }
-      }
-    });
-    
-    if (faceCount === 0) {
-      clearDetectedPersonCard();
+
+    overlay.textContent = `${dets.length} face(s)`;
+    if(dets.length===0){
+      detectedBox.innerHTML = "<span class='small' style='color:var(--text-secondary)'>මුහුණක් අනාවරණය වී නැත</span>";
+      return;
     }
-    
-  }, 1000);
+
+    for(const d of dets){
+      const box = d.detection.box;
+
+      let label="Unknown";
+      let distance=1;
+      let person=null;
+
+      if(matcher){
+        const best = matcher.findBestMatch(d.descriptor);
+        label = best.label;
+        distance = best.distance;
+        if(label !== "unknown" && label !== "Unknown"){
+          const parts = label.split("|").map(s=>s.trim());
+          const svc = parts[0] || "";
+          const name = parts.slice(1).join("|").trim();
+          person = persons.find(p=>(p.service_no||"NO-SVC")===svc && p.name===name) || null;
+        }
+      }
+
+      const conf = bestMatchToConfidence(distance);
+      const isUnknown = !person;
+
+      drawBox(box, isUnknown ? "#ef4444" : (person.watchlist ? "#f59e0b" : "#10b981"),
+              isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "OK"));
+
+      // Update detected UI
+      if(isUnknown){
+        detectedBox.innerHTML = `
+          <div style="text-align:center;padding:8px;">
+            <div class="badge no">UNKNOWN</div>
+            <p class="small" style="margin-top:8px;color:var(--text-secondary)">Manual verify / search භාවිතා කරන්න</p>
+          </div>`;
+        if(el("mode").value==="auto"){
+          // Unknown auto-log (rate-limited)
+          await autoLogUnknown(conf);
+        }
+      }else{
+        detectedBox.innerHTML = `
+          <div style="text-align:center;padding:8px;">
+            <div class="badge ${person.watchlist?'warn':'ok'}">${person.watchlist?'WATCHLIST':'NOTE'}</div>
+            <h3 style="margin-top:8px;">${person.name}</h3>
+            <p class="small">${person.rank||''} | ${person.service_no||''}</p>
+            <p class="small">Unit: ${person.unit||'-'} | Type: ${person.person_type} | Status: ${person.status}</p>
+            <p class="small" style="margin-top:8px;">Confidence: ${(conf*100).toFixed(1)}%</p>
+          </div>
+        `;
+        if(el("mode").value==="auto"){
+          await autoLogKnown(person, conf);
+        }
+      }
+    }
+  }, 900);
 }
 
-// OFFICER MANAGEMENT
-function addOfficer() {
-  const newOfficer = {
-    id: Date.now(),
-    name: `නිලධාරී ${officers.length + 1}`,
-    rank: 'කොන්ස්ටේබල්',
-    serviceNo: '',
-    descriptors: null
+async function autoLogUnknown(conf){
+  const key = `unknown-${new Date().toISOString().slice(0,16)}`; // per minute
+  if(lastLogKey===key) return;
+  lastLogKey=key;
+
+  const eventType = el("eventType").value;
+  const status = "rejected";
+  const deviceId = settings.deviceId || null;
+
+  const payload = {
+    person_id: null,
+    device_id: deviceId,
+    event_type: "UNKNOWN",
+    status,
+    confidence: Number((conf*100).toFixed(2)),
+    snapshot_url: null,
+    operator_user_id: session?.user?.id || null,
+    extra: { eventTypeRequested: eventType }
   };
-  officers.push(newOfficer);
-  renderOfficers();
-  saveToStorage();
-  showAlert('නව නිලධාරියෙකු එකතු කරන ලදී', 'success');
-}
 
-function updateOfficer(id, field, value) {
-  const officer = officers.find(o => o.id === id);
-  if (officer) {
-    officer[field] = value;
-    saveToStorage();
+  const ok = await insertAccessEvent(payload, "unknown");
+  if(ok){
+    speak("අනවසර ප්‍රවේශ උත්සාහයක්");
   }
 }
 
-async function enrollOfficer(id) {
-  if (!cameraStream) {
-    showAlert('පළමුව කැමරාව ආරම්භ කරන්න', 'danger');
+async function autoLogKnown(person, conf){
+  const nowKey = `${person.id}-${new Date().toISOString().slice(0,16)}`; // per minute
+  if(lastLogKey===nowKey) return;
+  lastLogKey=nowKey;
+
+  const eventType = el("eventType").value;
+  const status = person.watchlist ? "rejected" : "approved"; // demo logic: watchlist => reject+alert
+  const deviceId = settings.deviceId || null;
+
+  // Optional snapshot capture
+  const snapshotUrl = await tryUploadSnapshot(person, status);
+
+  const payload = {
+    person_id: person.id,
+    device_id: deviceId,
+    event_type: eventType,
+    status,
+    confidence: Number((conf*100).toFixed(2)),
+    snapshot_url: snapshotUrl,
+    operator_user_id: session?.user?.id || null,
+    extra: { watchlist: person.watchlist }
+  };
+
+  const ok = await insertAccessEvent(payload, person.watchlist ? "watchlist" : "normal");
+  if(ok){
+    speak(person.watchlist ? "වොච්ලිස්ට් අල්ලාර්ට්" : "අනුමතයි");
+  }
+}
+
+/* Snapshot upload (optional) */
+async function tryUploadSnapshot(person, status){
+  try{
+    // capture small JPG-like PNG (good enough for demo)
+    const tmp = document.createElement("canvas");
+    tmp.width = canvas.width; tmp.height = canvas.height;
+    const tctx = tmp.getContext("2d");
+    tctx.drawImage(video, 0, 0, tmp.width, tmp.height);
+    const blob = await new Promise(res=>tmp.toBlob(res, "image/png", 0.92));
+    if(!blob) return null;
+
+    const fileName = `${new Date().toISOString()}_${person?.service_no||"unknown"}_${status}.png`.replaceAll(":","-");
+    const path = `snapshots/${session.user.id}/${fileName}`;
+
+    const { error } = await supabase.storage.from("snapshots").upload(path, blob, { upsert:true, contentType:"image/png" });
+    if(error){
+      // If bucket is private or policy blocks, just skip
+      return null;
+    }
+    // store path only (safer). You can generate signed URLs later.
+    return path;
+  }catch{
+    return null;
+  }
+}
+
+/* Insert event with offline queue */
+async function insertAccessEvent(payload, kind){
+  try{
+    const { data, error } = await supabase.from("access_events").insert(payload).select("id").single();
+    if(error) throw error;
+
+    // create alerts if needed
+    if(kind==="watchlist"){
+      await supabase.from("alerts").insert({ access_event_id: data.id, alert_type:"watchlist", note:"Watchlist detected" });
+    }else if(kind==="unknown"){
+      await supabase.from("alerts").insert({ access_event_id: data.id, alert_type:"unknown", note:"Unknown person detected" });
+    }
+
+    await supabase.from("audit_logs").insert({ action:"access_event_insert", detail: payload });
+
+    await refreshStats();
+    await refreshLogs();
+    await refreshAlerts();
+    return true;
+  }catch(e){
+    // offline or network error => queue
+    queuePush({ payload, kind, ts: Date.now() });
+    showAlert("Network error - event queued offline", "warn");
+    return false;
+  }
+}
+
+async function syncQueue(){
+  let processed=0;
+  while(queueLen()>0 && navigator.onLine){
+    const item = queueShift();
+    if(!item) break;
+    const ok = await insertAccessEvent(item.payload, item.kind);
+    if(!ok){
+      // failed again, re-queue and stop to avoid loop
+      queuePush(item);
+      break;
+    }
+    processed++;
+  }
+  if(processed>0) showAlert(`Synced ${processed} queued event(s)`, "success");
+  updateQueueBadge();
+}
+
+/* =========================
+   PERSONS (ADMIN)
+========================= */
+function renderPersonsList(){
+  const q = (el("personSearch").value||"").toLowerCase().trim();
+  const list = persons
+    .filter(p=>{
+      if(!q) return true;
+      return (p.service_no||"").toLowerCase().includes(q) ||
+             (p.name||"").toLowerCase().includes(q) ||
+             (p.unit||"").toLowerCase().includes(q);
+    })
+    .slice(0,200);
+
+  const div = el("personsList");
+  if(!list.length){
+    div.innerHTML = "<div class='small' style='padding:14px;color:var(--text-secondary)'>No persons</div>";
     return;
   }
-  
-  const detection = await faceapi
-    .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
-    .withFaceLandmarks()
-    .withFaceDescriptor();
-  
-  if (!detection) {
-    showAlert('මුහුණක් අනාවරණය වී නැත. කැමරාව දෙස බලන්න.', 'danger');
-    return;
-  }
-  
-  const officer = officers.find(o => o.id === id);
-  if (!officer.descriptors) {
-    officer.descriptors = [];
-  }
-  officer.descriptors.push(detection.descriptor);
-  
-  // Update matcher
-  updateMatcher();
-  
-  saveToStorage();
-  renderOfficers();
-  updateStats();
-  showAlert(`${officer.name} සාර්ථකව ලියාපදිංචි කරන ලදී`, 'success');
-}
 
-function deleteOfficer(id) {
-  if (confirm('මෙම නිලධාරියා මකා දැමීමට විශ්වාසද?')) {
-    officers = officers.filter(o => o.id !== id);
-    updateMatcher();
-    saveToStorage();
-    renderOfficers();
-    updateStats();
-    showAlert('නිලධාරියා මකා දමන ලදී', 'info');
-  }
-}
-
-function updateMatcher() {
-  const enrolledOfficers = officers.filter(o => o.descriptors && o.descriptors.length > 0);
-  
-  if (enrolledOfficers.length > 0) {
-    matcher = new faceapi.FaceMatcher(
-      enrolledOfficers.map(o => new faceapi.LabeledFaceDescriptors(o.name, o.descriptors)),
-      settings.confidenceThreshold
-    );
-  } else {
-    matcher = null;
-  }
-}
-
-function renderOfficers() {
-  const list = document.getElementById('officerList');
-  
-  if (officers.length === 0) {
-    list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 30px;">තවම නිලධාරීන් එකතු කර නොමැත</p>';
-    return;
-  }
-  
-  list.innerHTML = officers.map(o => `
-    <div class="officer-card ${o.descriptors ? 'enrolled' : ''}">
-      <div class="officer-avatar">
-        ${o.name.charAt(0)}
-      </div>
-      <div class="officer-info">
-        <input type="text" value="${o.name}" placeholder="නම" 
-               onchange="updateOfficer(${o.id}, 'name', this.value); renderOfficers();">
-        <select onchange="updateOfficer(${o.id}, 'rank', this.value)">
-          <option value="කොන්ස්ටේබල්" ${o.rank === 'කොන්ස්ටේබල්' ? 'selected' : ''}>කොන්ස්ටේබල්</option>
-          <option value="සර්ජන්ට්" ${o.rank === 'සර්ජන්ට්' ? 'selected' : ''}>සර්ජන්ට්</option>
-          <option value="IP" ${o.rank === 'IP' ? 'selected' : ''}>IP</option>
-          <option value="SI" ${o.rank === 'SI' ? 'selected' : ''}>SI</option>
-          <option value="ASP" ${o.rank === 'ASP' ? 'selected' : ''}>ASP</option>
-          <option value="SP" ${o.rank === 'SP' ? 'selected' : ''}>SP</option>
-        </select>
-        <input type="text" value="${o.serviceNo || ''}" placeholder="සේවා අංකය" 
-               onchange="updateOfficer(${o.id}, 'serviceNo', this.value);">
-        <small style="color: var(--text-secondary);">
-          ${o.descriptors ? '✅ ලියාපදිංචි කර ඇත' : '⚠️ ලියාපදිංචි කර නැත'}
-        </small>
-      </div>
-      <div class="officer-actions">
-        <button class="btn-primary" onclick="enrollOfficer(${o.id})">
-          📸 ${o.descriptors ? 'යළි ' : ''}ලියාපදිංචි කරන්න
-        </button>
-        <button class="btn-danger" onclick="deleteOfficer(${o.id})">🗑️</button>
+  div.innerHTML = list.map(p=>`
+    <div style="padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.04)">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div>
+          <b>${p.name}</b> <span class="small">(${p.rank||'-'})</span><br/>
+          <span class="small">Svc: ${p.service_no||'-'} | Unit: ${p.unit||'-'} | Type: ${p.person_type} | Status: ${p.status}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          ${p.watchlist ? `<span class="badge warn">WATCHLIST</span>` : `<span class="badge ok">OK</span>`}
+          <button class="btn-secondary" onclick="openPersonForm('${p.id}')">✏️ Edit</button>
+        </div>
       </div>
     </div>
-  `).join('');
+  `).join("");
 }
 
-// LOGGING
-function logEntry(officer, status, confidence) {
-  const entry = {
-    id: Date.now(),
-    name: officer.name,
-    rank: officer.rank || 'N/A',
-    serviceNo: officer.serviceNo || 'N/A',
-    date: new Date().toLocaleDateString('si-LK'),
-    time: new Date().toLocaleTimeString('si-LK'),
-    status: status,
-    confidence: (confidence * 100).toFixed(1)
+window.openPersonForm = function(id){
+  const p = persons.find(x=>x.id===id);
+  if(!p) return;
+  el("personForm").classList.remove("hidden");
+  el("personId").value = p.id;
+  el("pService").value = p.service_no || "";
+  el("pName").value = p.name || "";
+  el("pRank").value = p.rank || "";
+  el("pUnit").value = p.unit || "";
+  el("pType").value = p.person_type || "soldier";
+  el("pStatus").value = p.status || "active";
+  el("pWatch").value = String(!!p.watchlist);
+  el("pNotes").value = p.notes || "";
+  selectedPersonId = p.id;
+  updateTemplateInfo();
+};
+
+function clearPersonForm(){
+  el("personForm").classList.add("hidden");
+  el("personId").value="";
+  el("pService").value="";
+  el("pName").value="";
+  el("pRank").value="";
+  el("pUnit").value="";
+  el("pType").value="soldier";
+  el("pStatus").value="active";
+  el("pWatch").value="false";
+  el("pNotes").value="";
+  selectedPersonId = null;
+  updateTemplateInfo();
+}
+
+async function savePerson(){
+  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+
+  const id = el("personId").value || null;
+  const payload = {
+    service_no: el("pService").value.trim() || null,
+    name: el("pName").value.trim(),
+    rank: el("pRank").value.trim() || null,
+    unit: el("pUnit").value.trim() || null,
+    person_type: el("pType").value,
+    status: el("pStatus").value,
+    watchlist: el("pWatch").value==="true",
+    notes: el("pNotes").value.trim() || null
   };
-  
-  entryLogs.unshift(entry);
-  saveToStorage();
-  renderLogs();
-  updateStats();
+  if(!payload.name){ showAlert("Name required", "danger"); return; }
+
+  try{
+    if(id){
+      const { error } = await supabase.from("persons").update(payload).eq("id", id);
+      if(error) throw error;
+      await supabase.from("audit_logs").insert({ action:"person_update", detail:{ id, payload } });
+      showAlert("Person updated", "success");
+    }else{
+      const { error } = await supabase.from("persons").insert(payload);
+      if(error) throw error;
+      await supabase.from("audit_logs").insert({ action:"person_insert", detail:{ payload } });
+      showAlert("Person added", "success");
+    }
+    await refreshPersonsAndTemplates();
+    await refreshStats();
+    clearPersonForm();
+  }catch(e){
+    showAlert(e.message || "Save failed", "danger");
+  }
 }
 
-function renderLogs(filter = 'all') {
-  const tbody = document.getElementById('logTableBody');
-  
-  let filteredLogs = entryLogs;
-  if (filter === 'today') {
-    const today = new Date().toLocaleDateString('si-LK');
-    filteredLogs = entryLogs.filter(log => log.date === today);
+async function deletePerson(){
+  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  const id = el("personId").value;
+  if(!id) return;
+  if(!confirm("Delete this person?")) return;
+  try{
+    const { error } = await supabase.from("persons").delete().eq("id", id);
+    if(error) throw error;
+    await supabase.from("audit_logs").insert({ action:"person_delete", detail:{ id } });
+    showAlert("Deleted", "info");
+    await refreshPersonsAndTemplates();
+    await refreshStats();
+    clearPersonForm();
+  }catch(e){
+    showAlert(e.message || "Delete failed", "danger");
   }
-  
-  if (filteredLogs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 30px;">දත්ත නොමැත</td></tr>';
+}
+
+/* Face enrollment: capture 3 descriptors and save as templates */
+async function enrollSelectedPerson(){
+  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  const id = el("personId").value;
+  if(!id){ showAlert("Select a person first", "warn"); return; }
+  if(!cameraStream){ showAlert("Start camera first", "warn"); return; }
+
+  const captures = [];
+  for(let i=0;i<3;i++){
+    overlay.textContent = `Enrollment capture ${i+1}/3…`;
+    const det = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+    if(!det){
+      showAlert("Face not detected. Look at camera.", "danger");
+      overlay.textContent = "Detecting…";
+      return;
+    }
+    captures.push(Array.from(det.descriptor).map(n=>Number(n)));
+    await new Promise(r=>setTimeout(r, 600));
+  }
+  overlay.textContent = "Saving templates…";
+
+  try{
+    const rows = captures.map(desc=>({ person_id: id, descriptor: desc, model_version: "faceapi-0.22.2" }));
+    const { error } = await supabase.from("face_templates").insert(rows);
+    if(error) throw error;
+    await supabase.from("audit_logs").insert({ action:"face_enroll", detail:{ person_id:id, count: rows.length } });
+    showAlert("Enrollment saved (3 templates)", "success");
+    overlay.textContent = "Detecting…";
+    await refreshPersonsAndTemplates();
+  }catch(e){
+    showAlert(e.message || "Enroll failed", "danger");
+    overlay.textContent = "Detecting…";
+  }
+}
+
+async function clearTemplatesForSelected(){
+  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  const id = el("personId").value;
+  if(!id) return;
+  if(!confirm("Clear all templates for this person?")) return;
+  const { error } = await supabase.from("face_templates").delete().eq("person_id", id);
+  if(error){ showAlert(error.message, "danger"); return; }
+  await supabase.from("audit_logs").insert({ action:"face_clear", detail:{ person_id:id } });
+  showAlert("Templates cleared", "info");
+  await refreshPersonsAndTemplates();
+}
+
+function updateTemplateInfo(){
+  const id = el("personId").value;
+  if(!id){
+    el("templateInfo").textContent = "No person selected.";
     return;
   }
-  
-  tbody.innerHTML = filteredLogs.map((log, index) => `
-    <tr>
-      <td>${index + 1}</td>
-      <td>${log.name}</td>
-      <td>${log.rank}</td>
-      <td>${log.date}</td>
-      <td>${log.time}</td>
-      <td>
-        <span class="badge ${log.status === 'approved' ? 'badge-success' : 'badge-danger'}">
-          ${log.status === 'approved' ? 'අනුමත' : 'ප්‍රතික්ෂේප'}
-        </span>
-      </td>
-      <td>${log.confidence}%</td>
-    </tr>
-  `).join('');
+  const count = templates.filter(t=>t.person_id===id).length;
+  el("templateInfo").textContent = `Templates for selected person: ${count}`;
 }
 
-function filterLogs(filter) {
-  renderLogs(filter);
+/* =========================
+   LOGS / ALERTS / AUDIT
+========================= */
+function daysAgoISO(days){
+  const d = new Date();
+  d.setDate(d.getDate()-days);
+  return d.toISOString();
 }
 
-function clearLogs() {
-  if (confirm('සියලු ලොග දත්ත මකා දැමීමට විශ්වාසද?')) {
-    entryLogs = [];
-    saveToStorage();
-    renderLogs();
-    updateStats();
-    showAlert('ලොග දත්ත මකා දමන ලදී', 'info');
+async function refreshLogs(){
+  const f = el("logFilter").value;
+  let q = supabase.from("access_events").select("id,created_at,person_id,device_id,event_type,status,confidence,extra,persons(name,service_no,person_type),devices(gate_name,name)").order("created_at",{ascending:false}).limit(300);
+
+  if(f==="today"){
+    const start = new Date(); start.setHours(0,0,0,0);
+    q = q.gte("created_at", start.toISOString());
+  }else if(f==="7"){
+    q = q.gte("created_at", daysAgoISO(7));
+  }else if(f==="30"){
+    q = q.gte("created_at", daysAgoISO(30));
   }
-}
 
-// EXPORT FUNCTIONS
-function exportToCSV() {
-  if (entryLogs.length === 0) {
-    showAlert('Export කිරීමට දත්ත නොමැත', 'danger');
+  const { data, error } = await q;
+  if(error){ showAlert(error.message, "danger"); return; }
+
+  const body = el("logsBody");
+  const rows = data || [];
+  if(!rows.length){
+    body.innerHTML = `<tr><td colspan="9" class="small" style="padding:18px;color:var(--text-secondary);text-align:center;">No logs</td></tr>`;
     return;
   }
-  
-  const headers = ['අංකය', 'නම', 'තනතුර', 'දිනය', 'වේලාව', 'තත්වය', 'විශ්වාසනීයත්වය'];
-  const rows = entryLogs.map((log, i) => [
-    i + 1,
-    log.name,
-    log.rank,
-    log.date,
-    log.time,
-    log.status === 'approved' ? 'අනුමත' : 'ප්‍රතික්ෂේප',
-    log.confidence + '%'
-  ]);
-  
-  const csvContent = [headers, ...rows]
-    .map(row => row.join(','))
-    .join('\n');
-  
-  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
+  body.innerHTML = rows.map((r,i)=>{
+    const p = r.persons;
+    const d = r.devices;
+    const statusBadge = r.status==="approved" ? "ok" : "no";
+    const conf = (r.confidence ?? "").toString();
+    const time = new Date(r.created_at).toLocaleString("si-LK");
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td>${time}</td>
+        <td>${p?.service_no || "-"}</td>
+        <td>${p?.name || "UNKNOWN"}</td>
+        <td>${p?.person_type || "-"}</td>
+        <td>${d?.gate_name || d?.name || "-"}</td>
+        <td>${r.event_type}</td>
+        <td><span class="badge ${statusBadge}">${r.status}</span></td>
+        <td>${conf}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+async function refreshAlerts(){
+  const { data, error } = await supabase
+    .from("alerts")
+    .select("id,created_at,alert_type,note,resolved,access_event_id")
+    .order("created_at",{ascending:false})
+    .limit(200);
+  if(error){ showAlert(error.message, "danger"); return; }
+
+  const list = data || [];
+  const div = el("alertsList");
+  if(!list.length){ div.textContent = "No alerts"; return; }
+
+  div.innerHTML = list.map(a=>`
+    <div style="padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.04)">
+      <b>${a.alert_type.toUpperCase()}</b> ${a.resolved ? `<span class="badge ok">RESOLVED</span>` : `<span class="badge warn">OPEN</span>`}
+      <div class="small" style="margin-top:6px;color:var(--text-secondary)">${new Date(a.created_at).toLocaleString("si-LK")} • ${a.note||''}</div>
+    </div>
+  `).join("");
+}
+
+async function refreshAudit(){
+  const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
+  if(!canAudit) return;
+
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .select("id,created_at,action,detail,user_id")
+    .order("created_at",{ascending:false})
+    .limit(200);
+  if(error){ showAlert(error.message, "danger"); return; }
+
+  const list = data || [];
+  const div = el("auditList");
+  if(!list.length){ div.textContent="No audit logs"; return; }
+
+  div.innerHTML = list.map(a=>`
+    <div style="padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.04)">
+      <b>${a.action}</b>
+      <div class="small" style="margin-top:6px;color:var(--text-secondary)">${new Date(a.created_at).toLocaleString("si-LK")} • user: ${a.user_id||'-认为'}</div>
+      <div class="small" style="margin-top:6px;color:var(--text-secondary);white-space:pre-wrap;">${JSON.stringify(a.detail,null,2)}</div>
+    </div>
+  `).join("");
+}
+
+/* CSV export (from currently loaded table query) */
+function exportLogsToCSV(){
+  const rows = [...el("logsBody").querySelectorAll("tr")].map(tr => [...tr.children].map(td=>td.innerText));
+  if(!rows.length){ showAlert("No logs to export", "warn"); return; }
+  const header = ["#", "Time", "Service", "Name", "Type", "Gate", "Event", "Status", "Conf"];
+  const csv = [header, ...rows].map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\ufeff"+csv], { type:"text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-  
-  link.setAttribute('href', url);
-  link.setAttribute('download', `camp_entry_log_${new Date().toISOString().split('T')[0]}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  showAlert('CSV ගොනුව බාගත කරන ලදී', 'success');
+  const a = document.createElement("a");
+  a.href=url;
+  a.download=`camp_access_events_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showAlert("CSV exported", "success");
 }
 
-async function exportToGoogleSheets() {
-  showAlert('Google Sheets integration සකසා නොමැත. Settings හි API key එකතු කරන්න.', 'info');
-  
-  // In a real implementation, you would:
-  // 1. Use Google Sheets API with credentials
-  // 2. Create/update a spreadsheet
-  // 3. Append the log data
-  
-  // Example structure for future implementation:
-  /*
-  const apiKey = document.getElementById('googleSheetsKey').value;
-  if (!apiKey) {
-    showAlert('Google Sheets API key නොමැත', 'danger');
-    return;
-  }
-  
-  // Use Google Sheets API to append data
-  // This requires setting up OAuth and using gapi library
-  */
+/* =========================
+   DEVICES (ADMIN)
+========================= */
+async function addDevice(){
+  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  const name = el("dName").value.trim();
+  const gate = el("dGate").value.trim();
+  const loc  = el("dLoc").value.trim();
+  if(!name){ showAlert("Device name required", "warn"); return; }
+  const { error } = await supabase.from("devices").insert({ name, gate_name: gate || null, location: loc || null });
+  if(error){ showAlert(error.message, "danger"); return; }
+  await supabase.from("audit_logs").insert({ action:"device_insert", detail:{ name, gate, loc } });
+  showAlert("Device added", "success");
+  el("dName").value=""; el("dGate").value=""; el("dLoc").value="";
+  await refreshDevices();
 }
 
-// UI UPDATES
-function updateDetectedPersonCard(officer, confidence) {
-  const card = document.getElementById('detectedPerson');
-  card.innerHTML = `
-    <div style="padding: 20px;">
-      <div style="width: 80px; height: 80px; background: var(--accent-green); border-radius: 50%; 
-                  display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; 
-                  font-size: 2em; font-weight: bold; color: white;">
-        ${officer.name.charAt(0)}
-      </div>
-      <h3 style="margin: 10px 0;">${officer.name}</h3>
-      <p style="color: var(--text-secondary); margin: 5px 0;">${officer.rank}</p>
-      <p style="color: var(--text-secondary); margin: 5px 0;">සේවා අංකය: ${officer.serviceNo || 'N/A'}</p>
-      <div style="margin-top: 15px;">
-        <span class="badge badge-success">හඳුනාගන්නා ලදී</span>
-        <p style="color: var(--accent-green); margin-top: 10px; font-weight: 600;">
-          විශ්වාසනීයත්වය: ${(confidence * 100).toFixed(1)}%
-        </p>
+/* =========================
+   MANUAL SEARCH (CAMERA TAB)
+========================= */
+async function manualSearch(){
+  const q = el("manualSearch").value.trim().toLowerCase();
+  if(!q){ showAlert("Type something to search", "warn"); return; }
+  const hits = persons.filter(p =>
+    (p.service_no||"").toLowerCase().includes(q) ||
+    (p.name||"").toLowerCase().includes(q)
+  ).slice(0,8);
+
+  const div = el("manualResults");
+  if(!hits.length){ div.innerHTML="<div class='small' style='color:var(--text-secondary)'>No results</div>"; return; }
+
+  div.innerHTML = hits.map(p=>`
+    <div style="padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;background:rgba(255,255,255,.04)">
+      <b>${p.name}</b> <span class="small">(${p.service_no||'-'})</span>
+      ${p.watchlist ? `<span class="badge warn" style="margin-left:8px;">WATCHLIST</span>` : ``}
+      <div class="small" style="color:var(--text-secondary)">${p.rank||'-'} | ${p.unit||'-'} | ${p.person_type}</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="manualLog('${p.id}', 'approved')">✅ Approve Log</button>
+        <button class="btn-danger" onclick="manualLog('${p.id}', 'rejected')">⛔ Reject Log</button>
       </div>
     </div>
-  `;
+  `).join("");
 }
 
-function showUnknownPerson() {
-  const card = document.getElementById('detectedPerson');
-  card.innerHTML = `
-    <div style="padding: 20px;">
-      <div style="width: 80px; height: 80px; background: var(--danger); border-radius: 50%; 
-                  display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; 
-                  font-size: 2em; color: white;">
-        ⚠️
-      </div>
-      <h3 style="margin: 10px 0; color: var(--danger);">නොදන්නා පුද්ගලයෙකු</h3>
-      <p style="color: var(--text-secondary); margin: 5px 0;">ලියාපදිංචි නිලධාරියෙකු නොවේ</p>
-      <div style="margin-top: 15px;">
-        <span class="badge badge-danger">අනවසර ප්‍රවේශය</span>
-      </div>
-    </div>
-  `;
+window.manualLog = async function(personId, status){
+  const person = persons.find(p=>p.id===personId);
+  if(!person){ showAlert("Person not found", "danger"); return; }
+  const eventType = el("eventType").value;
+  const payload = {
+    person_id: person.id,
+    device_id: settings.deviceId || null,
+    event_type: eventType,
+    status,
+    confidence: null,
+    snapshot_url: null,
+    operator_user_id: session?.user?.id || null,
+    extra: { manual: true }
+  };
+  const ok = await insertAccessEvent(payload, status==="rejected" ? "manual" : "normal");
+  if(ok) showAlert("Manual log saved", "success");
+};
+
+/* =========================
+   TABS
+========================= */
+function showTab(name){
+  document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden"));
+  el("tab-"+name).classList.remove("hidden");
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add("active");
 }
 
-function clearDetectedPersonCard() {
-  const card = document.getElementById('detectedPerson');
-  card.innerHTML = '<p style="text-align: center; padding: 30px 0; color: var(--text-secondary);">මුහුණක් අනාවරණය වී නැත</p>';
-}
+/* =========================
+   EVENTS
+========================= */
+el("btnLogin").addEventListener("click", login);
+el("btnLogout").addEventListener("click", logout);
 
-function updateStats() {
-  const today = new Date().toLocaleDateString('si-LK');
-  const todayLogs = entryLogs.filter(log => log.date === today);
-  
-  document.getElementById('statEnrolled').textContent = officers.filter(o => o.descriptors).length;
-  document.getElementById('statApproved').textContent = todayLogs.filter(log => log.status === 'approved').length;
-  document.getElementById('statRejected').textContent = todayLogs.filter(log => log.status === 'rejected').length;
-  document.getElementById('statTotal').textContent = entryLogs.length;
-}
-
-// VOICE ALERTS
-function speak(message) {
-  if (!settings.voiceAlerts || speaking) return;
-  
-  speaking = true;
-  const utterance = new SpeechSynthesisUtterance(message);
-  utterance.lang = 'si-LK';
-  speechSynthesis.speak(utterance);
-  
-  setTimeout(() => speaking = false, 3000);
-}
-
-// ALERTS
-function showAlert(message, type = 'info') {
-  const alertArea = document.getElementById('alertArea');
-  const alertId = Date.now();
-  
-  const alertHTML = `
-    <div id="alert-${alertId}" class="alert alert-${type}">
-      <span style="font-size: 1.2em;">
-        ${type === 'success' ? '✅' : type === 'danger' ? '❌' : 'ℹ️'}
-      </span>
-      <span>${message}</span>
-    </div>
-  `;
-  
-  alertArea.insertAdjacentHTML('beforeend', alertHTML);
-  
-  setTimeout(() => {
-    const alert = document.getElementById(`alert-${alertId}`);
-    if (alert) alert.remove();
-  }, 4000);
-}
-
-// TABS
-function switchTab(tabName) {
-  // Update tab buttons
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  // Hide all tab contents
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-  
-  // Show selected tab
-  document.getElementById(tabName + 'Tab').classList.remove('hidden');
-}
-
-// SETTINGS
-function saveSettings() {
-  settings.confidenceThreshold = parseFloat(document.getElementById('confidenceThreshold').value);
-  settings.voiceAlerts = document.getElementById('voiceAlerts').value === 'enabled';
-  settings.autoLockTime = parseInt(document.getElementById('autoLockTime').value);
-  
-  saveToStorage();
-  updateMatcher();
-  showAlert('සැකසුම් සුරකින ලදී', 'success');
-}
-
-// Initialize on page load
-window.addEventListener('load', () => {
-  // Check if already logged in (for development)
-  // Remove this in production
+document.querySelectorAll(".tab").forEach(btn=>{
+  btn.addEventListener("click", ()=>showTab(btn.dataset.tab));
 });
+
+el("btnStartCam").addEventListener("click", startCamera);
+el("btnStopCam").addEventListener("click", stopCamera);
+el("btnSyncQueue").addEventListener("click", syncQueue);
+
+el("btnSaveSettings").addEventListener("click", async ()=>{
+  settings.confidenceThreshold = Number(el("confThr").value);
+  settings.voiceAlerts = el("voice").value==="on";
+  settings.autoLockTime = Number(el("autolock").value);
+  settings.deviceId = el("deviceSelect").value || null;
+  saveSettingsLocal();
+  await refreshDevices();
+  buildMatcher();
+  showAlert("Settings saved", "success");
+});
+
+el("deviceSelect").addEventListener("change", ()=>{
+  settings.deviceId = el("deviceSelect").value || null;
+  saveSettingsLocal();
+  refreshDevices();
+});
+
+el("btnRefreshLogs").addEventListener("click", refreshLogs);
+el("logFilter").addEventListener("change", refreshLogs);
+el("btnExportCSV").addEventListener("click", exportLogsToCSV);
+
+el("btnRefreshAlerts").addEventListener("click", refreshAlerts);
+el("btnRefreshAudit").addEventListener("click", refreshAudit);
+
+el("btnManualPick").addEventListener("click", manualSearch);
+
+el("btnRefreshPersons").addEventListener("click", refreshPersonsAndTemplates);
+el("personSearch").addEventListener("input", renderPersonsList);
+el("btnAddPerson").addEventListener("click", ()=>{
+  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  clearPersonForm();
+  el("personForm").classList.remove("hidden");
+});
+el("btnCancelPerson").addEventListener("click", clearPersonForm);
+el("btnSavePerson").addEventListener("click", savePerson);
+el("btnDeletePerson").addEventListener("click", deletePerson);
+
+el("btnEnroll1").addEventListener("click", enrollSelectedPerson);
+el("btnClearTemplates").addEventListener("click", clearTemplatesForSelected);
+
+el("btnAddDevice").addEventListener("click", addDevice);
+el("btnRefreshDevices").addEventListener("click", refreshDevices);
+
+/* =========================
+   BOOT
+========================= */
+(async function boot(){
+  setOnlinePill();
+  loadSettings();
+
+  const s = await loadSession();
+  if(s){
+    session=s;
+    el("btnLogout").disabled=false;
+    await afterLogin();
+  }
+})();
 </script>
 
 </body>
