@@ -3,110 +3,262 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>මුහුණු රැක - Camp Security System (DB Edition)</title>
+<title>මුහුණු රැක - Camp Security System (Tactical Edition)</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+/* --- MODERN MILITARY THEME --- */
 :root{
-  --bg-primary:#0f172a; --bg-secondary:#1e293b; --bg-card:#334155;
-  --accent-green:#10b981; --accent-blue:#3b82f6; --accent-purple:#8b5cf6;
-  --danger:#ef4444; --warning:#f59e0b; --text-primary:#f1f5f9; --text-secondary:#94a3b8; --border:#475569;
+  --bg-primary: #050a05;       /* Deep Camo Black */
+  --bg-secondary: #0f1f15;     /* Dark Jungle Green */
+  --bg-card: rgba(20, 40, 25, 0.9); /* Transparent Tactical Green */
+  
+  --accent-main: #4caf50;      /* Tactical Green */
+  --accent-gold: #ffb300;      /* Rank/Alert Gold */
+  --accent-danger: #ff3333;    /* Kill/Danger Red */
+  
+  --text-primary: #e0e0e0;     /* Off-white */
+  --text-muted: #8da691;       /* Faded Green text */
+  --border-color: #2e5c3e;     /* Border Green */
+  
+  --font-head: 'Black Ops One', cursive;
+  --font-body: 'Share Tech Mono', monospace;
+  --font-ui: 'Rajdhani', sans-serif;
 }
+
+*{margin:0;padding:0;box-sizing:border-box}
+
 body{
-  font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-  background:linear-gradient(135deg,var(--bg-primary) 0%,#1e3a8a 100%);
-  color:var(--text-primary);
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  background-image: 
+    linear-gradient(rgba(0, 20, 0, 0.8), rgba(0, 10, 0, 0.9)),
+    url("https://www.transparenttextures.com/patterns/carbon-fibre.png"); /* Texture overlay */
+  color: var(--text-primary);
   min-height:100vh;
   padding:20px;
+  overflow-x: hidden;
 }
-.container{max-width:1400px;margin:0 auto}
+
+/* Scanline Effect */
+body::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 999;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+.container{max-width:1400px;margin:0 auto; position: relative; z-index: 10;}
 .hidden{display:none!important}
 
+/* Header Design */
 .header{
-  background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
-  padding:20px;border-radius:15px;margin-bottom:20px;
-  box-shadow:0 10px 40px rgba(0,0,0,.3);
-  display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;
+  background: linear-gradient(90deg, var(--bg-secondary) 0%, #1a3320 100%);
+  border-left: 5px solid var(--accent-gold);
+  border-bottom: 2px solid var(--border-color);
+  padding:25px;
+  margin-bottom:25px;
+  display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
 }
-.header h1{font-size:2em;text-shadow:2px 2px 4px rgba(0,0,0,.3)}
-.header p{opacity:.9;margin-top:5px}
+.header h1{
+  font-family: var(--font-head);
+  font-size: 2.5em;
+  color: var(--accent-main);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px var(--accent-main);
+}
+.header p{
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .pills{display:flex;gap:10px;flex-wrap:wrap}
-.pill{background:rgba(255,255,255,.2);padding:10px 14px;border-radius:10px;font-weight:700;backdrop-filter:blur(10px)}
-
-.tabs{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}
-.tab{padding:12px 20px;background:var(--bg-secondary);border:none;border-radius:10px;color:var(--text-primary);cursor:pointer;font-weight:700;transition:.2s}
-.tab:hover{background:var(--bg-card)}
-.tab.active{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));box-shadow:0 5px 15px rgba(59,130,246,.35)}
-
-.card{
-  background:var(--bg-secondary);
-  border-radius:15px;padding:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,.3);
-  border:1px solid var(--border);
+.pill{
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--border-color);
+  color: var(--accent-gold);
+  padding:8px 15px;
+  font-family: var(--font-body);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.card h3{margin-bottom:15px;font-size:1.2em;display:flex;align-items:center;gap:10px}
 
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:15px}
+/* Tabs Design */
+.tabs{display:flex;gap:5px;margin-bottom:20px;flex-wrap:wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+.tab{
+  padding:12px 25px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor:pointer;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  text-transform: uppercase;
+  transition:.3s;
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 25%);
+}
+.tab:hover{
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--accent-main);
+}
+.tab.active{
+  background: var(--accent-main);
+  color: #000;
+  border-color: var(--accent-main);
+  box-shadow: 0 0 10px var(--accent-main);
+}
+
+/* Card Design */
+.card{
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding:20px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+/* Corner Accents */
+.card::after {
+  content: "";
+  position: absolute; top: -1px; right: -1px;
+  width: 20px; height: 20px;
+  border-top: 2px solid var(--accent-gold);
+  border-right: 2px solid var(--accent-gold);
+}
+.card h3{
+  margin-bottom:20px; font-size:1.4em; display:flex; align-items:center; gap:10px;
+  color: var(--accent-gold);
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 10px;
+}
+
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
 @media(max-width:1024px){.grid{grid-template-columns:1fr}}
 
+/* Buttons */
 button{
-  padding:12px 20px;border:none;border-radius:10px;font-weight:800;cursor:pointer;transition:.2s;font-size:.95em
+  padding:12px 24px; border:none; cursor:pointer; transition:.2s; font-size:.95em;
+  font-family: var(--font-head); text-transform: uppercase; letter-spacing: 1px;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
-.btn-primary{background:linear-gradient(135deg,var(--accent-green),#059669);color:#fff}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(16,185,129,.35)}
-.btn-danger{background:linear-gradient(135deg,var(--danger),#dc2626);color:#fff}
-.btn-secondary{background:var(--bg-card);color:var(--text-primary)}
-button:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{
+  background: var(--accent-main); color: #000;
+}
+.btn-primary:hover{
+  background: #388e3c; box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+}
+.btn-danger{
+  background: var(--accent-danger); color: #fff;
+}
+.btn-danger:hover{
+  background: #d32f2f; box-shadow: 0 0 15px rgba(244, 67, 54, 0.6);
+}
+.btn-secondary{
+  background: transparent; border: 1px solid var(--text-muted); color: var(--text-primary);
+}
+.btn-secondary:hover{
+  background: rgba(255,255,255,0.1); border-color: var(--accent-main); color: var(--accent-main);
+}
+button:disabled{opacity:.4;cursor:not-allowed}
 
+/* Inputs */
 input,select,textarea{
-  width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);
-  background:var(--bg-card);color:var(--text-primary);
+  width:100%; padding:12px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--border-color);
+  color: var(--accent-main);
+  font-family: var(--font-body);
+  outline: none;
 }
-label{display:block;margin-bottom:6px;font-weight:800}
-.small{color:var(--text-secondary);font-size:.85em}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 5px rgba(255, 179, 0, 0.3);
+}
+label{display:block;margin-bottom:8px;font-weight:bold; color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; font-size: 0.85em;}
+.small{color:var(--text-muted);font-size:.85em}
 
+/* Alerts */
 .alert{
-  padding:14px 18px;border-radius:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;
-  border-left:4px solid var(--accent-blue);background:rgba(59,130,246,.18)
+  padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:10px;
+  background: rgba(0, 20, 10, 0.9); border: 1px solid var(--accent-main);
+  font-family: var(--font-body);
 }
-.alert.success{border-left-color:var(--accent-green);background:rgba(16,185,129,.18)}
-.alert.danger{border-left-color:var(--danger);background:rgba(239,68,68,.18)}
-.alert.warn{border-left-color:var(--warning);background:rgba(245,158,11,.18)}
+.alert.success{border-color:var(--accent-main); color: var(--accent-main);}
+.alert.danger{border-color:var(--accent-danger); color: var(--accent-danger);}
+.alert.warn{border-color:var(--accent-gold); color: var(--accent-gold);}
 
+/* Video */
 .video-container{
-  position:relative;width:100%;max-width:720px;margin:0 auto;background:#000;border-radius:15px;overflow:hidden;
-  box-shadow:0 10px 40px rgba(0,0,0,.45)
+  position:relative;width:100%;max-width:720px;margin:0 auto;
+  background:#000; border: 2px solid var(--border-color);
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+/* HUD Corners on Video */
+.video-container::before {
+  content: ""; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px;
+  border-top: 3px solid var(--accent-main); border-left: 3px solid var(--accent-main); z-index: 5;
+}
+.video-container::after {
+  content: ""; position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px;
+  border-bottom: 3px solid var(--accent-main); border-right: 3px solid var(--accent-main); z-index: 5;
 }
 video,canvas{width:100%;height:auto;display:block}
 canvas{position:absolute;top:0;left:0}
 .overlay{
-  position:absolute;top:12px;left:12px;background:rgba(0,0,0,.65);padding:10px 12px;border-radius:10px;font-size:.9em
+  position:absolute;top:12px;left:12px;
+  background:rgba(0,0,0,0.7); border: 1px solid var(--accent-main);
+  color: var(--accent-main);
+  padding:5px 10px; font-family: var(--font-body); font-size: 0.8em;
+  z-index: 10;
 }
 
+/* Tables */
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-thead{background:var(--bg-card)}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
-tbody tr:hover{background:rgba(255,255,255,.06)}
+table{width:100%;border-collapse:collapse; margin-top: 10px;}
+thead{background: rgba(76, 175, 80, 0.1); border-bottom: 2px solid var(--border-color);}
+th{color: var(--accent-gold); font-family: var(--font-ui); text-transform: uppercase; padding: 12px;}
+td{padding:12px;border-bottom:1px solid #1a3320; color: var(--text-primary); font-family: var(--font-body);}
+tbody tr:hover{background:rgba(76, 175, 80, 0.05);}
 
-.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.82em;font-weight:900}
-.badge.ok{background:rgba(16,185,129,.2);color:var(--accent-green)}
-.badge.no{background:rgba(239,68,68,.2);color:var(--danger)}
-.badge.warn{background:rgba(245,158,11,.2);color:var(--warning)}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px; font-family: var(--font-body); font-size: 0.75em; text-transform: uppercase; border: 1px solid transparent;}
+.badge.ok{background:rgba(76, 175, 80, 0.2); border-color: var(--accent-main); color:var(--accent-main)}
+.badge.no{background:rgba(244, 67, 54, 0.2); border-color: var(--accent-danger); color:var(--accent-danger)}
+.badge.warn{background:rgba(255, 179, 0, 0.2); border-color: var(--accent-gold); color:var(--accent-gold)}
 
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.stat{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));padding:16px;border-radius:14px;border-left:4px solid var(--accent-blue)}
-.stat .v{font-size:2.2em;font-weight:900;margin-top:6px}
-.stat.green{border-left-color:var(--accent-green)}
-.stat.red{border-left-color:var(--danger)}
-.stat.purple{border-left-color:var(--accent-purple)}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+.stat{
+  background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
+  padding:15px; display: flex; flex-direction: column; align-items: center;
+  position: relative; overflow: hidden;
+}
+.stat::before {
+  content: ""; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--border-color);
+}
+.stat.green::before{background: var(--accent-main);}
+.stat.red::before{background: var(--accent-danger);}
+.stat.purple::before{background: var(--accent-gold);}
 
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat .small { text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+.stat .v{font-size:2.5em; font-family: var(--font-head); margin-top:5px; color: var(--text-primary); text-shadow: 0 0 10px rgba(255,255,255,0.3);}
+
+/* Utility */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 @media(max-width:900px){.row{grid-template-columns:1fr}}
-hr{border:0;border-top:1px solid var(--border);margin:14px 0}
+hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5;}
 
-.kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,"Liberation Mono","Courier New", monospace;
-  background:rgba(255,255,255,.12);padding:3px 8px;border-radius:8px;font-weight:800}
+.kbd{font-family: var(--font-body); background:rgba(255,255,255,0.1);padding:3px 8px; color: var(--accent-gold);}
 </style>
 </head>
 
@@ -115,145 +267,140 @@ hr{border:0;border-top:1px solid var(--border);margin:14px 0}
 
   <div id="alertArea"></div>
 
-  <!-- LOGIN -->
-  <div id="loginCard" class="card" style="max-width:520px;margin:40px auto;">
-    <h3>🔐 ලොග්-ඉන් (Database Edition)</h3>
+  <div id="loginCard" class="card" style="max-width:520px;margin:80px auto;">
+    <h3>🔐 පද්ධතියට ඇතුල් වීම (SECURE LOGIN)</h3>
     <p class="small" style="margin-bottom:12px;">
-      GitHub Pages එකෙන් ඉදිරිපත් කළත්, දත්ත ගබඩාව/අයිතිවාසිකම් <b>Supabase</b> මඟින් පාලනය වේ.
+      දත්ත ගබඩාව/අයිතිවාසිකම් <b>Supabase High Command</b> මඟින් පාලනය වේ.
     </p>
     <div class="row">
       <div>
-        <label>ඊමේල්</label>
-        <input id="email" type="email" placeholder="you@example.com" />
+        <label>නිල ඊමේල් ලිපිනය</label>
+        <input id="email" type="email" placeholder="officer@army.lk" />
       </div>
       <div>
-        <label>මුරපදය</label>
+        <label>රහස් කේතය (Password)</label>
         <input id="password" type="password" placeholder="••••••••" />
       </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-      <button class="btn-primary" id="btnLogin">➡️ ඇතුල්වන්න</button>
-      <button class="btn-secondary" id="btnLogout" disabled>🚪 ඉවත් වන්න</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+      <button class="btn-primary" id="btnLogin">ACCESS GRANTED ➡️</button>
+      <button class="btn-secondary" id="btnLogout" disabled>ABORT 🚪</button>
     </div>
-    <div style="margin-top:12px" class="small">
-      Admin user එක Supabase තුළ සෑදූ පසු, ඔබට roles සකස් කරන්න පුළුවන්.
-      <br/>Tip: Admin role යනු <span class="kbd">profiles.role = 'admin'</span>
+    <div style="margin-top:15px; border-top: 1px dashed var(--border-color); padding-top: 10px;" class="small">
+      Admin user සඳහා: <span class="kbd">profiles.role = 'admin'</span>
     </div>
   </div>
 
-  <!-- MAIN APP -->
   <div id="app" class="hidden">
 
     <div class="header">
       <div>
         <h1>🛡️ මුහුණු රැක</h1>
-        <p>AI මුහුණු හඳුනාගැනීම + DB + Roles + Audit (Competition Edition)</p>
+        <p>Tactical Surveillance System (Competition Edition)</p>
       </div>
       <div class="pills">
-        <div class="pill" id="pillRole">Role: -</div>
-        <div class="pill" id="pillOnline">🌐 Online</div>
-        <div class="pill" id="pillDevice">📍 Device: -</div>
+        <div class="pill" id="pillRole">RANK: -</div>
+        <div class="pill" id="pillOnline" style="color:var(--accent-main)">SIGNAL: ONLINE</div>
+        <div class="pill" id="pillDevice">UNIT: -</div>
       </div>
     </div>
 
     <div class="tabs">
-      <button class="tab active" data-tab="dashboard">📊 උපකරණ පුවරුව</button>
-      <button class="tab" data-tab="camera">📹 සජීවී නිරීක්ෂණය</button>
-      <button class="tab" data-tab="persons">👥 පුද්ගල කළමනාකරණය</button>
-      <button class="tab" data-tab="logs">📋 ඇතුළත් වීම් ලොග</button>
-      <button class="tab" data-tab="alerts">🚨 Alerts</button>
-      <button class="tab" data-tab="settings">⚙️ සැකසුම්</button>
-      <button class="tab" data-tab="audit" id="auditTabBtn">🧾 Audit</button>
+      <button class="tab active" data-tab="dashboard">📊 උපකරණ පුවරුව (DASHBOARD)</button>
+      <button class="tab" data-tab="camera">📹 සජීවී නිරීක්ෂණය (LIVE FEED)</button>
+      <button class="tab" data-tab="persons">👥 භට කණ්ඩායම් (TROOPS)</button>
+      <button class="tab" data-tab="logs">📋 වාර්තා පොත (LOGS)</button>
+      <button class="tab" data-tab="alerts">🚨 අනතුරු ඇඟවීම් (ALERTS)</button>
+      <button class="tab" data-tab="settings">⚙️ පද්ධති සකසීම් (CONFIG)</button>
+      <button class="tab" data-tab="audit" id="auditTabBtn">🧾 පරීක්ෂණ වාර්තා (AUDIT)</button>
     </div>
 
-    <!-- DASHBOARD -->
     <div id="tab-dashboard" class="tab-content">
       <div class="stats">
-        <div class="stat"><div class="small">ලියාපදිංචි පුද්ගලයින්</div><div class="v" id="statPersons">0</div></div>
-        <div class="stat green"><div class="small">අද Approved</div><div class="v" id="statApproved">0</div></div>
-        <div class="stat red"><div class="small">අද Rejected</div><div class="v" id="statRejected">0</div></div>
-        <div class="stat purple"><div class="small">මුළු Events</div><div class="v" id="statTotal">0</div></div>
+        <div class="stat"><div class="small">ලියාපදිංචි භටයින්</div><div class="v" id="statPersons">0</div></div>
+        <div class="stat green"><div class="small">අද ඇතුල්වීම් (PASS)</div><div class="v" id="statApproved">0</div></div>
+        <div class="stat red"><div class="small">අද ප්‍රතික්ෂේපිත (DENIED)</div><div class="v" id="statRejected">0</div></div>
+        <div class="stat purple"><div class="small">මුළු මෙහෙයුම් (TOTAL)</div><div class="v" id="statTotal">0</div></div>
       </div>
 
-      <div class="card" style="margin-top:15px;">
-        <h3>🧠 පද්ධති තත්ත්වය</h3>
+      <div class="card" style="margin-top:20px;">
+        <h3>🧠 පද්ධති තත්ත්වය (SYSTEM STATUS)</h3>
         <div class="row">
           <div>
-            <label>AI Models</label>
-            <div id="modelStatus" class="badge warn">Loading…</div>
+            <label>AI NEURAL NET</label>
+            <div id="modelStatus" class="badge warn">INITIALIZING...</div>
           </div>
           <div>
-            <label>Camera</label>
-            <div id="cameraStatus" class="badge no">OFF</div>
+            <label>OPTICAL SENSOR</label>
+            <div id="cameraStatus" class="badge no">OFFLINE</div>
           </div>
         </div>
-        <div class="row" style="margin-top:12px;">
+        <div class="row" style="margin-top:15px;">
           <div>
-            <label>Recognition</label>
-            <div id="recStatus" class="badge no">Inactive</div>
+            <label>RECOGNITION ENGINE</label>
+            <div id="recStatus" class="badge no">STANDBY</div>
           </div>
           <div>
-            <label>Offline Queue</label>
-            <div id="queueStatus" class="badge warn">0 pending</div>
+            <label>DATA UPLINK QUEUE</label>
+            <div id="queueStatus" class="badge warn">0 PENDING</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- CAMERA -->
     <div id="tab-camera" class="tab-content hidden">
       <div class="grid">
         <div class="card">
-          <h3>📹 Live Recognition</h3>
+          <h3>📹 සජීවී මෙහෙයුම (LIVE OPS)</h3>
 
           <div class="row">
             <div>
-              <label>Event Type</label>
+              <label>ක්‍රියාව (ACTION)</label>
               <select id="eventType">
-                <option value="IN">IN (ඇතුල්වීම)</option>
-                <option value="OUT">OUT (පිටවීම)</option>
+                <option value="IN">ඇතුල්වීම (ENTRY)</option>
+                <option value="OUT">පිටවීම (EXIT)</option>
               </select>
             </div>
             <div>
-              <label>Mode</label>
+              <label>ප්‍රකාරය (MODE)</label>
               <select id="mode">
-                <option value="auto">Auto Log (Recommended)</option>
-                <option value="manual">Manual Verify</option>
+                <option value="auto">ස්වයංක්‍රීය (AUTO)</option>
+                <option value="manual">මිනිස් පාලනය (MANUAL)</option>
               </select>
             </div>
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-            <button id="btnStartCam" class="btn-primary">🎥 කැමරාව ආරම්භ කරන්න</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+            <button id="btnStartCam" class="btn-primary">🎥 කැමරාව අරඹන්න</button>
             <button id="btnStopCam" class="btn-danger" disabled>⏹️ නවත්වන්න</button>
-            <button id="btnSyncQueue" class="btn-secondary">🔁 Sync Offline Queue</button>
+            <button id="btnSyncQueue" class="btn-secondary">🔁 දත්ත යාවත්කාලීන කරන්න</button>
           </div>
 
-          <div class="video-container" style="margin-top:12px;">
+          <div class="video-container" style="margin-top:15px;">
             <video id="video" autoplay muted playsinline></video>
             <canvas id="canvas"></canvas>
-            <div class="overlay" id="overlay">Ready</div>
+            <div class="overlay" id="overlay">SYSTEM READY</div>
           </div>
 
           <p class="small" style="margin-top:10px;">
-            Note: “Confidence” යනු distance එකෙන් අනුමාන කරන value එකක්. Competition demo සඳහා threshold එක Settings තුළ tune කරන්න.
+            <span style="color:var(--accent-gold)">NOTE:</span> Confidence අගය දුර ප්‍රමාණය මත තීරණය වේ.
           </p>
         </div>
 
         <div class="card">
-          <h3>🎯 Detected</h3>
-          <div id="detectedBox" class="small" style="padding:8px;color:var(--text-secondary);text-align:center;">
-            මුහුණක් අනාවරණය වී නැත
+          <h3>🎯 ඉලක්ක (TARGETS)</h3>
+          <div id="detectedBox" class="small" style="padding:15px; border: 1px dashed var(--border-color); color:var(--text-muted); text-align:center;">
+            SCANNING AREA...
           </div>
           <hr/>
           <div>
-            <label>Manual Log (Unknown / Visitor)</label>
+            <label>අත්පොත සෙවීම (MANUAL OVERRIDE)</label>
             <div class="row">
               <div>
-                <input id="manualSearch" placeholder="Service No / Name search…" />
+                <input id="manualSearch" placeholder="Service No / Name..." />
               </div>
               <div>
-                <button id="btnManualPick" class="btn-secondary">🔎 Search</button>
+                <button id="btnManualPick" class="btn-secondary">🔎 SCAN</button>
               </div>
             </div>
             <div id="manualResults" style="margin-top:10px;"></div>
@@ -262,214 +409,205 @@ hr{border:0;border-top:1px solid var(--border);margin:14px 0}
       </div>
     </div>
 
-    <!-- PERSONS -->
     <div id="tab-persons" class="tab-content hidden">
       <div class="card">
-        <h3>👥 පුද්ගල කළමනාකරණය (Admin)</h3>
+        <h3>👥 භට කළමනාකරණය (PERSONNEL)</h3>
         <div id="personsGuard" class="alert warn">
-          ⚠️ මෙම tab එක Admin role එකට පමණයි.
+          ⚠️ RESTRICTED: COMMANDER ONLY (ADMIN)
         </div>
 
         <div id="personsArea" class="hidden">
           <div class="row">
             <div>
-              <label>Search</label>
-              <input id="personSearch" placeholder="Service No / Name / Unit…" />
+              <label>සෙවීම (SEARCH)</label>
+              <input id="personSearch" placeholder="Service No / Name / Unit..." />
             </div>
             <div>
-              <label>Actions</label>
+              <label>විධානයන් (COMMANDS)</label>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button id="btnRefreshPersons" class="btn-secondary">🔄 Refresh</button>
-                <button id="btnAddPerson" class="btn-primary">➕ Add Person</button>
+                <button id="btnRefreshPersons" class="btn-secondary">🔄 RELOAD</button>
+                <button id="btnAddPerson" class="btn-primary">➕ නව භටයෙක්</button>
               </div>
             </div>
           </div>
 
-          <div id="personForm" class="hidden" style="margin-top:12px;">
-            <hr/>
-            <h3>➕ / ✏️ Person Form</h3>
+          <div id="personForm" class="hidden" style="margin-top:20px; border: 1px solid var(--accent-gold); padding: 15px;">
+            <h3 style="color:var(--accent-gold)">➕ / ✏️ භට තොරතුරු පත්‍රිකාව</h3>
             <input type="hidden" id="personId" />
             <div class="row">
-              <div><label>Service No</label><input id="pService" placeholder="e.g., SLLI/12345" /></div>
-              <div><label>Name</label><input id="pName" placeholder="Full name" /></div>
+              <div><label>සේවා අංකය (SVC NO)</label><input id="pService" placeholder="SLLI/12345" /></div>
+              <div><label>නම (FULL NAME)</label><input id="pName" placeholder="Full name" /></div>
             </div>
             <div class="row" style="margin-top:10px;">
-              <div><label>Rank</label><input id="pRank" placeholder="Rank" /></div>
-              <div><label>Unit</label><input id="pUnit" placeholder="Unit" /></div>
+              <div><label>නිලය (RANK)</label><input id="pRank" placeholder="Rank" /></div>
+              <div><label>ඒකකය (UNIT)</label><input id="pUnit" placeholder="Unit" /></div>
             </div>
             <div class="row" style="margin-top:10px;">
               <div>
-                <label>Type</label>
+                <label>වර්ගය (TYPE)</label>
                 <select id="pType">
-                  <option value="soldier">soldier</option>
-                  <option value="visitor">visitor</option>
+                  <option value="soldier">සෙබළ (SOLDIER)</option>
+                  <option value="visitor">අමුත්තා (VISITOR)</option>
                 </select>
               </div>
               <div>
-                <label>Status</label>
+                <label>තත්ත්වය (STATUS)</label>
                 <select id="pStatus">
-                  <option value="active">active</option>
-                  <option value="leave">leave</option>
-                  <option value="suspended">suspended</option>
-                  <option value="visitor">visitor</option>
+                  <option value="active">සක්‍රීය (ACTIVE)</option>
+                  <option value="leave">නිවාඩු (ON LEAVE)</option>
+                  <option value="suspended">අත්හිටුවූ (SUSPENDED)</option>
                 </select>
               </div>
             </div>
             <div style="margin-top:10px;">
-              <label>Watchlist</label>
+              <label style="color:var(--accent-danger)">WATCHLIST (අවධානයට)</label>
               <select id="pWatch">
-                <option value="false">No</option>
-                <option value="true">Yes</option>
+                <option value="false">නැත (NO)</option>
+                <option value="true">ඔව් - අවදානම් (YES - ALERT)</option>
               </select>
             </div>
             <div style="margin-top:10px;">
-              <label>Notes</label>
-              <textarea id="pNotes" rows="3" placeholder="Reason / note…"></textarea>
+              <label>සටහන් (NOTES)</label>
+              <textarea id="pNotes" rows="3" placeholder="විශේෂ කරුණු..."></textarea>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-              <button id="btnSavePerson" class="btn-primary">💾 Save</button>
-              <button id="btnCancelPerson" class="btn-secondary">✖ Cancel</button>
-              <button id="btnDeletePerson" class="btn-danger">🗑 Delete</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+              <button id="btnSavePerson" class="btn-primary">💾 දත්ත සුරකින්න</button>
+              <button id="btnCancelPerson" class="btn-secondary">✖ අවලංගුයි</button>
+              <button id="btnDeletePerson" class="btn-danger">🗑 ඉවත් කරන්න</button>
             </div>
 
             <hr/>
-            <h3>📸 Face Enrollment (Admin)</h3>
-            <p class="small">Enroll requires camera ON + face visible. We store multiple descriptors in DB.</p>
+            <h3 style="color:var(--accent-main)">📸 මුහුණු දත්ත ඇතුලත් කිරීම (BIOMETRICS)</h3>
+            <p class="small">කැමරාව ක්‍රියාත්මක කර මුහුණ පෙන්වන්න.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button id="btnEnroll1" class="btn-primary">📸 Capture x3 & Save Templates</button>
-              <button id="btnClearTemplates" class="btn-danger">🧹 Clear Templates</button>
+              <button id="btnEnroll1" class="btn-primary">📸 ස්කෑන් කර සුරකින්න (SCAN x3)</button>
+              <button id="btnClearTemplates" class="btn-danger">🧹 දත්ත මකන්න (CLEAR)</button>
             </div>
-            <div class="small" id="templateInfo" style="margin-top:10px;color:var(--text-secondary);"></div>
+            <div class="small" id="templateInfo" style="margin-top:10px;color:var(--text-muted);"></div>
           </div>
 
           <hr/>
-          <div id="personsList" class="small" style="color:var(--text-secondary);">Loading…</div>
+          <div id="personsList" class="small" style="color:var(--text-muted);">LISTING PERSONNEL...</div>
         </div>
       </div>
     </div>
 
-    <!-- LOGS -->
     <div id="tab-logs" class="tab-content hidden">
       <div class="card">
-        <h3>📋 Access Events</h3>
+        <h3>📋 දෛනික වාර්තා (ACCESS LOGS)</h3>
         <div class="row">
           <div>
-            <label>Date Filter</label>
+            <label>දිනය තෝරන්න (FILTER)</label>
             <select id="logFilter">
-              <option value="today">Today</option>
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="all">All</option>
+              <option value="today">අද දින (TODAY)</option>
+              <option value="7">පසුගිය දින 7 (LAST 7 DAYS)</option>
+              <option value="30">පසුගිය දින 30 (LAST 30 DAYS)</option>
+              <option value="all">සියල්ල (ALL TIME)</option>
             </select>
           </div>
           <div>
-            <label>Export</label>
+            <label>දත්ත ලබාගැනීම (EXPORT)</label>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button id="btnExportCSV" class="btn-primary">📥 CSV</button>
-              <button id="btnRefreshLogs" class="btn-secondary">🔄 Refresh</button>
+              <button id="btnExportCSV" class="btn-primary">📥 DOWNLOAD CSV</button>
+              <button id="btnRefreshLogs" class="btn-secondary">🔄 REFRESH</button>
             </div>
           </div>
         </div>
 
-        <div class="table-wrap" style="margin-top:12px;">
+        <div class="table-wrap" style="margin-top:15px;">
           <table>
             <thead>
               <tr>
-                <th>#</th><th>Time</th><th>Service</th><th>Name</th><th>Type</th><th>Gate</th><th>Event</th><th>Status</th><th>Conf</th>
+                <th>#</th><th>වේලාව</th><th>සේවා අංකය</th><th>නම</th><th>වර්ගය</th><th>ස්ථානය</th><th>සිදුවීම</th><th>තත්ත්වය</th><th>CONF</th>
               </tr>
             </thead>
             <tbody id="logsBody">
-              <tr><td colspan="9" class="small" style="padding:18px;color:var(--text-secondary);text-align:center;">Loading…</td></tr>
+              <tr><td colspan="9" class="small" style="padding:18px;color:var(--text-muted);text-align:center;">NO DATA</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ALERTS -->
     <div id="tab-alerts" class="tab-content hidden">
       <div class="card">
-        <h3>🚨 Alerts</h3>
+        <h3>🚨 හදිසි අනතුරු ඇඟවීම් (SECURITY ALERTS)</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button id="btnRefreshAlerts" class="btn-secondary">🔄 Refresh</button>
+          <button id="btnRefreshAlerts" class="btn-secondary">🔄 යාවත්කාලීන කරන්න</button>
         </div>
-        <div id="alertsList" class="small" style="margin-top:12px;color:var(--text-secondary);">Loading…</div>
+        <div id="alertsList" class="small" style="margin-top:15px;color:var(--text-muted);">LOADING...</div>
       </div>
     </div>
 
-    <!-- SETTINGS -->
     <div id="tab-settings" class="tab-content hidden">
       <div class="card">
-        <h3>⚙️ Settings</h3>
+        <h3>⚙️ පද්ධති සකසීම් (SYSTEM CONFIG)</h3>
 
         <div class="row">
           <div>
-            <label>Device / Gate (for logs)</label>
+            <label>උපාංගය / ගේට්ටුව (GATE DEVICE)</label>
             <select id="deviceSelect"></select>
-            <p class="small">Admin tab එකෙන් Devices manage කරන්න පුළුවන් (or create one row in DB).</p>
+            <p class="small">Admin tab එකෙන් උපාංග එක් කරන්න.</p>
           </div>
           <div>
-            <label>Recognition Threshold (0–1)</label>
+            <label>සංවේදීතාව (SENSITIVITY 0-1)</label>
             <input id="confThr" type="number" min="0" max="1" step="0.05" value="0.55" />
-            <p class="small">අඩු අග = more sensitive. (We map it to FaceMatcher distance internally.)</p>
+            <p class="small">අඩු අගය = වැඩි සංවේදීතාව (More Sensitive)</p>
           </div>
         </div>
 
-        <div class="row" style="margin-top:10px;">
+        <div class="row" style="margin-top:15px;">
           <div>
-            <label>Voice Alerts</label>
+            <label>හඬ දැනුම්දීම් (VOICE COMMS)</label>
             <select id="voice">
-              <option value="on">On</option>
-              <option value="off">Off</option>
+              <option value="on">ක්‍රියාත්මකයි (ON)</option>
+              <option value="off">අක්‍රියයි (OFF)</option>
             </select>
           </div>
           <div>
-            <label>Auto Lock Seconds (UI only)</label>
+            <label>Auto Lock Time (Sec)</label>
             <input id="autolock" type="number" min="3" max="60" step="1" value="8" />
           </div>
         </div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-          <button id="btnSaveSettings" class="btn-primary">💾 Save</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+          <button id="btnSaveSettings" class="btn-primary">💾 සුරකින්න (SAVE)</button>
         </div>
 
         <hr/>
-        <h3>📟 Devices (Admin)</h3>
-        <div id="devicesGuard" class="alert warn">⚠️ Devices manage කිරීම Admin role එකට පමණයි.</div>
+        <h3>📟 උපාංග කළමනාකරණය (DEVICE ADMIN)</h3>
+        <div id="devicesGuard" class="alert warn">⚠️ RESTRICTED ACCESS</div>
 
         <div id="devicesArea" class="hidden">
           <div class="row">
-            <div><label>Name</label><input id="dName" placeholder="Gate-1 Tablet"/></div>
-            <div><label>Gate</label><input id="dGate" placeholder="Gate-1"/></div>
+            <div><label>නම (NAME)</label><input id="dName" placeholder="Gate-1 Tablet"/></div>
+            <div><label>ගේට්ටුව (GATE)</label><input id="dGate" placeholder="Gate-1"/></div>
           </div>
           <div class="row" style="margin-top:10px;">
-            <div><label>Location</label><input id="dLoc" placeholder="HQ Entrance"/></div>
+            <div><label>ස්ථානය (LOCATION)</label><input id="dLoc" placeholder="HQ Entrance"/></div>
             <div style="display:flex;align-items:flex-end;gap:10px;">
-              <button id="btnAddDevice" class="btn-primary">➕ Add Device</button>
-              <button id="btnRefreshDevices" class="btn-secondary">🔄 Refresh</button>
+              <button id="btnAddDevice" class="btn-primary">➕ උපාංගය එක් කරන්න</button>
+              <button id="btnRefreshDevices" class="btn-secondary">🔄 RELOAD</button>
             </div>
           </div>
-          <div id="devicesList" class="small" style="margin-top:12px;color:var(--text-secondary);">Loading…</div>
+          <div id="devicesList" class="small" style="margin-top:15px;color:var(--text-muted);">LOADING...</div>
         </div>
       </div>
     </div>
 
-    <!-- AUDIT -->
     <div id="tab-audit" class="tab-content hidden">
       <div class="card">
-        <h3>🧾 Audit Logs</h3>
-        <p class="small">මෙය Admin / Commander / Investigator සඳහා පමණයි.</p>
-        <button id="btnRefreshAudit" class="btn-secondary">🔄 Refresh</button>
-        <div id="auditList" class="small" style="margin-top:12px;color:var(--text-secondary);">Loading…</div>
+        <h3>🧾 පරීක්ෂණ වාර්තා (AUDIT TRAIL)</h3>
+        <p class="small">Admin / Commander / Investigator EYES ONLY</p>
+        <button id="btnRefreshAudit" class="btn-secondary">🔄 RELOAD</button>
+        <div id="auditList" class="small" style="margin-top:15px;color:var(--text-muted);">LOADING...</div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- Face API -->
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -555,8 +693,9 @@ function speak(msg){
 
 function setOnlinePill(){
   const on = navigator.onLine;
-  pillOnline.textContent = on ? "🌐 Online" : "📴 Offline";
-  pillOnline.style.opacity = on ? "1" : ".8";
+  pillOnline.textContent = on ? "🌐 UPLINK: ONLINE" : "📴 UPLINK: OFFLINE";
+  pillOnline.style.opacity = on ? "1" : ".5";
+  pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
 }
 
 /* =========================
@@ -578,23 +717,23 @@ async function loadProfile(){
   if(error){
     // If profile doesn't exist, ask admin to create it
     profile = { role:"operator", unit:"", full_name:"" };
-    showAlert("Profile row එක නොමැත. Admin එකට profiles table එකෙන් role සකස් කරන්න.", "warn");
+    showAlert("Profile දත්ත හමු නොවිණි. Admin අමතන්න.", "warn");
   }else{
     profile = data;
   }
-  pillRole.textContent = `Role: ${profile.role || "-"}`;
+  pillRole.textContent = `RANK: ${profile.role || "-"}`;
   return profile;
 }
 
 async function login(){
   const email = el("email").value.trim();
   const password = el("password").value;
-  if(!email || !password){ showAlert("ඊමේල්/මුරපදය ඇතුලත් කරන්න", "danger"); return; }
+  if(!email || !password){ showAlert("ඊමේල් සහ මුරපදය ඇතුලත් කරන්න", "danger"); return; }
 
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ showAlert(error.message, "danger"); return; }
   session = data.session;
-  showAlert("Logged in", "success");
+  showAlert("අවසර ලබා දෙන ලදී (ACCESS GRANTED)", "success");
   await afterLogin();
 }
 
@@ -605,7 +744,7 @@ async function logout(){
   app.classList.add("hidden");
   loginCard.classList.remove("hidden");
   el("btnLogout").disabled = true;
-  showAlert("Logged out", "info");
+  showAlert("ඉවත් විය (LOGGED OUT)", "info");
 }
 
 /* =========================
@@ -627,7 +766,7 @@ function saveSettingsLocal(){
 }
 
 function updateQueueBadge(){
-  el("queueStatus").textContent = `${queueLen()} pending`;
+  el("queueStatus").textContent = `${queueLen()} PENDING`;
   el("queueStatus").className = queueLen()>0 ? "badge warn" : "badge ok";
 }
 
@@ -651,12 +790,12 @@ async function afterLogin(){
 
   window.addEventListener("online", async ()=>{
     setOnlinePill();
-    showAlert("Online - syncing queue…", "info");
+    showAlert("Uplink Restored - Syncing...", "info");
     await syncQueue();
   });
   window.addEventListener("offline", ()=>{
     setOnlinePill();
-    showAlert("Offline mode - events will queue locally", "warn");
+    showAlert("Uplink Lost - Offline Mode", "warn");
   });
 }
 
@@ -681,7 +820,7 @@ function applyRoleGuards(){
 ========================= */
 async function loadModels(){
   try{
-    el("modelStatus").textContent = "Loading…";
+    el("modelStatus").textContent = "LOADING...";
     el("modelStatus").className = "badge warn";
 
     // More stable than SSD on weak GPUs; keep SSD if you prefer
@@ -689,14 +828,14 @@ async function loadModels(){
     await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
     await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
 
-    el("modelStatus").textContent = "Loaded";
+    el("modelStatus").textContent = "OPERATIONAL";
     el("modelStatus").className = "badge ok";
-    showAlert("AI models loaded", "success");
+    showAlert("AI Systems Online", "success");
   }catch(e){
     console.error(e);
-    el("modelStatus").textContent = "Error";
+    el("modelStatus").textContent = "FAILURE";
     el("modelStatus").className = "badge no";
-    showAlert("Models load failed. MODEL_URL check කරන්න.", "danger");
+    showAlert("AI Models load failed. MODEL_URL පරීක්ෂා කරන්න.", "danger");
   }
 }
 
@@ -748,7 +887,7 @@ function buildMatcher(){
   matcher = labeled.length ? new faceapi.FaceMatcher(labeled, maxDistance) : null;
 
   // update rec status
-  el("recStatus").textContent = matcher ? "Active" : "No templates";
+  el("recStatus").textContent = matcher ? "ACTIVE" : "NO DATA";
   el("recStatus").className = matcher ? "badge ok" : "badge warn";
 }
 
@@ -775,7 +914,7 @@ async function refreshDevices(){
     currentDevice = null;
   }
 
-  pillDevice.textContent = currentDevice ? `📍 Device: ${currentDevice.gate_name || currentDevice.name}` : "📍 Device: -";
+  pillDevice.textContent = currentDevice ? `UNIT: ${currentDevice.gate_name || currentDevice.name}` : "UNIT: -";
 }
 
 async function refreshStats(){
@@ -820,18 +959,18 @@ async function startCamera(){
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
-    el("cameraStatus").textContent = "ON";
+    el("cameraStatus").textContent = "ONLINE";
     el("cameraStatus").className = "badge ok";
-    overlay.textContent = "Detecting…";
+    overlay.textContent = "SEARCHING TARGETS...";
 
     el("btnStartCam").disabled = true;
     el("btnStopCam").disabled = false;
 
     startDetectionLoop();
-    showAlert("Camera started", "success");
+    showAlert("Camera Uplink Established", "success");
   }catch(e){
     console.error(e);
-    showAlert("Camera access failed. Other apps close කරන්න.", "danger");
+    showAlert("Camera Error. වෙනත් ඇප් එකක් කැමරාව භාවිතා කරන්නේද?", "danger");
   }
 }
 
@@ -843,12 +982,12 @@ async function stopCamera(){
   }
   video.srcObject=null;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  el("cameraStatus").textContent = "OFF";
+  el("cameraStatus").textContent = "OFFLINE";
   el("cameraStatus").className = "badge no";
-  overlay.textContent="Ready";
+  overlay.textContent="STANDBY";
   el("btnStartCam").disabled = false;
   el("btnStopCam").disabled = true;
-  detectedBox.innerHTML = "මුහුණක් අනාවරණය වී නැත";
+  detectedBox.innerHTML = "NO TARGETS";
 }
 
 function bestMatchToConfidence(distance){
@@ -860,9 +999,20 @@ function bestMatchToConfidence(distance){
 function drawBox(box, color, text){
   ctx.strokeStyle=color; ctx.lineWidth=3;
   ctx.strokeRect(box.x, box.y, box.width, box.height);
+  
+  // Military corners
+  ctx.fillStyle=color;
+  ctx.fillRect(box.x-2, box.y-2, 10, 4); 
+  ctx.fillRect(box.x-2, box.y-2, 4, 10);
+  ctx.fillRect(box.x+box.width-8, box.y-2, 10, 4);
+  ctx.fillRect(box.x+box.width-2, box.y-2, 4, 10);
+  
+  // Label bg
   ctx.fillStyle=color;
   ctx.fillRect(box.x, Math.max(0, box.y-28), box.width, 28);
-  ctx.fillStyle="#fff"; ctx.font="16px Arial";
+  
+  // Text
+  ctx.fillStyle="#000"; ctx.font="bold 16px 'Share Tech Mono'";
   ctx.fillText(text, box.x+6, Math.max(18, box.y-8));
 }
 
@@ -878,9 +1028,9 @@ function startDetectionLoop(){
       .withFaceLandmarks()
       .withFaceDescriptors();
 
-    overlay.textContent = `${dets.length} face(s)`;
+    overlay.textContent = `TARGETS: ${dets.length}`;
     if(dets.length===0){
-      detectedBox.innerHTML = "<span class='small' style='color:var(--text-secondary)'>මුහුණක් අනාවරණය වී නැත</span>";
+      detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING...</span>";
       return;
     }
 
@@ -906,15 +1056,15 @@ function startDetectionLoop(){
       const conf = bestMatchToConfidence(distance);
       const isUnknown = !person;
 
-      drawBox(box, isUnknown ? "#ef4444" : (person.watchlist ? "#f59e0b" : "#10b981"),
-              isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "OK"));
+      drawBox(box, isUnknown ? "#ff3333" : (person.watchlist ? "#ffb300" : "#4caf50"),
+              isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "IDENTIFIED"));
 
       // Update detected UI
       if(isUnknown){
         detectedBox.innerHTML = `
           <div style="text-align:center;padding:8px;">
             <div class="badge no">UNKNOWN</div>
-            <p class="small" style="margin-top:8px;color:var(--text-secondary)">Manual verify / search භාවිතා කරන්න</p>
+            <p class="small" style="margin-top:8px;color:var(--text-muted)">හැඳුනුම්පත පරීක්ෂා කරන්න (VERIFY ID)</p>
           </div>`;
         if(el("mode").value==="auto"){
           // Unknown auto-log (rate-limited)
@@ -923,11 +1073,11 @@ function startDetectionLoop(){
       }else{
         detectedBox.innerHTML = `
           <div style="text-align:center;padding:8px;">
-            <div class="badge ${person.watchlist?'warn':'ok'}">${person.watchlist?'WATCHLIST':'NOTE'}</div>
-            <h3 style="margin-top:8px;">${person.name}</h3>
-            <p class="small">${person.rank||''} | ${person.service_no||''}</p>
+            <div class="badge ${person.watchlist?'warn':'ok'}">${person.watchlist?'⚠️ WATCHLIST':'✅ CLEARED'}</div>
+            <h3 style="margin-top:8px;color:var(--text-primary)">${person.name}</h3>
+            <p class="small" style="color:var(--accent-gold)">${person.rank||''} | ${person.service_no||''}</p>
             <p class="small">Unit: ${person.unit||'-'} | Type: ${person.person_type} | Status: ${person.status}</p>
-            <p class="small" style="margin-top:8px;">Confidence: ${(conf*100).toFixed(1)}%</p>
+            <p class="small" style="margin-top:8px;">MATCH CONFIDENCE: ${(conf*100).toFixed(1)}%</p>
           </div>
         `;
         if(el("mode").value==="auto"){
@@ -960,7 +1110,7 @@ async function autoLogUnknown(conf){
 
   const ok = await insertAccessEvent(payload, "unknown");
   if(ok){
-    speak("අනවසර ප්‍රවේශ උත්සාහයක්");
+    speak("අවසර නොමැති පුද්ගලයෙක්");
   }
 }
 
@@ -989,7 +1139,7 @@ async function autoLogKnown(person, conf){
 
   const ok = await insertAccessEvent(payload, person.watchlist ? "watchlist" : "normal");
   if(ok){
-    speak(person.watchlist ? "වොච්ලිස්ට් අල්ලාර්ට්" : "අනුමතයි");
+    speak(person.watchlist ? "වොච්ලිස්ට්, වහාම පරීක්ෂා කරන්න" : "අනුමතයි");
   }
 }
 
@@ -1041,7 +1191,7 @@ async function insertAccessEvent(payload, kind){
   }catch(e){
     // offline or network error => queue
     queuePush({ payload, kind, ts: Date.now() });
-    showAlert("Network error - event queued offline", "warn");
+    showAlert("Network Error - Queued Offline", "warn");
     return false;
   }
 }
@@ -1079,20 +1229,20 @@ function renderPersonsList(){
 
   const div = el("personsList");
   if(!list.length){
-    div.innerHTML = "<div class='small' style='padding:14px;color:var(--text-secondary)'>No persons</div>";
+    div.innerHTML = "<div class='small' style='padding:14px;color:var(--text-muted)'>NO RECORDS FOUND</div>";
     return;
   }
 
   div.innerHTML = list.map(p=>`
-    <div style="padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.04)">
+    <div style="padding:12px;border:1px solid var(--border-color);border-left: 3px solid ${p.watchlist?'var(--accent-gold)':'var(--accent-main)'}; margin-bottom:10px;background:rgba(0,0,0,0.4)">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div>
-          <b>${p.name}</b> <span class="small">(${p.rank||'-'})</span><br/>
+          <b style="color:var(--text-primary); font-size:1.1em">${p.name}</b> <span class="small" style="color:var(--accent-gold)">(${p.rank||'-'})</span><br/>
           <span class="small">Svc: ${p.service_no||'-'} | Unit: ${p.unit||'-'} | Type: ${p.person_type} | Status: ${p.status}</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          ${p.watchlist ? `<span class="badge warn">WATCHLIST</span>` : `<span class="badge ok">OK</span>`}
-          <button class="btn-secondary" onclick="openPersonForm('${p.id}')">✏️ Edit</button>
+          ${p.watchlist ? `<span class="badge warn">WATCHLIST</span>` : `<span class="badge ok">CLEARED</span>`}
+          <button class="btn-secondary" onclick="openPersonForm('${p.id}')">EDIT</button>
         </div>
       </div>
     </div>
@@ -1132,7 +1282,7 @@ function clearPersonForm(){
 }
 
 async function savePerson(){
-  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
 
   const id = el("personId").value || null;
   const payload = {
@@ -1145,104 +1295,104 @@ async function savePerson(){
     watchlist: el("pWatch").value==="true",
     notes: el("pNotes").value.trim() || null
   };
-  if(!payload.name){ showAlert("Name required", "danger"); return; }
+  if(!payload.name){ showAlert("නම අත්‍යවශ්‍යයි (NAME REQUIRED)", "danger"); return; }
 
   try{
     if(id){
       const { error } = await sb.from("persons").update(payload).eq("id", id);
       if(error) throw error;
       await sb.from("audit_logs").insert({ action:"person_update", detail:{ id, payload } });
-      showAlert("Person updated", "success");
+      showAlert("දත්ත යාවත්කාලීන කරන ලදී (UPDATED)", "success");
     }else{
       const { error } = await sb.from("persons").insert(payload);
       if(error) throw error;
       await sb.from("audit_logs").insert({ action:"person_insert", detail:{ payload } });
-      showAlert("Person added", "success");
+      showAlert("නව දත්ත එක් කරන ලදී (ADDED)", "success");
     }
     await refreshPersonsAndTemplates();
     await refreshStats();
     clearPersonForm();
   }catch(e){
-    showAlert(e.message || "Save failed", "danger");
+    showAlert(e.message || "Save Failed", "danger");
   }
 }
 
 async function deletePerson(){
-  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
   const id = el("personId").value;
   if(!id) return;
-  if(!confirm("Delete this person?")) return;
+  if(!confirm("මෙම භටයාගේ දත්ත ඉවත් කිරීමට ඔබට අවශ්‍යද?")) return;
   try{
     const { error } = await sb.from("persons").delete().eq("id", id);
     if(error) throw error;
     await sb.from("audit_logs").insert({ action:"person_delete", detail:{ id } });
-    showAlert("Deleted", "info");
+    showAlert("දත්ත ඉවත් කරන ලදී (DELETED)", "info");
     await refreshPersonsAndTemplates();
     await refreshStats();
     clearPersonForm();
   }catch(e){
-    showAlert(e.message || "Delete failed", "danger");
+    showAlert(e.message || "Delete Failed", "danger");
   }
 }
 
 /* Face enrollment: capture 3 descriptors and save as templates */
 async function enrollSelectedPerson(){
-  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
   const id = el("personId").value;
-  if(!id){ showAlert("Select a person first", "warn"); return; }
-  if(!cameraStream){ showAlert("Start camera first", "warn"); return; }
+  if(!id){ showAlert("කරුණාකර පළමුව නමක් තෝරන්න", "warn"); return; }
+  if(!cameraStream){ showAlert("කැමරාව අරඹන්න (START CAMERA)", "warn"); return; }
 
   const captures = [];
   for(let i=0;i<3;i++){
-    overlay.textContent = `Enrollment capture ${i+1}/3…`;
+    overlay.textContent = `SCANNING ${i+1}/3...`;
     const det = await faceapi
       .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
       .withFaceLandmarks()
       .withFaceDescriptor();
     if(!det){
-      showAlert("Face not detected. Look at camera.", "danger");
-      overlay.textContent = "Detecting…";
+      showAlert("මුහුණක් අනාවරණය නොවිණි. කැමරාව දෙස බලන්න.", "danger");
+      overlay.textContent = "STANDBY";
       return;
     }
     captures.push(Array.from(det.descriptor).map(n=>Number(n)));
     await new Promise(r=>setTimeout(r, 600));
   }
-  overlay.textContent = "Saving templates…";
+  overlay.textContent = "ENCRYPTING & SAVING...";
 
   try{
     const rows = captures.map(desc=>({ person_id: id, descriptor: desc, model_version: "faceapi-0.22.2" }));
     const { error } = await sb.from("face_templates").insert(rows);
     if(error) throw error;
     await sb.from("audit_logs").insert({ action:"face_enroll", detail:{ person_id:id, count: rows.length } });
-    showAlert("Enrollment saved (3 templates)", "success");
-    overlay.textContent = "Detecting…";
+    showAlert("ජෛව දත්ත සුරකින ලදී (BIOMETRICS SAVED)", "success");
+    overlay.textContent = "SYSTEM READY";
     await refreshPersonsAndTemplates();
   }catch(e){
-    showAlert(e.message || "Enroll failed", "danger");
-    overlay.textContent = "Detecting…";
+    showAlert(e.message || "Enroll Failed", "danger");
+    overlay.textContent = "SYSTEM READY";
   }
 }
 
 async function clearTemplatesForSelected(){
-  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
   const id = el("personId").value;
   if(!id) return;
-  if(!confirm("Clear all templates for this person?")) return;
+  if(!confirm("සියලුම ජෛව දත්ත මකා දැමීමට අවශ්‍යද?")) return;
   const { error } = await sb.from("face_templates").delete().eq("person_id", id);
   if(error){ showAlert(error.message, "danger"); return; }
   await sb.from("audit_logs").insert({ action:"face_clear", detail:{ person_id:id } });
-  showAlert("Templates cleared", "info");
+  showAlert("දත්ත මකා දමන ලදී (CLEARED)", "info");
   await refreshPersonsAndTemplates();
 }
 
 function updateTemplateInfo(){
   const id = el("personId").value;
   if(!id){
-    el("templateInfo").textContent = "No person selected.";
+    el("templateInfo").textContent = "NO SELECTION";
     return;
   }
   const count = templates.filter(t=>t.person_id===id).length;
-  el("templateInfo").textContent = `Templates for selected person: ${count}`;
+  el("templateInfo").textContent = `Biometric Templates: ${count}`;
 }
 
 /* =========================
@@ -1273,7 +1423,7 @@ async function refreshLogs(){
   const body = el("logsBody");
   const rows = data || [];
   if(!rows.length){
-    body.innerHTML = `<tr><td colspan="9" class="small" style="padding:18px;color:var(--text-secondary);text-align:center;">No logs</td></tr>`;
+    body.innerHTML = `<tr><td colspan="9" class="small" style="padding:18px;color:var(--text-muted);text-align:center;">NO LOGS FOUND</td></tr>`;
     return;
   }
   body.innerHTML = rows.map((r,i)=>{
@@ -1308,12 +1458,12 @@ async function refreshAlerts(){
 
   const list = data || [];
   const div = el("alertsList");
-  if(!list.length){ div.textContent = "No alerts"; return; }
+  if(!list.length){ div.textContent = "NO ALERTS"; return; }
 
   div.innerHTML = list.map(a=>`
-    <div style="padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.04)">
-      <b>${a.alert_type.toUpperCase()}</b> ${a.resolved ? `<span class="badge ok">RESOLVED</span>` : `<span class="badge warn">OPEN</span>`}
-      <div class="small" style="margin-top:6px;color:var(--text-secondary)">${new Date(a.created_at).toLocaleString("si-LK")} • ${a.note||''}</div>
+    <div style="padding:12px;border:1px solid var(--border-color); border-left: 3px solid var(--accent-danger); border-radius:4px;margin-bottom:10px;background:rgba(0,0,0,0.5)">
+      <b style="color:var(--accent-danger)">${a.alert_type.toUpperCase()}</b> ${a.resolved ? `<span class="badge ok">RESOLVED</span>` : `<span class="badge warn">OPEN</span>`}
+      <div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString("si-LK")} • ${a.note||''}</div>
     </div>
   `).join("");
 }
@@ -1331,13 +1481,13 @@ async function refreshAudit(){
 
   const list = data || [];
   const div = el("auditList");
-  if(!list.length){ div.textContent="No audit logs"; return; }
+  if(!list.length){ div.textContent="NO AUDIT LOGS"; return; }
 
   div.innerHTML = list.map(a=>`
-    <div style="padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.04)">
-      <b>${a.action}</b>
-      <div class="small" style="margin-top:6px;color:var(--text-secondary)">${new Date(a.created_at).toLocaleString("si-LK")} • user: ${a.user_id||'-认为'}</div>
-      <div class="small" style="margin-top:6px;color:var(--text-secondary);white-space:pre-wrap;">${JSON.stringify(a.detail,null,2)}</div>
+    <div style="padding:12px;border:1px solid var(--border-color); margin-bottom:10px;background:rgba(255,255,255,0.05)">
+      <b style="color:var(--accent-main)">${a.action}</b>
+      <div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString("si-LK")} • USER ID: ${a.user_id||'SYSTEM'}</div>
+      <div class="small" style="margin-top:6px;color:var(--text-muted);white-space:pre-wrap; font-family:monospace">${JSON.stringify(a.detail,null,2)}</div>
     </div>
   `).join("");
 }
@@ -1352,17 +1502,17 @@ function exportLogsToCSV(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href=url;
-  a.download=`camp_access_events_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download=`mission_logs_${new Date().toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
-  showAlert("CSV exported", "success");
+  showAlert("FILE DOWNLOADED", "success");
 }
 
 /* =========================
    DEVICES (ADMIN)
 ========================= */
 async function addDevice(){
-  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED", "danger"); return; }
   const name = el("dName").value.trim();
   const gate = el("dGate").value.trim();
   const loc  = el("dLoc").value.trim();
@@ -1370,7 +1520,7 @@ async function addDevice(){
   const { error } = await sb.from("devices").insert({ name, gate_name: gate || null, location: loc || null });
   if(error){ showAlert(error.message, "danger"); return; }
   await sb.from("audit_logs").insert({ action:"device_insert", detail:{ name, gate, loc } });
-  showAlert("Device added", "success");
+  showAlert("DEVICE ADDED", "success");
   el("dName").value=""; el("dGate").value=""; el("dLoc").value="";
   await refreshDevices();
 }
@@ -1380,23 +1530,23 @@ async function addDevice(){
 ========================= */
 async function manualSearch(){
   const q = el("manualSearch").value.trim().toLowerCase();
-  if(!q){ showAlert("Type something to search", "warn"); return; }
+  if(!q){ showAlert("Enter Service No or Name", "warn"); return; }
   const hits = persons.filter(p =>
     (p.service_no||"").toLowerCase().includes(q) ||
     (p.name||"").toLowerCase().includes(q)
   ).slice(0,8);
 
   const div = el("manualResults");
-  if(!hits.length){ div.innerHTML="<div class='small' style='color:var(--text-secondary)'>No results</div>"; return; }
+  if(!hits.length){ div.innerHTML="<div class='small' style='color:var(--text-muted)'>NO MATCH FOUND</div>"; return; }
 
   div.innerHTML = hits.map(p=>`
-    <div style="padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;background:rgba(255,255,255,.04)">
-      <b>${p.name}</b> <span class="small">(${p.service_no||'-'})</span>
+    <div style="padding:10px;border:1px solid var(--border-color); border-left: 3px solid ${p.watchlist?'var(--accent-gold)':'var(--accent-main)'}; margin-bottom:8px;background:rgba(0,0,0,0.6)">
+      <b style="color:#fff">${p.name}</b> <span class="small" style="color:var(--accent-gold)">(${p.service_no||'-'})</span>
       ${p.watchlist ? `<span class="badge warn" style="margin-left:8px;">WATCHLIST</span>` : ``}
-      <div class="small" style="color:var(--text-secondary)">${p.rank||'-'} | ${p.unit||'-'} | ${p.person_type}</div>
+      <div class="small" style="color:var(--text-muted)">${p.rank||'-'} | ${p.unit||'-'} | ${p.person_type}</div>
       <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-primary" onclick="manualLog('${p.id}', 'approved')">✅ Approve Log</button>
-        <button class="btn-danger" onclick="manualLog('${p.id}', 'rejected')">⛔ Reject Log</button>
+        <button class="btn-primary" onclick="manualLog('${p.id}', 'approved')">✅ APPROVE</button>
+        <button class="btn-danger" onclick="manualLog('${p.id}', 'rejected')">⛔ DENY</button>
       </div>
     </div>
   `).join("");
@@ -1404,7 +1554,7 @@ async function manualSearch(){
 
 window.manualLog = async function(personId, status){
   const person = persons.find(p=>p.id===personId);
-  if(!person){ showAlert("Person not found", "danger"); return; }
+  if(!person){ showAlert("Person Error", "danger"); return; }
   const eventType = el("eventType").value;
   const payload = {
     person_id: person.id,
@@ -1417,7 +1567,7 @@ window.manualLog = async function(personId, status){
     extra: { manual: true }
   };
   const ok = await insertAccessEvent(payload, status==="rejected" ? "manual" : "normal");
-  if(ok) showAlert("Manual log saved", "success");
+  if(ok) showAlert("Manual Log Recorded", "success");
 };
 
 /* =========================
@@ -1452,7 +1602,7 @@ el("btnSaveSettings").addEventListener("click", async ()=>{
   saveSettingsLocal();
   await refreshDevices();
   buildMatcher();
-  showAlert("Settings saved", "success");
+  showAlert("CONFIGURATION SAVED", "success");
 });
 
 el("deviceSelect").addEventListener("change", ()=>{
@@ -1473,7 +1623,7 @@ el("btnManualPick").addEventListener("click", manualSearch);
 el("btnRefreshPersons").addEventListener("click", refreshPersonsAndTemplates);
 el("personSearch").addEventListener("input", renderPersonsList);
 el("btnAddPerson").addEventListener("click", ()=>{
-  if(profile?.role!=="admin"){ showAlert("Admin only", "danger"); return; }
+  if(profile?.role!=="admin"){ showAlert("ADMIN ACCESS REQUIRED", "danger"); return; }
   clearPersonForm();
   el("personForm").classList.remove("hidden");
 });
@@ -1505,5 +1655,3 @@ el("btnRefreshDevices").addEventListener("click", refreshDevices);
 
 </body>
 </html>
-
-
