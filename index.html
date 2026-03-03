@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>මුහුණු රැක - Camp Security System (Tactical Edition)</title>
+<title> AI Guardian - Camp Security System (Tactical Edition)</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
@@ -313,6 +313,9 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
       <button class="tab" data-tab="alerts">🚨 අනතුරු ඇඟවීම් (ALERTS)</button>
       <button class="tab" data-tab="settings">⚙️ පද්ධති සකසීම් (CONFIG)</button>
       <button class="tab" data-tab="audit" id="auditTabBtn">🧾 පරීක්ෂණ වාර්තා (AUDIT)</button>
+       <a href="https://wdjanuradha.github.io/Camp-Vehicle-Plate-Detector/" target="_blank" class="tab tab-link" title="Open Vehicle Plate Detector">
+        🚙 වාහන හඳුනාගැනීම (VEHICLE SCAN) ↗
+      </a>
     </div>
 
     <div id="tab-dashboard" class="tab-content">
@@ -324,7 +327,7 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
       </div>
 
       <div class="card" style="margin-top:20px;">
-        <h3>🧠 පද්ධති තත්ත්වය (SYSTEM STATUS)</h3>
+        <h3>🧠 පද්ධති තත්වය (SYSTEM STATUS)</h3>
         <div class="row">
           <div>
             <label>AI NEURAL NET</label>
@@ -445,17 +448,20 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
             <div class="row" style="margin-top:10px;">
               <div>
                 <label>වර්ගය (TYPE)</label>
-                <select id="pType">
+                <select id="pType">          
+                  <option value="soldier">නිලධාරී (OFFICER)</option>
                   <option value="soldier">සෙබළ (SOLDIER)</option>
+                  <option value="soldier">සිවිල් සේවක  (CIVIL SERVANT)</option>
                   <option value="visitor">අමුත්තා (VISITOR)</option>
                 </select>
               </div>
               <div>
                 <label>තත්ත්වය (STATUS)</label>
                 <select id="pStatus">
-                  <option value="active">සක්‍රීය (ACTIVE)</option>
+                  <option value="active">සක්‍රීය සේවයේ (ON SERVICE)</option>
+                   <option value="active">විශ්‍රාමික (PENSION)</option>
                   <option value="leave">නිවාඩු (ON LEAVE)</option>
-                  <option value="suspended">අත්හිටුවූ (SUSPENDED)</option>
+                  <option value="suspended">නිනොනො (ABSENT)</option>
                 </select>
               </div>
             </div>
@@ -1655,3 +1661,4 @@ el("btnRefreshDevices").addEventListener("click", refreshDevices);
 
 </body>
 </html>
+
