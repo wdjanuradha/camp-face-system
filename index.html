@@ -450,9 +450,12 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 /* =========================
-   CONFIG
+   CONFIG & SUPABASE
 ========================= */
 const SUPABASE_URL = "https://hhmchdaqlwghdgultkgf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_a7boZvmQp7JWOC8S6G_McA_yGW8zVpy";
@@ -463,24 +466,16 @@ const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models";
    STATE & SENSORS
 ========================= */
 let session = null; let profile = null; let persons = []; let templates = []; let matcher = null;
-
 let settings = { confidenceThreshold: 0.55, voiceAlerts: true, acousticDetection: true, autoLockTime: 15, deviceId: null };
 
-// --- FEATURE: ANTI-SPAM COOLDOWN MEMORY MAP ---
+// Anti-Spam Cooldown Memory
 const detectionCooldowns = new Map(); 
 
+// Tactical Sensors
 let currentGps = { lat: null, lng: null };
 let audioContext = null; let analyser = null; let microphone = null; let acousticLoop = null; let acousticCooldown = false;
 let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; let currentDevice = null;
-let nightVisionMode = false; let isLockdown = false;
-
-/* Offline queue */
-const QUEUE_KEY = "camp_offline_queue_v1";
-function queueGet(){ try{ return JSON.parse(localStorage.getItem(QUEUE_KEY)||"[]"); }catch{ return []; } }
-function queueSet(q){ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateQueueBadge(); }
-function queuePush(item){ const q=queueGet(); q.push(item); queueSet(q); }
-function queueShift(){ const q=queueGet(); const item=q.shift(); queueSet(q); return item; }
-function queueLen(){ return queueGet().length; }
+let nightVisionMode = false; let isLockdown = false; let lastLogKey = "";
 
 /* =========================
    DOM ELEMENTS
@@ -496,12 +491,10 @@ const overlay = el("overlay"); const detectedBox = el("detectedBox"); const audi
 ========================= */
 function initGPS() {
   if (navigator.geolocation) {
-    navigator.geolocation.watchPosition((position) => {
-      currentGps.lat = position.coords.latitude.toFixed(6); currentGps.lng = position.coords.longitude.toFixed(6);
+    navigator.geolocation.watchPosition((pos) => {
+      currentGps.lat = pos.coords.latitude.toFixed(6); currentGps.lng = pos.coords.longitude.toFixed(6);
       pillGps.textContent = `📍 GPS: ${currentGps.lat}, ${currentGps.lng}`; pillGps.style.color = "var(--accent-main)";
-    }, () => {
-      pillGps.textContent = "📍 GPS: SIGNAL LOST"; pillGps.style.color = "var(--accent-danger)";
-    });
+    }, () => { pillGps.textContent = "📍 GPS: SIGNAL LOST"; pillGps.style.color = "var(--accent-danger)"; });
   }
 }
 
@@ -530,16 +523,16 @@ async function triggerAcousticAlert() {
 }
 
 function playAlarmSound() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = ctx.createOscillator(); const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.5);
-  gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
-  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 1);
+  const ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx2.createOscillator(); const gain = ctx2.createGain();
+  osc.connect(gain); gain.connect(ctx2.destination); osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(400, ctx2.currentTime); osc.frequency.linearRampToValueAtTime(800, ctx2.currentTime + 0.5);
+  gain.gain.setValueAtTime(0.5, ctx2.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx2.currentTime + 1);
+  osc.start(ctx2.currentTime); osc.stop(ctx2.currentTime + 1);
 }
 
 /* =========================
-   UI HELPERS & AUTH
+   UI HELPERS & ALERTS
 ========================= */
 function showAlert(msg, type="info"){
   const div=document.createElement("div"); div.className="alert "+(type==="success"?"success":type==="danger"?"danger":type==="warn"?"warn":"");
@@ -558,6 +551,9 @@ function setOnlinePill(){
   pillOnline.style.opacity = on ? "1" : ".5"; pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
 }
 
+/* =========================
+   AUTH & BOOT
+========================= */
 async function login(){
   const email = el("email").value.trim(); const password = el("password").value;
   if(!email || !password){ showAlert("ඊමේල් සහ මුරපදය ඇතුලත් කරන්න", "danger"); return; }
@@ -575,11 +571,10 @@ function loadSettings(){
   const s = localStorage.getItem("camp_settings_v1");
   if(s){ try{ settings = { ...settings, ...JSON.parse(s) }; }catch{} }
   el("confThr").value = settings.confidenceThreshold; el("voice").value = settings.voiceAlerts ? "on" : "off";
-  el("acousticSetting").value = settings.acousticDetection ? "on" : "off"; el("autolock").value = settings.autoLockTime; updateQueueBadge();
+  el("acousticSetting").value = settings.acousticDetection ? "on" : "off"; el("autolock").value = settings.autoLockTime; 
 }
 
 function saveSettingsLocal(){ localStorage.setItem("camp_settings_v1", JSON.stringify(settings)); }
-function updateQueueBadge(){ el("queueStatus").textContent = `${queueLen()} PENDING`; el("queueStatus").className = queueLen()>0 ? "badge warn" : "badge ok"; }
 
 async function loadProfile(){
   if(!session?.user) return null;
@@ -598,12 +593,94 @@ function applyRoleGuards(){
 async function afterLogin(){
   loginCard.classList.add("hidden"); app.classList.remove("hidden"); el("btnLogout").disabled = false;
   setOnlinePill(); loadSettings(); initGPS(); await loadProfile(); applyRoleGuards();
-  await loadModels(); await refreshDevices(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs(); await refreshAlerts(); await refreshAudit();
-  window.addEventListener("online", async ()=>{ setOnlinePill(); await syncQueue(); }); window.addEventListener("offline", ()=>{ setOnlinePill(); });
+  
+  // Reload all dashboard data correctly
+  await loadModels(); 
+  await refreshDevices(); 
+  await refreshPersonsAndTemplates(); 
+  await refreshStats(); 
+  await refreshLogs(); 
+  await refreshAlerts(); 
+  await refreshAudit();
+  
+  window.addEventListener("online", async ()=>{ setOnlinePill(); }); 
+  window.addEventListener("offline", ()=>{ setOnlinePill(); });
 }
 
 /* =========================
-   MODELS & DATA
+   DATABASE FETCHING (RESTORED)
+========================= */
+async function refreshStats(){
+  el("statPersons").textContent = persons.length;
+  const start = new Date(); start.setHours(0,0,0,0);
+  const { data } = await sb.from("access_events").select("status, created_at").gte("created_at", start.toISOString());
+  const today = data || [];
+  el("statApproved").textContent = today.filter(x=>x.status==="approved").length;
+  el("statRejected").textContent = today.filter(x=>x.status==="rejected").length;
+  const { count } = await sb.from("access_events").select("*", { count:"exact", head:true });
+  el("statTotal").textContent = count || 0;
+}
+
+async function refreshAlerts(){
+  const { data } = await sb.from("alerts").select("*").order("created_at",{ascending:false}).limit(100);
+  const div = el("alertsList");
+  if(!data || !data.length){ div.textContent = "NO ALERTS"; return; }
+  div.innerHTML = data.map(a=>`<div style="padding:12px;border:1px solid var(--border-color); border-left: 3px solid var(--accent-danger); border-radius:4px;margin-bottom:10px;background:rgba(0,0,0,0.5)"><b style="color:var(--accent-danger)">${a.alert_type.toUpperCase()}</b> ${a.resolved ? `<span class="badge ok">RESOLVED</span>` : `<span class="badge warn">OPEN</span>`}<div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString()} • ${a.note||''}</div></div>`).join("");
+}
+
+async function refreshAudit(){
+  const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
+  if(!canAudit) return;
+  const { data } = await sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(100);
+  const div = el("auditList");
+  if(!data || !data.length){ div.textContent="NO AUDIT LOGS"; return; }
+  div.innerHTML = data.map(a=>`<div style="padding:12px;border:1px solid var(--border-color); margin-bottom:10px;background:rgba(255,255,255,0.05)"><b style="color:var(--accent-main)">${a.action}</b><div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString()} • USER ID: ${a.user_id||'SYSTEM'}</div><div class="small" style="margin-top:6px;color:var(--text-muted);white-space:pre-wrap; font-family:monospace">${JSON.stringify(a.detail,null,2)}</div></div>`).join("");
+}
+
+async function refreshLogs(){
+  const f = el("logFilter") ? el("logFilter").value : "all";
+  let q = sb.from("access_events").select("*, persons(name,service_no), devices(gate_name)").order("created_at",{ascending:false}).limit(200);
+  if(f==="today"){ const start = new Date(); start.setHours(0,0,0,0); q = q.gte("created_at", start.toISOString()); }
+  const { data } = await q;
+  const body = el("logsBody");
+  if(!data||!data.length){ body.innerHTML=`<tr><td colspan="8">NO DATA</td></tr>`; return; }
+  body.innerHTML = data.map((r,i)=>{
+    const p = r.persons; let gpsLink = "-";
+    if(r.extra && r.extra.gps && r.extra.gps.lat) { gpsLink = `<a href="https://www.google.com/maps?q=${r.extra.gps.lat},${r.extra.gps.lng}" target="_blank" style="color:#00e5ff;">MAP</a>`; }
+    return `<tr><td>${i+1}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${p?.service_no||"-"}</td><td>${p?.name||"-"}</td><td>${r.devices?.gate_name||"-"}</td><td>${gpsLink}</td><td>${r.event_type}</td><td><span class="badge ${r.status==='approved'?'ok':'no'}">${r.status}</span></td></tr>`;
+  }).join("");
+}
+
+async function refreshPersonsAndTemplates(){
+  const { data: p } = await sb.from("persons").select("*").order("created_at",{ascending:false}); persons = p || [];
+  const { data: t } = await sb.from("face_templates").select("id, person_id, descriptor"); templates = t || [];
+  buildMatcher(); renderPersonsList(); updateTemplateInfo();
+}
+
+function renderPersonsList(){
+  const q = (el("personSearch").value||"").toLowerCase().trim();
+  const list = persons.filter(p=>{ if(!q) return true; return (p.service_no||"").toLowerCase().includes(q) || (p.name||"").toLowerCase().includes(q); }).slice(0,200);
+  const div = el("personsList");
+  if(!list.length){ div.innerHTML = "NO RECORDS FOUND"; return; }
+  div.innerHTML = list.map(p=>`<div style="padding:12px;border:1px solid var(--border-color);border-left: 3px solid ${p.watchlist?'var(--accent-gold)':'var(--accent-main)'}; margin-bottom:10px;background:rgba(0,0,0,0.4)"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><div><b style="color:var(--text-primary); font-size:1.1em">${p.name}</b> <span class="small" style="color:var(--accent-gold)">(${p.rank||'-'})</span><br/><span class="small">Svc: ${p.service_no||'-'} | Unit: ${p.unit||'-'} | Type: ${p.person_type} | Status: ${p.status}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">${p.watchlist ? `<span class="badge warn">WATCHLIST</span>` : `<span class="badge ok">CLEARED</span>`}<button class="btn-secondary" onclick="openPersonForm('${p.id}')">EDIT</button></div></div></div>`).join("");
+}
+
+function updateTemplateInfo(){
+  const id = el("personId").value;
+  if(!id){ el("templateInfo").textContent = "NO SELECTION"; return; }
+  const count = templates.filter(t=>t.person_id===id).length;
+  el("templateInfo").textContent = `Biometric Templates: ${count}`;
+}
+
+async function refreshDevices(){
+  const { data } = await sb.from("devices").select("*").eq("is_active", true);
+  const select = el("deviceSelect"); select.innerHTML = "";
+  (data||[]).forEach(d=>{ select.appendChild(new Option(`${d.name} (${d.gate_name || "-"})`, d.id)); });
+  if(settings.deviceId) select.value = settings.deviceId;
+}
+
+/* =========================
+   MODELS
 ========================= */
 async function loadModels(){
   try{
@@ -611,12 +688,6 @@ async function loadModels(){
     await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL); await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL); await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
     el("modelStatus").textContent = "OPERATIONAL"; el("modelStatus").className = "badge ok";
   }catch(e){ el("modelStatus").textContent = "FAILURE"; el("modelStatus").className = "badge no"; }
-}
-
-async function refreshPersonsAndTemplates(){
-  const { data: p } = await sb.from("persons").select("*").order("created_at",{ascending:false}); persons = p || [];
-  const { data: t } = await sb.from("face_templates").select("id, person_id, descriptor"); templates = t || [];
-  buildMatcher(); renderPersonsList();
 }
 
 function buildMatcher(){
@@ -634,15 +705,6 @@ function buildMatcher(){
   matcher = labeled.length ? new faceapi.FaceMatcher(labeled, maxDistance) : null;
   el("recStatus").textContent = matcher ? "ACTIVE" : "NO DATA"; el("recStatus").className = matcher ? "badge ok" : "badge warn";
 }
-
-async function refreshDevices(){
-  const { data } = await sb.from("devices").select("*").eq("is_active", true);
-  const select = el("deviceSelect"); select.innerHTML = "";
-  (data||[]).forEach(d=>{ select.appendChild(new Option(`${d.name} (${d.gate_name || "-"})`, d.id)); });
-  if(settings.deviceId) select.value = settings.deviceId;
-}
-
-async function refreshStats(){ el("statPersons").textContent = persons.length; updateQueueBadge(); }
 
 /* =========================
    CAMERA & DETECTIONS
@@ -668,7 +730,6 @@ async function stopCamera(){
   el("btnStartCam").disabled = false; el("btnStopCam").disabled = true;
 }
 
-// Draw Target Boxes on Canvas
 function drawBox(box, color, text){
   ctx.strokeStyle=color; ctx.lineWidth=3; ctx.strokeRect(box.x, box.y, box.width, box.height);
   ctx.fillStyle=color; ctx.fillRect(box.x-2, box.y-2, 10, 4); ctx.fillRect(box.x-2, box.y-2, 4, 10);
@@ -679,7 +740,6 @@ function drawBox(box, color, text){
 
 function bestMatchToConfidence(distance){ return Math.max(0, Math.min(1, 1 - distance)); }
 
-// THE CORE DETECTION LOOP (With Anti-Spam Memory Map)
 function startDetectionLoop(){
   if(detectTimer) clearInterval(detectTimer);
   
@@ -702,8 +762,7 @@ function startDetectionLoop(){
         const best = matcher.findBestMatch(d.descriptor);
         label = best.label; distance = best.distance;
         if(label !== "unknown"){
-          const svc = label.split("|")[0].trim();
-          person = persons.find(p=>p.service_no===svc);
+          const svc = label.split("|")[0].trim(); person = persons.find(p=>p.service_no===svc);
         }
       }
       
@@ -711,57 +770,29 @@ function startDetectionLoop(){
       const isUnknown = !person;
       const targetId = isUnknown ? "UNKNOWN_TARGET" : person.id;
 
-      // Check Anti-Spam Cooldown Memory
       const lastSeen = detectionCooldowns.get(targetId) || 0;
       const timeSinceSeen = now - lastSeen;
       const inCooldown = timeSinceSeen < cooldownMs;
       const timeLeft = Math.ceil((cooldownMs - timeSinceSeen) / 1000);
 
-      // Determine colors based on status and cooldown
       let boxColor = isUnknown ? "#ff3333" : (person.watchlist ? "#ffb300" : "#4caf50");
       let boxText = isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "IDENTIFIED");
       
-      if(inCooldown) {
-        boxColor = "#00e5ff"; // Cyan for Cooldown Mode
-        boxText += ` (WAIT ${timeLeft}s)`;
-      }
-
+      if(inCooldown) { boxColor = "#00e5ff"; boxText += ` (WAIT ${timeLeft}s)`; }
       drawBox(box, boxColor, boxText);
 
-      // Display UI Output
       if(isUnknown){
-        detectedBox.innerHTML = `
-          <div style="text-align:center;padding:8px;">
-            <div class="badge ${inCooldown ? 'cool' : 'no'}">${inCooldown ? 'COOLDOWN' : 'UNKNOWN'}</div>
-            <p class="small" style="margin-top:8px;color:var(--text-muted)">හැඳුනුම්පත පරීක්ෂා කරන්න (VERIFY ID)</p>
-          </div>`;
-          
-        if(el("mode").value==="auto" && !inCooldown) {
-           detectionCooldowns.set("UNKNOWN_TARGET", now); // Lock Memory
-           autoLogUnknown(conf);
-        }
+        detectedBox.innerHTML = `<div style="text-align:center;padding:8px;"><div class="badge ${inCooldown ? 'cool' : 'no'}">${inCooldown ? 'COOLDOWN' : 'UNKNOWN'}</div><p class="small" style="margin-top:8px;color:var(--text-muted)">VERIFY ID</p></div>`;
+        if(el("mode").value==="auto" && !inCooldown) { detectionCooldowns.set("UNKNOWN_TARGET", now); autoLogUnknown(conf); }
       }else{
-        detectedBox.innerHTML = `
-          <div style="text-align:center;padding:8px;">
-            <div class="badge ${inCooldown ? 'cool' : (person.watchlist?'warn':'ok')}">
-              ${inCooldown ? `⏳ WAIT ${timeLeft}s` : (person.watchlist?'⚠️ WATCHLIST':'✅ CLEARED')}
-            </div>
-            <h3 style="margin-top:8px;color:var(--text-primary)">${person.name}</h3>
-            <p class="small" style="color:var(--accent-gold)">${person.rank||''} | ${person.service_no||''}</p>
-            <p class="small">Unit: ${person.unit||'-'}</p>
-          </div>
-        `;
-
-        if(el("mode").value==="auto" && !inCooldown){
-           detectionCooldowns.set(person.id, now); // Lock Memory
-           autoLogKnown(person, conf);
-        }
+        detectedBox.innerHTML = `<div style="text-align:center;padding:8px;"><div class="badge ${inCooldown ? 'cool' : (person.watchlist?'warn':'ok')}">${inCooldown ? `⏳ WAIT ${timeLeft}s` : (person.watchlist?'⚠️ WATCHLIST':'✅ CLEARED')}</div><h3 style="margin-top:8px;color:var(--text-primary)">${person.name}</h3><p class="small" style="color:var(--accent-gold)">${person.rank||''} | ${person.service_no||''}</p></div>`;
+        if(el("mode").value==="auto" && !inCooldown){ detectionCooldowns.set(person.id, now); autoLogKnown(person, conf); }
       }
     }
   }, 900);
 }
 
-// LOGGING FUNCTIONS
+// LOGGING
 async function autoLogUnknown(conf){
   await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected", confidence: conf, extra: { gps: currentGps } }, "unknown");
   speak("Unauthorized person detected");
@@ -776,11 +807,9 @@ async function insertAccessEvent(payload, kind){
   try{
     const { data } = await sb.from("access_events").insert(payload).select("id").single();
     if(kind==="watchlist"||kind==="unknown") await sb.from("alerts").insert({ access_event_id: data.id, alert_type:kind });
-    refreshLogs(); return true;
-  }catch(e){ queuePush({ payload, kind, ts: Date.now() }); return false; }
+    refreshStats(); refreshLogs(); refreshAlerts(); return true;
+  }catch(e){ return false; }
 }
-
-async function syncQueue(){ /* sync logic */ }
 
 /* =========================
    UI BUTTONS & EXPORT
@@ -798,22 +827,9 @@ el("btnPanic").addEventListener("click", async () => {
     speak("Base Lockdown Initiated. Security breach protocol activated."); playAlarmSound();
     await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected", device_id: settings.deviceId || null, extra: { gps: currentGps, lockdown: true } }, "watchlist");
   } else {
-    document.body.classList.remove("lockdown-mode"); el("btnPanic").innerHTML = "🚨 හදිසි අවස්ථා අගුලු දැමීම (INITIATE BASE LOCKDOWN) 🚨";
-    speak("Lockdown cancelled. Resume normal operations.");
+    document.body.classList.remove("lockdown-mode"); el("btnPanic").innerHTML = "🚨 හදිසි අවස්ථා අගුලු දැමීම (INITIATE BASE LOCKDOWN) 🚨"; speak("Lockdown cancelled.");
   }
 });
-
-async function refreshLogs(){
-  const { data } = await sb.from("access_events").select("*, persons(name,service_no), devices(gate_name)").order("created_at",{ascending:false}).limit(100);
-  const body = el("logsBody");
-  if(!data||!data.length){ body.innerHTML=`<tr><td colspan="8">NO DATA</td></tr>`; return; }
-  
-  body.innerHTML = data.map((r,i)=>{
-    const p = r.persons; let gpsLink = "-";
-    if(r.extra && r.extra.gps && r.extra.gps.lat) { gpsLink = `<a href="https://www.google.com/maps?q=${r.extra.gps.lat},${r.extra.gps.lng}" target="_blank" style="color:#00e5ff;">MAP</a>`; }
-    return `<tr><td>${i+1}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${p?.service_no||"-"}</td><td>${p?.name||"-"}</td><td>${r.devices?.gate_name||"-"}</td><td>${gpsLink}</td><td>${r.event_type}</td><td><span class="badge ${r.status==='approved'?'ok':'no'}">${r.status}</span></td></tr>`;
-  }).join("");
-}
 
 el("btnSaveSettings").addEventListener("click", async ()=>{
   settings.confidenceThreshold = Number(el("confThr").value); settings.voiceAlerts = el("voice").value==="on";
@@ -831,11 +847,50 @@ el("btnExportCSV").addEventListener("click", ()=>{
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 
+// Admin Control Panel Forms
+window.openPersonForm = function(id){
+  const p = persons.find(x=>x.id===id); if(!p) return;
+  el("personForm").classList.remove("hidden"); el("personId").value = p.id; el("pService").value = p.service_no || ""; el("pName").value = p.name || "";
+  el("pRank").value = p.rank || ""; el("pUnit").value = p.unit || ""; el("pType").value = p.person_type || "soldier"; el("pStatus").value = p.status || "active";
+  el("pWatch").value = String(!!p.watchlist); selectedPersonId = p.id; updateTemplateInfo();
+};
+el("btnCancelPerson").addEventListener("click", ()=>{ el("personForm").classList.add("hidden"); });
+
+el("btnSavePerson").addEventListener("click", async ()=>{
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
+  const id = el("personId").value || null;
+  const payload = { service_no: el("pService").value.trim() || null, name: el("pName").value.trim(), rank: el("pRank").value.trim() || null, unit: el("pUnit").value.trim() || null, person_type: el("pType").value, status: el("pStatus").value, watchlist: el("pWatch").value==="true" };
+  if(!payload.name){ showAlert("නම අත්‍යවශ්‍යයි (NAME REQUIRED)", "danger"); return; }
+  try{
+    if(id){ await sb.from("persons").update(payload).eq("id", id); } else { await sb.from("persons").insert(payload); }
+    await refreshPersonsAndTemplates(); await refreshStats(); el("personForm").classList.add("hidden"); showAlert("දත්ත යාවත්කාලීන කරන ලදී (UPDATED)", "success");
+  }catch(e){ showAlert(e.message, "danger"); }
+});
+
+el("btnEnroll1").addEventListener("click", async ()=>{
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
+  const id = el("personId").value; if(!id) return; if(!cameraStream){ showAlert("කැමරාව අරඹන්න (START CAMERA)", "warn"); return; }
+  const captures = [];
+  for(let i=0;i<3;i++){
+    overlay.textContent = `SCANNING ${i+1}/3...`;
+    const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 })).withFaceLandmarks().withFaceDescriptor();
+    if(!det){ showAlert("මුහුණක් අනාවරණය නොවිණි.", "danger"); overlay.textContent = "STANDBY"; return; }
+    captures.push(Array.from(det.descriptor).map(n=>Number(n))); await new Promise(r=>setTimeout(r, 600));
+  }
+  overlay.textContent = "SAVING...";
+  const rows = captures.map(desc=>({ person_id: id, descriptor: desc, model_version: "faceapi-0.22.2" }));
+  await sb.from("face_templates").insert(rows);
+  showAlert("ජෛව දත්ත සුරකින ලදී (BIOMETRICS SAVED)", "success"); overlay.textContent = "SYSTEM READY"; await refreshPersonsAndTemplates();
+});
+
 /* BOOT */
-el("btnLogin").addEventListener("click", login);
-el("btnLogout").addEventListener("click", logout);
+el("btnLogin").addEventListener("click", login); el("btnLogout").addEventListener("click", logout);
 document.querySelectorAll(".tab").forEach(btn=>{ btn.addEventListener("click", ()=>{ document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden")); el("tab-"+btn.dataset.tab).classList.remove("hidden"); document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); }); });
-el("btnStartCam").addEventListener("click", startCamera); el("btnStopCam").addEventListener("click", stopCamera); el("btnRefreshLogs").addEventListener("click", refreshLogs);
+el("btnStartCam").addEventListener("click", startCamera); el("btnStopCam").addEventListener("click", stopCamera); 
+el("btnRefreshLogs").addEventListener("click", refreshLogs); el("logFilter").addEventListener("change", refreshLogs);
+el("btnRefreshPersons").addEventListener("click", refreshPersonsAndTemplates); el("personSearch").addEventListener("input", renderPersonsList);
+el("btnRefreshAlerts").addEventListener("click", refreshAlerts); el("btnRefreshAudit").addEventListener("click", refreshAudit);
+el("btnAddPerson").addEventListener("click", ()=>{ if(profile?.role!=="admin"){ showAlert("ADMIN ACCESS REQUIRED", "danger"); return; } el("personForm").classList.remove("hidden"); el("personId").value=""; });
 
 (async function boot(){
   setOnlinePill(); loadSettings(); initGPS();
@@ -844,3 +899,4 @@ el("btnStartCam").addEventListener("click", startCamera); el("btnStopCam").addEv
 </script>
 </body>
 </html>
+
