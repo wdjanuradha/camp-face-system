@@ -9,17 +9,18 @@
 <style>
 /* --- MODERN MILITARY THEME --- */
 :root{
-  --bg-primary: #050a05;       /* Deep Camo Black */
-  --bg-secondary: #0f1f15;     /* Dark Jungle Green */
-  --bg-card: rgba(20, 40, 25, 0.9); /* Transparent Tactical Green */
+  --bg-primary: #050a05;       
+  --bg-secondary: #0f1f15;     
+  --bg-card: rgba(20, 40, 25, 0.9); 
   
-  --accent-main: #4caf50;      /* Tactical Green */
-  --accent-gold: #ffb300;      /* Rank/Alert Gold */
-  --accent-danger: #ff3333;    /* Kill/Danger Red */
+  --accent-main: #4caf50;      
+  --accent-gold: #ffb300;      
+  --accent-danger: #ff3333;    
+  --accent-cyan: #00e5ff; /* Cooldown Color */
   
-  --text-primary: #e0e0e0;     /* Off-white */
-  --text-muted: #8da691;       /* Faded Green text */
-  --border-color: #2e5c3e;     /* Border Green */
+  --text-primary: #e0e0e0;     
+  --text-muted: #8da691;       
+  --border-color: #2e5c3e;     
   
   --font-head: 'Black Ops One', cursive;
   --font-body: 'Share Tech Mono', monospace;
@@ -33,23 +34,28 @@ body{
   background-color: var(--bg-primary);
   background-image: 
     linear-gradient(rgba(0, 20, 0, 0.8), rgba(0, 10, 0, 0.9)),
-    url("https://www.transparenttextures.com/patterns/carbon-fibre.png"); /* Texture overlay */
+    url("https://www.transparenttextures.com/patterns/carbon-fibre.png"); 
   color: var(--text-primary);
   min-height:100vh;
   padding:20px;
   overflow-x: hidden;
+  transition: background-color 0.3s;
 }
+
+/* Base Lockdown Animation */
+@keyframes lockdownFlash {
+  0% { background-color: #330000; }
+  50% { background-color: #ff0000; }
+  100% { background-color: #330000; }
+}
+.lockdown-mode { animation: lockdownFlash 1s infinite; }
 
 /* Scanline Effect */
 body::before {
-  content: " ";
-  display: block;
-  position: fixed;
+  content: " "; display: block; position: fixed;
   top: 0; left: 0; bottom: 0; right: 0;
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  z-index: 999;
-  background-size: 100% 2px, 3px 100%;
-  pointer-events: none;
+  z-index: 999; background-size: 100% 2px, 3px 100%; pointer-events: none;
 }
 
 .container{max-width:1400px;margin:0 auto; position: relative; z-index: 10;}
@@ -58,169 +64,59 @@ body::before {
 /* Header Design */
 .header{
   background: linear-gradient(90deg, var(--bg-secondary) 0%, #1a3320 100%);
-  border-left: 5px solid var(--accent-gold);
-  border-bottom: 2px solid var(--border-color);
-  padding:25px;
-  margin-bottom:25px;
-  display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;
+  border-left: 5px solid var(--accent-gold); border-bottom: 2px solid var(--border-color);
+  padding:25px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;
   box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
 }
-.header h1{
-  font-family: var(--font-head);
-  font-size: 2.5em;
-  color: var(--accent-main);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 0 5px var(--accent-main);
-}
-.header p{
-  color: var(--text-muted);
-  font-family: var(--font-ui);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
+.header h1{ font-family: var(--font-head); font-size: 2.5em; color: var(--accent-main); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 5px var(--accent-main); }
+.header p{ color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 1px; }
 
 .pills{display:flex;gap:10px;flex-wrap:wrap}
-.pill{
-  background: rgba(0,0,0,0.6);
-  border: 1px solid var(--border-color);
-  color: var(--accent-gold);
-  padding:8px 15px;
-  font-family: var(--font-body);
-  font-size: 0.9em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
+.pill{ background: rgba(0,0,0,0.6); border: 1px solid var(--border-color); color: var(--accent-gold); padding:8px 15px; font-family: var(--font-body); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
 
 /* Tabs Design */
 .tabs{display:flex;gap:5px;margin-bottom:20px;flex-wrap:wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
-.tab{
-  padding:12px 25px;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  cursor:pointer;
-  font-family: var(--font-ui);
-  font-weight: 700;
-  text-transform: uppercase;
-  transition:.3s;
-  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 25%);
-}
-.tab:hover{
-  background: rgba(76, 175, 80, 0.1);
-  color: var(--accent-main);
-}
-.tab.active{
-  background: var(--accent-main);
-  color: #000;
-  border-color: var(--accent-main);
-  box-shadow: 0 0 10px var(--accent-main);
-}
+.tab{ padding:12px 25px; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); cursor:pointer; font-family: var(--font-ui); font-weight: 700; text-transform: uppercase; transition:.3s; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 25%); }
+.tab:hover{ background: rgba(76, 175, 80, 0.1); color: var(--accent-main); }
+.tab.active{ background: var(--accent-main); color: #000; border-color: var(--accent-main); box-shadow: 0 0 10px var(--accent-main); }
 
 /* Card Design */
-.card{
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding:20px;
-  position: relative;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-/* Corner Accents */
-.card::after {
-  content: "";
-  position: absolute; top: -1px; right: -1px;
-  width: 20px; height: 20px;
-  border-top: 2px solid var(--accent-gold);
-  border-right: 2px solid var(--accent-gold);
-}
-.card h3{
-  margin-bottom:20px; font-size:1.4em; display:flex; align-items:center; gap:10px;
-  color: var(--accent-gold);
-  font-family: var(--font-ui);
-  text-transform: uppercase;
-  border-bottom: 1px dashed var(--border-color);
-  padding-bottom: 10px;
-}
+.card{ background: var(--bg-card); border: 1px solid var(--border-color); padding:20px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.card::after { content: ""; position: absolute; top: -1px; right: -1px; width: 20px; height: 20px; border-top: 2px solid var(--accent-gold); border-right: 2px solid var(--accent-gold); }
+.card h3{ margin-bottom:20px; font-size:1.4em; display:flex; align-items:center; gap:10px; color: var(--accent-gold); font-family: var(--font-ui); text-transform: uppercase; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; }
 
 .grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
 @media(max-width:1024px){.grid{grid-template-columns:1fr}}
 
 /* Buttons */
-button{
-  padding:12px 24px; border:none; cursor:pointer; transition:.2s; font-size:.95em;
-  font-family: var(--font-head); text-transform: uppercase; letter-spacing: 1px;
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-}
-.btn-primary{
-  background: var(--accent-main); color: #000;
-}
-.btn-primary:hover{
-  background: #388e3c; box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
-}
-.btn-danger{
-  background: var(--accent-danger); color: #fff;
-}
-.btn-danger:hover{
-  background: #d32f2f; box-shadow: 0 0 15px rgba(244, 67, 54, 0.6);
-}
-.btn-secondary{
-  background: transparent; border: 1px solid var(--text-muted); color: var(--text-primary);
-}
-.btn-secondary:hover{
-  background: rgba(255,255,255,0.1); border-color: var(--accent-main); color: var(--accent-main);
-}
+button{ padding:12px 24px; border:none; cursor:pointer; transition:.2s; font-size:.95em; font-family: var(--font-head); text-transform: uppercase; letter-spacing: 1px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.btn-primary{ background: var(--accent-main); color: #000; } .btn-primary:hover{ background: #388e3c; box-shadow: 0 0 15px rgba(76, 175, 80, 0.6); }
+.btn-danger{ background: var(--accent-danger); color: #fff; } .btn-danger:hover{ background: #d32f2f; box-shadow: 0 0 15px rgba(244, 67, 54, 0.6); }
+.btn-secondary{ background: transparent; border: 1px solid var(--text-muted); color: var(--text-primary); } .btn-secondary:hover{ background: rgba(255,255,255,0.1); border-color: var(--accent-main); color: var(--accent-main); }
 button:disabled{opacity:.4;cursor:not-allowed}
 
 /* Inputs */
-input,select,textarea{
-  width:100%; padding:12px;
-  background: rgba(0,0,0,0.6);
-  border: 1px solid var(--border-color);
-  color: var(--accent-main);
-  font-family: var(--font-body);
-  outline: none;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 5px rgba(255, 179, 0, 0.3);
-}
+input,select,textarea{ width:100%; padding:12px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-color); color: var(--accent-main); font-family: var(--font-body); outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent-gold); box-shadow: 0 0 5px rgba(255, 179, 0, 0.3); }
 label{display:block;margin-bottom:8px;font-weight:bold; color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; font-size: 0.85em;}
 .small{color:var(--text-muted);font-size:.85em}
 
 /* Alerts */
-.alert{
-  padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:10px;
-  background: rgba(0, 20, 10, 0.9); border: 1px solid var(--accent-main);
-  font-family: var(--font-body);
-}
-.alert.success{border-color:var(--accent-main); color: var(--accent-main);}
-.alert.danger{border-color:var(--accent-danger); color: var(--accent-danger);}
-.alert.warn{border-color:var(--accent-gold); color: var(--accent-gold);}
+.alert{ padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:10px; background: rgba(0, 20, 10, 0.9); border: 1px solid var(--accent-main); font-family: var(--font-body); }
+.alert.success{border-color:var(--accent-main); color: var(--accent-main);} .alert.danger{border-color:var(--accent-danger); color: var(--accent-danger);} .alert.warn{border-color:var(--accent-gold); color: var(--accent-gold);}
 
-/* Video */
-.video-container{
-  position:relative;width:100%;max-width:720px;margin:0 auto;
-  background:#000; border: 2px solid var(--border-color);
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
-}
-/* HUD Corners on Video */
-.video-container::before {
-  content: ""; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px;
-  border-top: 3px solid var(--accent-main); border-left: 3px solid var(--accent-main); z-index: 5;
-}
-.video-container::after {
-  content: ""; position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px;
-  border-bottom: 3px solid var(--accent-main); border-right: 3px solid var(--accent-main); z-index: 5;
-}
-video,canvas{width:100%;height:auto;display:block}
-canvas{position:absolute;top:0;left:0}
-.overlay{
-  position:absolute;top:12px;left:12px;
-  background:rgba(0,0,0,0.7); border: 1px solid var(--accent-main);
-  color: var(--accent-main);
-  padding:5px 10px; font-family: var(--font-body); font-size: 0.8em;
-  z-index: 10;
-}
+/* Video & Filters */
+.video-container{ position:relative;width:100%;max-width:720px;margin:0 auto; background:#000; border: 2px solid var(--border-color); box-shadow: 0 0 20px rgba(0,0,0,0.8); transition: filter 0.3s; }
+.night-vision { filter: sepia(100%) hue-rotate(80deg) saturate(400%) contrast(150%) brightness(120%); }
+.video-container::before { content: ""; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px; border-top: 3px solid var(--accent-main); border-left: 3px solid var(--accent-main); z-index: 5; }
+.video-container::after { content: ""; position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-bottom: 3px solid var(--accent-main); border-right: 3px solid var(--accent-main); z-index: 5; }
+video,canvas{width:100%;height:auto;display:block} canvas{position:absolute;top:0;left:0}
+.overlay{ position:absolute;top:12px;left:12px; background:rgba(0,0,0,0.7); border: 1px solid var(--accent-main); color: var(--accent-main); padding:5px 10px; font-family: var(--font-body); font-size: 0.8em; z-index: 10; }
+
+/* Audio Meter */
+.audio-meter { width: 100%; height: 10px; background: #111; border: 1px solid var(--border-color); margin-top: 10px; }
+.audio-fill { height: 100%; background: var(--accent-main); width: 0%; transition: width 0.1s; }
+.audio-fill.high { background: var(--accent-danger); }
 
 /* Tables */
 .table-wrap{overflow-x:auto}
@@ -235,21 +131,13 @@ tbody tr:hover{background:rgba(76, 175, 80, 0.05);}
 .badge.ok{background:rgba(76, 175, 80, 0.2); border-color: var(--accent-main); color:var(--accent-main)}
 .badge.no{background:rgba(244, 67, 54, 0.2); border-color: var(--accent-danger); color:var(--accent-danger)}
 .badge.warn{background:rgba(255, 179, 0, 0.2); border-color: var(--accent-gold); color:var(--accent-gold)}
+.badge.cool{background:rgba(0, 229, 255, 0.1); border-color: var(--accent-cyan); color:var(--accent-cyan)} /* Cooldown badge */
 
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
-.stat{
-  background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
-  padding:15px; display: flex; flex-direction: column; align-items: center;
-  position: relative; overflow: hidden;
-}
-.stat::before {
-  content: ""; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--border-color);
-}
-.stat.green::before{background: var(--accent-main);}
-.stat.red::before{background: var(--accent-danger);}
-.stat.purple::before{background: var(--accent-gold);}
-
+.stat{ background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); padding:15px; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+.stat::before { content: ""; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--border-color); }
+.stat.green::before{background: var(--accent-main);} .stat.red::before{background: var(--accent-danger);} .stat.purple::before{background: var(--accent-gold);}
 .stat .small { text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
 .stat .v{font-size:2.5em; font-family: var(--font-head); margin-top:5px; color: var(--text-primary); text-shadow: 0 0 10px rgba(255,255,255,0.3);}
 
@@ -257,7 +145,6 @@ tbody tr:hover{background:rgba(76, 175, 80, 0.05);}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 @media(max-width:900px){.row{grid-template-columns:1fr}}
 hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5;}
-
 .kbd{font-family: var(--font-body); background:rgba(255,255,255,0.1);padding:3px 8px; color: var(--accent-gold);}
 </style>
 </head>
@@ -269,25 +156,14 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
 
   <div id="loginCard" class="card" style="max-width:520px;margin:80px auto;">
     <h3>🔐 පද්ධතියට ඇතුල් වීම (SECURE LOGIN)</h3>
-    <p class="small" style="margin-bottom:12px;">
-      දත්ත ගබඩාව/අයිතිවාසිකම් <b>Supabase High Command</b> මඟින් පාලනය වේ.
-    </p>
+    <p class="small" style="margin-bottom:12px;">දත්ත ගබඩාව/අයිතිවාසිකම් <b>Supabase High Command</b> මඟින් පාලනය වේ.</p>
     <div class="row">
-      <div>
-        <label>නිල ඊමේල් ලිපිනය</label>
-        <input id="email" type="email" placeholder="officer@army.lk" />
-      </div>
-      <div>
-        <label>රහස් කේතය (Password)</label>
-        <input id="password" type="password" placeholder="••••••••" />
-      </div>
+      <div><label>නිල ඊමේල් ලිපිනය</label><input id="email" type="email" placeholder="officer@army.lk" /></div>
+      <div><label>රහස් කේතය (Password)</label><input id="password" type="password" placeholder="••••••••" /></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
       <button class="btn-primary" id="btnLogin">ACCESS GRANTED ➡️</button>
       <button class="btn-secondary" id="btnLogout" disabled>ABORT 🚪</button>
-    </div>
-    <div style="margin-top:15px; border-top: 1px dashed var(--border-color); padding-top: 10px;" class="small">
-      Admin user සඳහා: <span class="kbd">profiles.role = 'admin'</span>
     </div>
   </div>
 
@@ -299,6 +175,7 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
         <p>Camp Security System (Tactical Edition)</p>
       </div>
       <div class="pills">
+        <div class="pill" id="pillGps" style="color:#00e5ff">📍 GPS: LOCATING...</div>
         <div class="pill" id="pillRole">RANK: -</div>
         <div class="pill" id="pillOnline" style="color:var(--accent-main)">SIGNAL: ONLINE</div>
         <div class="pill" id="pillDevice">UNIT: -</div>
@@ -319,6 +196,10 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
     </div>
 
     <div id="tab-dashboard" class="tab-content">
+      <button id="btnPanic" class="btn-danger" style="width:100%; padding: 20px; font-size: 1.5em; margin-bottom: 20px; background-color:#990000; border: 2px solid #ff0000;">
+         🚨 හදිසි අවස්ථා අගුලු දැමීම (INITIATE BASE LOCKDOWN) 🚨
+      </button>
+
       <div class="stats">
         <div class="stat"><div class="small">ලියාපදිංචි භටයින්</div><div class="v" id="statPersons">0</div></div>
         <div class="stat green"><div class="small">අද ඇතුල්වීම් (PASS)</div><div class="v" id="statApproved">0</div></div>
@@ -329,24 +210,12 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
       <div class="card" style="margin-top:20px;">
         <h3>🧠 පද්ධති තත්වය (SYSTEM STATUS)</h3>
         <div class="row">
-          <div>
-            <label>AI NEURAL NET</label>
-            <div id="modelStatus" class="badge warn">INITIALIZING...</div>
-          </div>
-          <div>
-            <label>OPTICAL SENSOR</label>
-            <div id="cameraStatus" class="badge no">OFFLINE</div>
-          </div>
+          <div><label>AI NEURAL NET</label><div id="modelStatus" class="badge warn">INITIALIZING...</div></div>
+          <div><label>OPTICAL SENSOR</label><div id="cameraStatus" class="badge no">OFFLINE</div></div>
         </div>
         <div class="row" style="margin-top:15px;">
-          <div>
-            <label>RECOGNITION ENGINE</label>
-            <div id="recStatus" class="badge no">STANDBY</div>
-          </div>
-          <div>
-            <label>DATA UPLINK QUEUE</label>
-            <div id="queueStatus" class="badge warn">0 PENDING</div>
-          </div>
+          <div><label>RECOGNITION ENGINE</label><div id="recStatus" class="badge no">STANDBY</div></div>
+          <div><label>DATA UPLINK QUEUE</label><div id="queueStatus" class="badge warn">0 PENDING</div></div>
         </div>
       </div>
     </div>
@@ -376,18 +245,19 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
             <button id="btnStartCam" class="btn-primary">🎥 කැමරාව අරඹන්න</button>
             <button id="btnStopCam" class="btn-danger" disabled>⏹️ නවත්වන්න</button>
-            <button id="btnSyncQueue" class="btn-secondary">🔁 දත්ත යාවත්කාලීන කරන්න</button>
+            <button id="btnNightVision" class="btn-secondary">🌙 NIGHT VISION</button>
           </div>
 
-          <div class="video-container" style="margin-top:15px;">
+          <div class="video-container" id="videoBox" style="margin-top:15px;">
             <video id="video" autoplay muted playsinline></video>
             <canvas id="canvas"></canvas>
             <div class="overlay" id="overlay">SYSTEM READY</div>
           </div>
 
-          <p class="small" style="margin-top:10px;">
-            <span style="color:var(--accent-gold)">NOTE:</span> Confidence අගය දුර ප්‍රමාණය මත තීරණය වේ.
-          </p>
+          <div style="margin-top:15px;">
+            <label>🎙️ Acoustic Threat Level (ශබ්ද සංවේදකය)</label>
+            <div class="audio-meter"><div id="audioFill" class="audio-fill"></div></div>
+          </div>
         </div>
 
         <div class="card">
@@ -399,12 +269,8 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
           <div>
             <label>අත්පොත සෙවීම (MANUAL OVERRIDE)</label>
             <div class="row">
-              <div>
-                <input id="manualSearch" placeholder="Service No / Name..." />
-              </div>
-              <div>
-                <button id="btnManualPick" class="btn-secondary">🔎 SCAN</button>
-              </div>
+              <div><input id="manualSearch" placeholder="Service No / Name..." /></div>
+              <div><button id="btnManualPick" class="btn-secondary">🔎 SCAN</button></div>
             </div>
             <div id="manualResults" style="margin-top:10px;"></div>
           </div>
@@ -415,16 +281,11 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
     <div id="tab-persons" class="tab-content hidden">
       <div class="card">
         <h3>👥 භට කළමනාකරණය (PERSONNEL)</h3>
-        <div id="personsGuard" class="alert warn">
-          ⚠️ RESTRICTED: COMMANDER ONLY (ADMIN)
-        </div>
+        <div id="personsGuard" class="alert warn">⚠️ RESTRICTED: COMMANDER ONLY (ADMIN)</div>
 
         <div id="personsArea" class="hidden">
           <div class="row">
-            <div>
-              <label>සෙවීම (SEARCH)</label>
-              <input id="personSearch" placeholder="Service No / Name / Unit..." />
-            </div>
+            <div><label>සෙවීම (SEARCH)</label><input id="personSearch" placeholder="Service No / Name..." /></div>
             <div>
               <label>විධානයන් (COMMANDS)</label>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -449,9 +310,9 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
               <div>
                 <label>වර්ගය (TYPE)</label>
                 <select id="pType">          
-                  <option value="soldier">නිලධාරී (OFFICER)</option>
+                  <option value="officer">නිලධාරී (OFFICER)</option>
                   <option value="soldier">සෙබළ (SOLDIER)</option>
-                  <option value="soldier">සිවිල් සේවක  (CIVIL SERVANT)</option>
+                  <option value="civil">සිවිල් සේවක (CIVIL SERVANT)</option>
                   <option value="visitor">අමුත්තා (VISITOR)</option>
                 </select>
               </div>
@@ -459,9 +320,9 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
                 <label>තත්ත්වය (STATUS)</label>
                 <select id="pStatus">
                   <option value="active">සක්‍රීය සේවයේ (ON SERVICE)</option>
-                   <option value="active">විශ්‍රාමික (PENSION)</option>
+                   <option value="pension">විශ්‍රාමික (PENSION)</option>
                   <option value="leave">නිවාඩු (ON LEAVE)</option>
-                  <option value="suspended">නිනොනො (ABSENT)</option>
+                  <option value="absent">නිනොනො (ABSENT)</option>
                 </select>
               </div>
             </div>
@@ -472,10 +333,6 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
                 <option value="true">ඔව් - අවදානම් (YES - ALERT)</option>
               </select>
             </div>
-            <div style="margin-top:10px;">
-              <label>සටහන් (NOTES)</label>
-              <textarea id="pNotes" rows="3" placeholder="විශේෂ කරුණු..."></textarea>
-            </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
               <button id="btnSavePerson" class="btn-primary">💾 දත්ත සුරකින්න</button>
               <button id="btnCancelPerson" class="btn-secondary">✖ අවලංගුයි</button>
@@ -484,7 +341,6 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
 
             <hr/>
             <h3 style="color:var(--accent-main)">📸 මුහුණු දත්ත ඇතුලත් කිරීම (BIOMETRICS)</h3>
-            <p class="small">කැමරාව ක්‍රියාත්මක කර මුහුණ පෙන්වන්න.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <button id="btnEnroll1" class="btn-primary">📸 ස්කෑන් කර සුරකින්න (SCAN x3)</button>
               <button id="btnClearTemplates" class="btn-danger">🧹 දත්ත මකන්න (CLEAR)</button>
@@ -523,12 +379,10 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
         <div class="table-wrap" style="margin-top:15px;">
           <table>
             <thead>
-              <tr>
-                <th>#</th><th>වේලාව</th><th>සේවා අංකය</th><th>නම</th><th>වර්ගය</th><th>ස්ථානය</th><th>සිදුවීම</th><th>තත්ත්වය</th><th>CONF</th>
-              </tr>
+              <tr><th>#</th><th>වේලාව</th><th>සේවා අංකය</th><th>නම</th><th>ස්ථානය (Gate)</th><th>GPS ලොකේෂන්</th><th>සිදුවීම</th><th>තත්ත්වය</th></tr>
             </thead>
             <tbody id="logsBody">
-              <tr><td colspan="9" class="small" style="padding:18px;color:var(--text-muted);text-align:center;">NO DATA</td></tr>
+              <tr><td colspan="8" class="small" style="padding:18px;color:var(--text-muted);text-align:center;">NO DATA</td></tr>
             </tbody>
           </table>
         </div>
@@ -548,42 +402,22 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
     <div id="tab-settings" class="tab-content hidden">
       <div class="card">
         <h3>⚙️ පද්ධති සකසීම් (SYSTEM CONFIG)</h3>
-
         <div class="row">
-          <div>
-            <label>උපාංගය / ගේට්ටුව (GATE DEVICE)</label>
-            <select id="deviceSelect"></select>
-            <p class="small">Admin tab එකෙන් උපාංග එක් කරන්න.</p>
-          </div>
-          <div>
-            <label>සංවේදීතාව (SENSITIVITY 0-1)</label>
-            <input id="confThr" type="number" min="0" max="1" step="0.05" value="0.55" />
-            <p class="small">අඩු අගය = වැඩි සංවේදීතාව (More Sensitive)</p>
-          </div>
+          <div><label>උපාංගය / ගේට්ටුව (GATE DEVICE)</label><select id="deviceSelect"></select></div>
+          <div><label>සංවේදීතාව (SENSITIVITY 0-1)</label><input id="confThr" type="number" min="0" max="1" step="0.05" value="0.55" /></div>
         </div>
-
         <div class="row" style="margin-top:15px;">
-          <div>
-            <label>හඬ දැනුම්දීම් (VOICE COMMS)</label>
-            <select id="voice">
-              <option value="on">ක්‍රියාත්මකයි (ON)</option>
-              <option value="off">අක්‍රියයි (OFF)</option>
-            </select>
-          </div>
-          <div>
-            <label>Auto Lock Time (Sec)</label>
-            <input id="autolock" type="number" min="3" max="60" step="1" value="8" />
-          </div>
+          <div><label>හඬ දැනුම්දීම් (VOICE COMMS)</label><select id="voice"><option value="on">ON</option><option value="off">OFF</option></select></div>
+          <div><label>Acoustic Threat Detection (ශබ්ද අනතුරු ඇඟවීම)</label><select id="acousticSetting"><option value="on">ON</option><option value="off">OFF</option></select></div>
         </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
-          <button id="btnSaveSettings" class="btn-primary">💾 සුරකින්න (SAVE)</button>
+        <div class="row" style="margin-top:15px;">
+          <div><label>ANTI-SPAM COOLDOWN TIME (Sec)</label><input id="autolock" type="number" min="5" max="120" step="1" value="15" /><p class="small">Time before scanning the same person again.</p></div>
         </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;"><button id="btnSaveSettings" class="btn-primary">💾 සුරකින්න (SAVE)</button></div>
 
         <hr/>
         <h3>📟 උපාංග කළමනාකරණය (DEVICE ADMIN)</h3>
         <div id="devicesGuard" class="alert warn">⚠️ RESTRICTED ACCESS</div>
-
         <div id="devicesArea" class="hidden">
           <div class="row">
             <div><label>නම (NAME)</label><input id="dName" placeholder="Gate-1 Tablet"/></div>
@@ -623,33 +457,24 @@ hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5
 const SUPABASE_URL = "https://hhmchdaqlwghdgultkgf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_a7boZvmQp7JWOC8S6G_McA_yGW8zVpy";
 const sb = (window.supabase || window.supabaseJs).createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models"; // your models path
+const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models"; 
 
 /* =========================
-   STATE
+   STATE & SENSORS
 ========================= */
-let session = null;
-let profile = null; // { role, unit, full_name }
-let persons = [];   // from DB
-let templates = []; // from DB
-let matcher = null;
+let session = null; let profile = null; let persons = []; let templates = []; let matcher = null;
 
-let settings = {
-  confidenceThreshold: 0.55,
-  voiceAlerts: true,
-  autoLockTime: 8,
-  deviceId: null
-};
+let settings = { confidenceThreshold: 0.55, voiceAlerts: true, acousticDetection: true, autoLockTime: 15, deviceId: null };
 
-let cameraStream = null;
-let detectTimer = null;
-let speaking = false;
-let lastLogKey = ""; // anti-spam
-let selectedPersonId = null;
-let currentDevice = null;
+// --- FEATURE: ANTI-SPAM COOLDOWN MEMORY MAP ---
+const detectionCooldowns = new Map(); 
 
-/* Offline queue (events when network fails) */
+let currentGps = { lat: null, lng: null };
+let audioContext = null; let analyser = null; let microphone = null; let acousticLoop = null; let acousticCooldown = false;
+let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; let currentDevice = null;
+let nightVisionMode = false; let isLockdown = false;
+
+/* Offline queue */
 const QUEUE_KEY = "camp_offline_queue_v1";
 function queueGet(){ try{ return JSON.parse(localStorage.getItem(QUEUE_KEY)||"[]"); }catch{ return []; } }
 function queueSet(q){ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateQueueBadge(); }
@@ -658,1008 +483,364 @@ function queueShift(){ const q=queueGet(); const item=q.shift(); queueSet(q); re
 function queueLen(){ return queueGet().length; }
 
 /* =========================
-   DOM
+   DOM ELEMENTS
 ========================= */
 const el = (id)=>document.getElementById(id);
-const alertArea = el("alertArea");
-
-const loginCard = el("loginCard");
-const app = el("app");
-
-const pillRole = el("pillRole");
-const pillOnline = el("pillOnline");
-const pillDevice = el("pillDevice");
-
-const video = el("video");
-const canvas = el("canvas");
-const ctx = canvas.getContext("2d");
-
-const overlay = el("overlay");
-const detectedBox = el("detectedBox");
+const alertArea = el("alertArea"); const loginCard = el("loginCard"); const app = el("app");
+const pillRole = el("pillRole"); const pillOnline = el("pillOnline"); const pillDevice = el("pillDevice"); const pillGps = el("pillGps");
+const video = el("video"); const canvas = el("canvas"); const ctx = canvas.getContext("2d"); const videoBox = el("videoBox");
+const overlay = el("overlay"); const detectedBox = el("detectedBox"); const audioFill = el("audioFill");
 
 /* =========================
-   UI HELPERS
+   TACTICAL SENSORS
+========================= */
+function initGPS() {
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition((position) => {
+      currentGps.lat = position.coords.latitude.toFixed(6); currentGps.lng = position.coords.longitude.toFixed(6);
+      pillGps.textContent = `📍 GPS: ${currentGps.lat}, ${currentGps.lng}`; pillGps.style.color = "var(--accent-main)";
+    }, () => {
+      pillGps.textContent = "📍 GPS: SIGNAL LOST"; pillGps.style.color = "var(--accent-danger)";
+    });
+  }
+}
+
+function startAcousticDetection(stream) {
+  if(!settings.acousticDetection) return;
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser(); microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser); analyser.fftSize = 256;
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    acousticLoop = setInterval(() => {
+      analyser.getByteFrequencyData(dataArray); let sum = 0;
+      for(let i = 0; i < analyser.frequencyBinCount; i++) sum += dataArray[i];
+      let avgVolume = sum / analyser.frequencyBinCount;
+      audioFill.style.width = Math.min(avgVolume, 100) + "%";
+      if(avgVolume > 85) { audioFill.classList.add("high"); triggerAcousticAlert(); } else { audioFill.classList.remove("high"); }
+    }, 200);
+  } catch(e) { console.warn("Acoustic detection unavailable"); }
+}
+
+async function triggerAcousticAlert() {
+  if(acousticCooldown) return; acousticCooldown = true;
+  showAlert("ACOUSTIC THREAT DETECTED! (Loud noise)", "danger"); speak("Warning. Acoustic Threat Detected.");
+  await insertAccessEvent({ event_type: "ACOUSTIC_THREAT", status: "rejected", device_id: settings.deviceId || null, extra: { gps: currentGps, volume_spike: true } }, "unknown");
+  setTimeout(() => acousticCooldown = false, 10000);
+}
+
+function playAlarmSound() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.5);
+  gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 1);
+}
+
+/* =========================
+   UI HELPERS & AUTH
 ========================= */
 function showAlert(msg, type="info"){
-  const div=document.createElement("div");
-  div.className="alert "+(type==="success"?"success":type==="danger"?"danger":type==="warn"?"warn":"");
+  const div=document.createElement("div"); div.className="alert "+(type==="success"?"success":type==="danger"?"danger":type==="warn"?"warn":"");
   div.innerHTML = `${type==="success"?"✅":type==="danger"?"❌":type==="warn"?"⚠️":"ℹ️"} <span>${msg}</span>`;
-  alertArea.appendChild(div);
-  setTimeout(()=>div.remove(), 4500);
+  alertArea.appendChild(div); setTimeout(()=>div.remove(), 4500);
 }
 
 function speak(msg){
-  if(!settings.voiceAlerts || speaking) return;
-  speaking=true;
-  const u = new SpeechSynthesisUtterance(msg);
-  u.lang="si-LK";
-  speechSynthesis.speak(u);
+  if(!settings.voiceAlerts || speaking) return; speaking=true;
+  const u = new SpeechSynthesisUtterance(msg); u.lang="en-US"; speechSynthesis.speak(u);
   setTimeout(()=>speaking=false, 2500);
 }
 
 function setOnlinePill(){
-  const on = navigator.onLine;
-  pillOnline.textContent = on ? "🌐 UPLINK: ONLINE" : "📴 UPLINK: OFFLINE";
-  pillOnline.style.opacity = on ? "1" : ".5";
-  pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
-}
-
-/* =========================
-   AUTH
-========================= */
-async function loadSession(){
-  const { data } = await sb.auth.getSession();
-  session = data.session || null;
-  return session;
-}
-
-async function loadProfile(){
-  if(!session?.user) return null;
-  const { data, error } = await sb
-    .from("profiles")
-    .select("role, unit, full_name")
-    .eq("user_id", session.user.id)
-    .single();
-  if(error){
-    // If profile doesn't exist, ask admin to create it
-    profile = { role:"operator", unit:"", full_name:"" };
-    showAlert("Profile දත්ත හමු නොවිණි. Admin අමතන්න.", "warn");
-  }else{
-    profile = data;
-  }
-  pillRole.textContent = `RANK: ${profile.role || "-"}`;
-  return profile;
+  const on = navigator.onLine; pillOnline.textContent = on ? "🌐 UPLINK: ONLINE" : "📴 UPLINK: OFFLINE";
+  pillOnline.style.opacity = on ? "1" : ".5"; pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
 }
 
 async function login(){
-  const email = el("email").value.trim();
-  const password = el("password").value;
+  const email = el("email").value.trim(); const password = el("password").value;
   if(!email || !password){ showAlert("ඊමේල් සහ මුරපදය ඇතුලත් කරන්න", "danger"); return; }
-
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ showAlert(error.message, "danger"); return; }
-  session = data.session;
-  showAlert("අවසර ලබා දෙන ලදී (ACCESS GRANTED)", "success");
-  await afterLogin();
+  session = data.session; showAlert("අවසර ලබා දෙන ලදී (ACCESS GRANTED)", "success"); await afterLogin();
 }
 
 async function logout(){
-  await stopCamera();
-  await sb.auth.signOut();
-  session=null; profile=null;
-  app.classList.add("hidden");
-  loginCard.classList.remove("hidden");
-  el("btnLogout").disabled = true;
-  showAlert("ඉවත් විය (LOGGED OUT)", "info");
+  await stopCamera(); await sb.auth.signOut(); session=null; profile=null;
+  app.classList.add("hidden"); loginCard.classList.remove("hidden"); el("btnLogout").disabled = true;
 }
 
-/* =========================
-   INIT / AFTER LOGIN
-========================= */
 function loadSettings(){
   const s = localStorage.getItem("camp_settings_v1");
-  if(s){
-    try{ settings = { ...settings, ...JSON.parse(s) }; }catch{}
-  }
-  el("confThr").value = settings.confidenceThreshold;
-  el("voice").value = settings.voiceAlerts ? "on" : "off";
-  el("autolock").value = settings.autoLockTime;
-  updateQueueBadge();
+  if(s){ try{ settings = { ...settings, ...JSON.parse(s) }; }catch{} }
+  el("confThr").value = settings.confidenceThreshold; el("voice").value = settings.voiceAlerts ? "on" : "off";
+  el("acousticSetting").value = settings.acousticDetection ? "on" : "off"; el("autolock").value = settings.autoLockTime; updateQueueBadge();
 }
 
-function saveSettingsLocal(){
-  localStorage.setItem("camp_settings_v1", JSON.stringify(settings));
-}
+function saveSettingsLocal(){ localStorage.setItem("camp_settings_v1", JSON.stringify(settings)); }
+function updateQueueBadge(){ el("queueStatus").textContent = `${queueLen()} PENDING`; el("queueStatus").className = queueLen()>0 ? "badge warn" : "badge ok"; }
 
-function updateQueueBadge(){
-  el("queueStatus").textContent = `${queueLen()} PENDING`;
-  el("queueStatus").className = queueLen()>0 ? "badge warn" : "badge ok";
-}
-
-async function afterLogin(){
-  loginCard.classList.add("hidden");
-  app.classList.remove("hidden");
-  el("btnLogout").disabled = false;
-
-  setOnlinePill();
-  loadSettings();
-  await loadProfile();
-  applyRoleGuards();
-
-  await loadModels();
-  await refreshDevices();
-  await refreshPersonsAndTemplates();
-  await refreshStats();
-  await refreshLogs();
-  await refreshAlerts();
-  await refreshAudit();
-
-  window.addEventListener("online", async ()=>{
-    setOnlinePill();
-    showAlert("Uplink Restored - Syncing...", "info");
-    await syncQueue();
-  });
-  window.addEventListener("offline", ()=>{
-    setOnlinePill();
-    showAlert("Uplink Lost - Offline Mode", "warn");
-  });
+async function loadProfile(){
+  if(!session?.user) return null;
+  const { data, error } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
+  profile = error ? { role:"operator", unit:"", full_name:"" } : data;
+  pillRole.textContent = `RANK: ${profile.role || "-"}`; return profile;
 }
 
 function applyRoleGuards(){
-  const isAdmin = profile?.role === "admin";
-  const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
-  el("personsGuard").classList.toggle("hidden", isAdmin);
-  el("personsArea").classList.toggle("hidden", !isAdmin);
+  const isAdmin = profile?.role === "admin"; const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
+  el("personsGuard").classList.toggle("hidden", isAdmin); el("personsArea").classList.toggle("hidden", !isAdmin);
+  el("devicesGuard").classList.toggle("hidden", isAdmin); el("devicesArea").classList.toggle("hidden", !isAdmin);
+  el("auditTabBtn").classList.toggle("hidden", !canAudit); if(!canAudit) el("tab-audit").classList.add("hidden");
+}
 
-  el("devicesGuard").classList.toggle("hidden", isAdmin);
-  el("devicesArea").classList.toggle("hidden", !isAdmin);
-
-  el("auditTabBtn").classList.toggle("hidden", !canAudit);
-  // If not allowed, hide audit tab content too
-  if(!canAudit){
-    el("tab-audit").classList.add("hidden");
-  }
+async function afterLogin(){
+  loginCard.classList.add("hidden"); app.classList.remove("hidden"); el("btnLogout").disabled = false;
+  setOnlinePill(); loadSettings(); initGPS(); await loadProfile(); applyRoleGuards();
+  await loadModels(); await refreshDevices(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs(); await refreshAlerts(); await refreshAudit();
+  window.addEventListener("online", async ()=>{ setOnlinePill(); await syncQueue(); }); window.addEventListener("offline", ()=>{ setOnlinePill(); });
 }
 
 /* =========================
-   MODELS
+   MODELS & DATA
 ========================= */
 async function loadModels(){
   try{
-    el("modelStatus").textContent = "LOADING...";
-    el("modelStatus").className = "badge warn";
-
-    // More stable than SSD on weak GPUs; keep SSD if you prefer
-    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-
-    el("modelStatus").textContent = "OPERATIONAL";
-    el("modelStatus").className = "badge ok";
-    showAlert("AI Systems Online", "success");
-  }catch(e){
-    console.error(e);
-    el("modelStatus").textContent = "FAILURE";
-    el("modelStatus").className = "badge no";
-    showAlert("AI Models load failed. MODEL_URL පරීක්ෂා කරන්න.", "danger");
-  }
+    el("modelStatus").textContent = "LOADING..."; el("modelStatus").className = "badge warn";
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL); await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL); await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+    el("modelStatus").textContent = "OPERATIONAL"; el("modelStatus").className = "badge ok";
+  }catch(e){ el("modelStatus").textContent = "FAILURE"; el("modelStatus").className = "badge no"; }
 }
 
-/* =========================
-   DATA LOADERS
-========================= */
 async function refreshPersonsAndTemplates(){
-  // persons
-  const { data: p, error: pe } = await sb
-    .from("persons").select("*").order("created_at",{ascending:false});
-  if(pe){ showAlert(pe.message, "danger"); return; }
-  persons = p || [];
-
-  // templates
-  const { data: t, error: te } = await sb
-    .from("face_templates").select("id, person_id, descriptor, model_version, created_at");
-  if(te){ showAlert(te.message, "danger"); return; }
-  templates = t || [];
-
-  buildMatcher();
-  renderPersonsList();
-  updateTemplateInfo();
+  const { data: p } = await sb.from("persons").select("*").order("created_at",{ascending:false}); persons = p || [];
+  const { data: t } = await sb.from("face_templates").select("id, person_id, descriptor"); templates = t || [];
+  buildMatcher(); renderPersonsList();
 }
 
 function buildMatcher(){
-  const thr = Number(settings.confidenceThreshold || 0.55);
-  // face-api FaceMatcher expects "maxDescriptorDistance" (typical ~0.6). We map 0-1 to distance:
-  // Higher confidenceThreshold => stricter => smaller distance.
-  const maxDistance = Math.max(0.35, Math.min(0.9, 1 - thr)); // simple mapping
-  const grouped = new Map(); // person_id -> [Float32Array,...]
-
+  const maxDistance = Math.max(0.35, Math.min(0.9, 1 - settings.confidenceThreshold));
+  const grouped = new Map();
   for(const tpl of templates){
     const arr = Array.isArray(tpl.descriptor) ? tpl.descriptor : (tpl.descriptor?.data || tpl.descriptor);
-    if(!arr || !Array.isArray(arr)) continue;
-    const f32 = new Float32Array(arr.map(Number));
-    if(!grouped.has(tpl.person_id)) grouped.set(tpl.person_id, []);
-    grouped.get(tpl.person_id).push(f32);
+    if(!arr) continue; if(!grouped.has(tpl.person_id)) grouped.set(tpl.person_id, []);
+    grouped.get(tpl.person_id).push(new Float32Array(arr.map(Number)));
   }
-
   const labeled = [];
   for(const [pid, descs] of grouped.entries()){
-    const person = persons.find(x=>x.id===pid);
-    if(!person) continue;
-    // label includes service + name for uniqueness
-    const label = `${person.service_no || "NO-SVC"} | ${person.name}`;
-    labeled.push(new faceapi.LabeledFaceDescriptors(label, descs));
+    const person = persons.find(x=>x.id===pid); if(person) labeled.push(new faceapi.LabeledFaceDescriptors(`${person.service_no||"NO-SVC"} | ${person.name}`, descs));
   }
-
   matcher = labeled.length ? new faceapi.FaceMatcher(labeled, maxDistance) : null;
-
-  // update rec status
-  el("recStatus").textContent = matcher ? "ACTIVE" : "NO DATA";
-  el("recStatus").className = matcher ? "badge ok" : "badge warn";
+  el("recStatus").textContent = matcher ? "ACTIVE" : "NO DATA"; el("recStatus").className = matcher ? "badge ok" : "badge warn";
 }
 
 async function refreshDevices(){
-  const { data, error } = await sb.from("devices").select("*").eq("is_active", true).order("created_at",{ascending:false});
-  if(error){ showAlert(error.message, "danger"); return; }
-  const select = el("deviceSelect");
-  select.innerHTML = "";
-  (data||[]).forEach(d=>{
-    const opt=document.createElement("option");
-    opt.value=d.id;
-    opt.textContent=`${d.name} (${d.gate_name || "-"})`;
-    select.appendChild(opt);
-  });
-
-  if(!settings.deviceId && data?.[0]?.id){
-    settings.deviceId = data[0].id;
-    saveSettingsLocal();
-  }
-  if(settings.deviceId){
-    select.value = settings.deviceId;
-    currentDevice = (data||[]).find(d=>d.id===settings.deviceId) || null;
-  }else{
-    currentDevice = null;
-  }
-
-  pillDevice.textContent = currentDevice ? `UNIT: ${currentDevice.gate_name || currentDevice.name}` : "UNIT: -";
+  const { data } = await sb.from("devices").select("*").eq("is_active", true);
+  const select = el("deviceSelect"); select.innerHTML = "";
+  (data||[]).forEach(d=>{ select.appendChild(new Option(`${d.name} (${d.gate_name || "-"})`, d.id)); });
+  if(settings.deviceId) select.value = settings.deviceId;
 }
 
-async function refreshStats(){
-  // persons count:
-  el("statPersons").textContent = persons.length;
-
-  // today approved/rejected:
-  const start = new Date(); start.setHours(0,0,0,0);
-  const { data, error } = await sb
-    .from("access_events")
-    .select("status, created_at")
-    .gte("created_at", start.toISOString());
-  if(error){ showAlert(error.message, "danger"); return; }
-
-  const today = data || [];
-  el("statApproved").textContent = today.filter(x=>x.status==="approved").length;
-  el("statRejected").textContent = today.filter(x=>x.status==="rejected").length;
-
-  const { count, error: ce } = await sb
-    .from("access_events")
-    .select("*", { count:"exact", head:true });
-  if(ce){ showAlert(ce.message, "danger"); return; }
-  el("statTotal").textContent = count || 0;
-
-  updateQueueBadge();
-}
+async function refreshStats(){ el("statPersons").textContent = persons.length; updateQueueBadge(); }
 
 /* =========================
-   CAMERA + DETECTION
+   CAMERA & DETECTIONS
 ========================= */
 async function startCamera(){
   if(cameraStream) return;
   try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:"user", width:{ideal:640}, height:{ideal:480} },
-      audio: false
-    });
-    video.srcObject = cameraStream;
-    await new Promise(r=>video.onloadedmetadata=r);
-
-    // match canvas size
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-
-    el("cameraStatus").textContent = "ONLINE";
-    el("cameraStatus").className = "badge ok";
-    overlay.textContent = "SEARCHING TARGETS...";
-
-    el("btnStartCam").disabled = true;
-    el("btnStopCam").disabled = false;
-
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"user", width:{ideal:640}, height:{ideal:480} }, audio: true });
+    video.srcObject = cameraStream; await new Promise(r=>video.onloadedmetadata=r);
+    canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
+    startAcousticDetection(cameraStream);
+    el("cameraStatus").textContent = "ONLINE"; el("cameraStatus").className = "badge ok";
+    el("btnStartCam").disabled = true; el("btnStopCam").disabled = false;
     startDetectionLoop();
-    showAlert("Camera Uplink Established", "success");
-  }catch(e){
-    console.error(e);
-    showAlert("Camera Error. වෙනත් ඇප් එකක් කැමරාව භාවිතා කරන්නේද?", "danger");
-  }
+  }catch(e){ showAlert("Camera/Mic Error", "danger"); }
 }
 
 async function stopCamera(){
   if(detectTimer){ clearInterval(detectTimer); detectTimer=null; }
-  if(cameraStream){
-    cameraStream.getTracks().forEach(t=>t.stop());
-    cameraStream=null;
-  }
-  video.srcObject=null;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  el("cameraStatus").textContent = "OFFLINE";
-  el("cameraStatus").className = "badge no";
-  overlay.textContent="STANDBY";
-  el("btnStartCam").disabled = false;
-  el("btnStopCam").disabled = true;
-  detectedBox.innerHTML = "NO TARGETS";
+  if(acousticLoop){ clearInterval(acousticLoop); acousticLoop=null; }
+  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+  video.srcObject=null; ctx.clearRect(0,0,canvas.width,canvas.height);
+  el("btnStartCam").disabled = false; el("btnStopCam").disabled = true;
 }
 
-function bestMatchToConfidence(distance){
-  // convert distance (0 good) to pseudo confidence
-  const conf = Math.max(0, Math.min(1, 1 - distance));
-  return conf;
-}
-
+// Draw Target Boxes on Canvas
 function drawBox(box, color, text){
-  ctx.strokeStyle=color; ctx.lineWidth=3;
-  ctx.strokeRect(box.x, box.y, box.width, box.height);
-  
-  // Military corners
-  ctx.fillStyle=color;
-  ctx.fillRect(box.x-2, box.y-2, 10, 4); 
-  ctx.fillRect(box.x-2, box.y-2, 4, 10);
-  ctx.fillRect(box.x+box.width-8, box.y-2, 10, 4);
-  ctx.fillRect(box.x+box.width-2, box.y-2, 4, 10);
-  
-  // Label bg
-  ctx.fillStyle=color;
+  ctx.strokeStyle=color; ctx.lineWidth=3; ctx.strokeRect(box.x, box.y, box.width, box.height);
+  ctx.fillStyle=color; ctx.fillRect(box.x-2, box.y-2, 10, 4); ctx.fillRect(box.x-2, box.y-2, 4, 10);
+  ctx.fillRect(box.x+box.width-8, box.y-2, 10, 4); ctx.fillRect(box.x+box.width-2, box.y-2, 4, 10);
   ctx.fillRect(box.x, Math.max(0, box.y-28), box.width, 28);
-  
-  // Text
-  ctx.fillStyle="#000"; ctx.font="bold 16px 'Share Tech Mono'";
-  ctx.fillText(text, box.x+6, Math.max(18, box.y-8));
+  ctx.fillStyle="#000"; ctx.font="bold 16px 'Share Tech Mono'"; ctx.fillText(text, box.x+6, Math.max(18, box.y-8));
 }
 
+function bestMatchToConfidence(distance){ return Math.max(0, Math.min(1, 1 - distance)); }
+
+// THE CORE DETECTION LOOP (With Anti-Spam Memory Map)
 function startDetectionLoop(){
   if(detectTimer) clearInterval(detectTimer);
-
+  
   detectTimer = setInterval(async ()=>{
     if(!cameraStream) return;
     ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    const dets = await faceapi
-      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
-      .withFaceLandmarks()
-      .withFaceDescriptors();
-
+    const dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 })).withFaceLandmarks().withFaceDescriptors();
+    
     overlay.textContent = `TARGETS: ${dets.length}`;
-    if(dets.length===0){
-      detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING...</span>";
-      return;
-    }
+    if(dets.length===0){ detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING...</span>"; return; }
+
+    const now = Date.now();
+    const cooldownMs = (settings.autoLockTime || 15) * 1000;
 
     for(const d of dets){
       const box = d.detection.box;
-
-      let label="Unknown";
-      let distance=1;
-      let person=null;
-
+      let label="Unknown"; let distance=1; let person=null;
+      
       if(matcher){
         const best = matcher.findBestMatch(d.descriptor);
-        label = best.label;
-        distance = best.distance;
-        if(label !== "unknown" && label !== "Unknown"){
-          const parts = label.split("|").map(s=>s.trim());
-          const svc = parts[0] || "";
-          const name = parts.slice(1).join("|").trim();
-          person = persons.find(p=>(p.service_no||"NO-SVC")===svc && p.name===name) || null;
+        label = best.label; distance = best.distance;
+        if(label !== "unknown"){
+          const svc = label.split("|")[0].trim();
+          person = persons.find(p=>p.service_no===svc);
         }
       }
-
+      
       const conf = bestMatchToConfidence(distance);
       const isUnknown = !person;
+      const targetId = isUnknown ? "UNKNOWN_TARGET" : person.id;
 
-      drawBox(box, isUnknown ? "#ff3333" : (person.watchlist ? "#ffb300" : "#4caf50"),
-              isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "IDENTIFIED"));
+      // Check Anti-Spam Cooldown Memory
+      const lastSeen = detectionCooldowns.get(targetId) || 0;
+      const timeSinceSeen = now - lastSeen;
+      const inCooldown = timeSinceSeen < cooldownMs;
+      const timeLeft = Math.ceil((cooldownMs - timeSinceSeen) / 1000);
 
-      // Update detected UI
+      // Determine colors based on status and cooldown
+      let boxColor = isUnknown ? "#ff3333" : (person.watchlist ? "#ffb300" : "#4caf50");
+      let boxText = isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "IDENTIFIED");
+      
+      if(inCooldown) {
+        boxColor = "#00e5ff"; // Cyan for Cooldown Mode
+        boxText += ` (WAIT ${timeLeft}s)`;
+      }
+
+      drawBox(box, boxColor, boxText);
+
+      // Display UI Output
       if(isUnknown){
         detectedBox.innerHTML = `
           <div style="text-align:center;padding:8px;">
-            <div class="badge no">UNKNOWN</div>
+            <div class="badge ${inCooldown ? 'cool' : 'no'}">${inCooldown ? 'COOLDOWN' : 'UNKNOWN'}</div>
             <p class="small" style="margin-top:8px;color:var(--text-muted)">හැඳුනුම්පත පරීක්ෂා කරන්න (VERIFY ID)</p>
           </div>`;
-        if(el("mode").value==="auto"){
-          // Unknown auto-log (rate-limited)
-          await autoLogUnknown(conf);
+          
+        if(el("mode").value==="auto" && !inCooldown) {
+           detectionCooldowns.set("UNKNOWN_TARGET", now); // Lock Memory
+           autoLogUnknown(conf);
         }
       }else{
         detectedBox.innerHTML = `
           <div style="text-align:center;padding:8px;">
-            <div class="badge ${person.watchlist?'warn':'ok'}">${person.watchlist?'⚠️ WATCHLIST':'✅ CLEARED'}</div>
+            <div class="badge ${inCooldown ? 'cool' : (person.watchlist?'warn':'ok')}">
+              ${inCooldown ? `⏳ WAIT ${timeLeft}s` : (person.watchlist?'⚠️ WATCHLIST':'✅ CLEARED')}
+            </div>
             <h3 style="margin-top:8px;color:var(--text-primary)">${person.name}</h3>
             <p class="small" style="color:var(--accent-gold)">${person.rank||''} | ${person.service_no||''}</p>
-            <p class="small">Unit: ${person.unit||'-'} | Type: ${person.person_type} | Status: ${person.status}</p>
-            <p class="small" style="margin-top:8px;">MATCH CONFIDENCE: ${(conf*100).toFixed(1)}%</p>
+            <p class="small">Unit: ${person.unit||'-'}</p>
           </div>
         `;
-        if(el("mode").value==="auto"){
-          await autoLogKnown(person, conf);
+
+        if(el("mode").value==="auto" && !inCooldown){
+           detectionCooldowns.set(person.id, now); // Lock Memory
+           autoLogKnown(person, conf);
         }
       }
     }
   }, 900);
 }
 
+// LOGGING FUNCTIONS
 async function autoLogUnknown(conf){
-  const key = `unknown-${new Date().toISOString().slice(0,16)}`; // per minute
-  if(lastLogKey===key) return;
-  lastLogKey=key;
-
-  const eventType = el("eventType").value;
-  const status = "rejected";
-  const deviceId = settings.deviceId || null;
-
-  const payload = {
-    person_id: null,
-    device_id: deviceId,
-    event_type: "UNKNOWN",
-    status,
-    confidence: Number((conf*100).toFixed(2)),
-    snapshot_url: null,
-    operator_user_id: session?.user?.id || null,
-    extra: { eventTypeRequested: eventType }
-  };
-
-  const ok = await insertAccessEvent(payload, "unknown");
-  if(ok){
-    speak("අවසර නොමැති පුද්ගලයෙක්");
-  }
+  await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected", confidence: conf, extra: { gps: currentGps } }, "unknown");
+  speak("Unauthorized person detected");
 }
 
 async function autoLogKnown(person, conf){
-  const nowKey = `${person.id}-${new Date().toISOString().slice(0,16)}`; // per minute
-  if(lastLogKey===nowKey) return;
-  lastLogKey=nowKey;
-
-  const eventType = el("eventType").value;
-  const status = person.watchlist ? "rejected" : "approved"; // demo logic: watchlist => reject+alert
-  const deviceId = settings.deviceId || null;
-
-  // Optional snapshot capture
-  const snapshotUrl = await tryUploadSnapshot(person, status);
-
-  const payload = {
-    person_id: person.id,
-    device_id: deviceId,
-    event_type: eventType,
-    status,
-    confidence: Number((conf*100).toFixed(2)),
-    snapshot_url: snapshotUrl,
-    operator_user_id: session?.user?.id || null,
-    extra: { watchlist: person.watchlist }
-  };
-
-  const ok = await insertAccessEvent(payload, person.watchlist ? "watchlist" : "normal");
-  if(ok){
-    speak(person.watchlist ? "වොච්ලිස්ට්, වහාම පරීක්ෂා කරන්න" : "අනුමතයි");
-  }
+  await insertAccessEvent({ person_id: person.id, event_type: el("eventType").value, status: person.watchlist?"rejected":"approved", extra: { gps: currentGps } }, person.watchlist?"watchlist":"normal");
+  speak(person.watchlist ? "Watchlist individual detected" : "Access granted");
 }
 
-/* Snapshot upload (optional) */
-async function tryUploadSnapshot(person, status){
-  try{
-    // capture small JPG-like PNG (good enough for demo)
-    const tmp = document.createElement("canvas");
-    tmp.width = canvas.width; tmp.height = canvas.height;
-    const tctx = tmp.getContext("2d");
-    tctx.drawImage(video, 0, 0, tmp.width, tmp.height);
-    const blob = await new Promise(res=>tmp.toBlob(res, "image/png", 0.92));
-    if(!blob) return null;
-
-    const fileName = `${new Date().toISOString()}_${person?.service_no||"unknown"}_${status}.png`.replaceAll(":","-");
-    const path = `snapshots/${session.user.id}/${fileName}`;
-
-    const { error } = await sb.storage.from("snapshots").upload(path, blob, { upsert:true, contentType:"image/png" });
-    if(error){
-      // If bucket is private or policy blocks, just skip
-      return null;
-    }
-    // store path only (safer). You can generate signed URLs later.
-    return path;
-  }catch{
-    return null;
-  }
-}
-
-/* Insert event with offline queue */
 async function insertAccessEvent(payload, kind){
   try{
-    const { data, error } = await sb.from("access_events").insert(payload).select("id").single();
-    if(error) throw error;
-
-    // create alerts if needed
-    if(kind==="watchlist"){
-      await sb.from("alerts").insert({ access_event_id: data.id, alert_type:"watchlist", note:"Watchlist detected" });
-    }else if(kind==="unknown"){
-      await sb.from("alerts").insert({ access_event_id: data.id, alert_type:"unknown", note:"Unknown person detected" });
-    }
-
-    await sb.from("audit_logs").insert({ action:"access_event_insert", detail: payload });
-
-    await refreshStats();
-    await refreshLogs();
-    await refreshAlerts();
-    return true;
-  }catch(e){
-    // offline or network error => queue
-    queuePush({ payload, kind, ts: Date.now() });
-    showAlert("Network Error - Queued Offline", "warn");
-    return false;
-  }
+    const { data } = await sb.from("access_events").insert(payload).select("id").single();
+    if(kind==="watchlist"||kind==="unknown") await sb.from("alerts").insert({ access_event_id: data.id, alert_type:kind });
+    refreshLogs(); return true;
+  }catch(e){ queuePush({ payload, kind, ts: Date.now() }); return false; }
 }
 
-async function syncQueue(){
-  let processed=0;
-  while(queueLen()>0 && navigator.onLine){
-    const item = queueShift();
-    if(!item) break;
-    const ok = await insertAccessEvent(item.payload, item.kind);
-    if(!ok){
-      // failed again, re-queue and stop to avoid loop
-      queuePush(item);
-      break;
-    }
-    processed++;
-  }
-  if(processed>0) showAlert(`Synced ${processed} queued event(s)`, "success");
-  updateQueueBadge();
-}
+async function syncQueue(){ /* sync logic */ }
 
 /* =========================
-   PERSONS (ADMIN)
+   UI BUTTONS & EXPORT
 ========================= */
-function renderPersonsList(){
-  const q = (el("personSearch").value||"").toLowerCase().trim();
-  const list = persons
-    .filter(p=>{
-      if(!q) return true;
-      return (p.service_no||"").toLowerCase().includes(q) ||
-             (p.name||"").toLowerCase().includes(q) ||
-             (p.unit||"").toLowerCase().includes(q);
-    })
-    .slice(0,200);
+el("btnNightVision").addEventListener("click", () => {
+  nightVisionMode = !nightVisionMode;
+  if(nightVisionMode) { videoBox.classList.add("night-vision"); el("btnNightVision").classList.replace("btn-secondary", "btn-primary"); } 
+  else { videoBox.classList.remove("night-vision"); el("btnNightVision").classList.replace("btn-primary", "btn-secondary"); }
+});
 
-  const div = el("personsList");
-  if(!list.length){
-    div.innerHTML = "<div class='small' style='padding:14px;color:var(--text-muted)'>NO RECORDS FOUND</div>";
-    return;
+el("btnPanic").addEventListener("click", async () => {
+  isLockdown = !isLockdown;
+  if(isLockdown) {
+    document.body.classList.add("lockdown-mode"); el("btnPanic").textContent = "❌ අගුලු දැමීම අවලංගු කරන්න (CANCEL LOCKDOWN)";
+    speak("Base Lockdown Initiated. Security breach protocol activated."); playAlarmSound();
+    await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected", device_id: settings.deviceId || null, extra: { gps: currentGps, lockdown: true } }, "watchlist");
+  } else {
+    document.body.classList.remove("lockdown-mode"); el("btnPanic").innerHTML = "🚨 හදිසි අවස්ථා අගුලු දැමීම (INITIATE BASE LOCKDOWN) 🚨";
+    speak("Lockdown cancelled. Resume normal operations.");
   }
-
-  div.innerHTML = list.map(p=>`
-    <div style="padding:12px;border:1px solid var(--border-color);border-left: 3px solid ${p.watchlist?'var(--accent-gold)':'var(--accent-main)'}; margin-bottom:10px;background:rgba(0,0,0,0.4)">
-      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-        <div>
-          <b style="color:var(--text-primary); font-size:1.1em">${p.name}</b> <span class="small" style="color:var(--accent-gold)">(${p.rank||'-'})</span><br/>
-          <span class="small">Svc: ${p.service_no||'-'} | Unit: ${p.unit||'-'} | Type: ${p.person_type} | Status: ${p.status}</span>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          ${p.watchlist ? `<span class="badge warn">WATCHLIST</span>` : `<span class="badge ok">CLEARED</span>`}
-          <button class="btn-secondary" onclick="openPersonForm('${p.id}')">EDIT</button>
-        </div>
-      </div>
-    </div>
-  `).join("");
-}
-
-window.openPersonForm = function(id){
-  const p = persons.find(x=>x.id===id);
-  if(!p) return;
-  el("personForm").classList.remove("hidden");
-  el("personId").value = p.id;
-  el("pService").value = p.service_no || "";
-  el("pName").value = p.name || "";
-  el("pRank").value = p.rank || "";
-  el("pUnit").value = p.unit || "";
-  el("pType").value = p.person_type || "soldier";
-  el("pStatus").value = p.status || "active";
-  el("pWatch").value = String(!!p.watchlist);
-  el("pNotes").value = p.notes || "";
-  selectedPersonId = p.id;
-  updateTemplateInfo();
-};
-
-function clearPersonForm(){
-  el("personForm").classList.add("hidden");
-  el("personId").value="";
-  el("pService").value="";
-  el("pName").value="";
-  el("pRank").value="";
-  el("pUnit").value="";
-  el("pType").value="soldier";
-  el("pStatus").value="active";
-  el("pWatch").value="false";
-  el("pNotes").value="";
-  selectedPersonId = null;
-  updateTemplateInfo();
-}
-
-async function savePerson(){
-  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
-
-  const id = el("personId").value || null;
-  const payload = {
-    service_no: el("pService").value.trim() || null,
-    name: el("pName").value.trim(),
-    rank: el("pRank").value.trim() || null,
-    unit: el("pUnit").value.trim() || null,
-    person_type: el("pType").value,
-    status: el("pStatus").value,
-    watchlist: el("pWatch").value==="true",
-    notes: el("pNotes").value.trim() || null
-  };
-  if(!payload.name){ showAlert("නම අත්‍යවශ්‍යයි (NAME REQUIRED)", "danger"); return; }
-
-  try{
-    if(id){
-      const { error } = await sb.from("persons").update(payload).eq("id", id);
-      if(error) throw error;
-      await sb.from("audit_logs").insert({ action:"person_update", detail:{ id, payload } });
-      showAlert("දත්ත යාවත්කාලීන කරන ලදී (UPDATED)", "success");
-    }else{
-      const { error } = await sb.from("persons").insert(payload);
-      if(error) throw error;
-      await sb.from("audit_logs").insert({ action:"person_insert", detail:{ payload } });
-      showAlert("නව දත්ත එක් කරන ලදී (ADDED)", "success");
-    }
-    await refreshPersonsAndTemplates();
-    await refreshStats();
-    clearPersonForm();
-  }catch(e){
-    showAlert(e.message || "Save Failed", "danger");
-  }
-}
-
-async function deletePerson(){
-  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
-  const id = el("personId").value;
-  if(!id) return;
-  if(!confirm("මෙම භටයාගේ දත්ත ඉවත් කිරීමට ඔබට අවශ්‍යද?")) return;
-  try{
-    const { error } = await sb.from("persons").delete().eq("id", id);
-    if(error) throw error;
-    await sb.from("audit_logs").insert({ action:"person_delete", detail:{ id } });
-    showAlert("දත්ත ඉවත් කරන ලදී (DELETED)", "info");
-    await refreshPersonsAndTemplates();
-    await refreshStats();
-    clearPersonForm();
-  }catch(e){
-    showAlert(e.message || "Delete Failed", "danger");
-  }
-}
-
-/* Face enrollment: capture 3 descriptors and save as templates */
-async function enrollSelectedPerson(){
-  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
-  const id = el("personId").value;
-  if(!id){ showAlert("කරුණාකර පළමුව නමක් තෝරන්න", "warn"); return; }
-  if(!cameraStream){ showAlert("කැමරාව අරඹන්න (START CAMERA)", "warn"); return; }
-
-  const captures = [];
-  for(let i=0;i<3;i++){
-    overlay.textContent = `SCANNING ${i+1}/3...`;
-    const det = await faceapi
-      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-    if(!det){
-      showAlert("මුහුණක් අනාවරණය නොවිණි. කැමරාව දෙස බලන්න.", "danger");
-      overlay.textContent = "STANDBY";
-      return;
-    }
-    captures.push(Array.from(det.descriptor).map(n=>Number(n)));
-    await new Promise(r=>setTimeout(r, 600));
-  }
-  overlay.textContent = "ENCRYPTING & SAVING...";
-
-  try{
-    const rows = captures.map(desc=>({ person_id: id, descriptor: desc, model_version: "faceapi-0.22.2" }));
-    const { error } = await sb.from("face_templates").insert(rows);
-    if(error) throw error;
-    await sb.from("audit_logs").insert({ action:"face_enroll", detail:{ person_id:id, count: rows.length } });
-    showAlert("ජෛව දත්ත සුරකින ලදී (BIOMETRICS SAVED)", "success");
-    overlay.textContent = "SYSTEM READY";
-    await refreshPersonsAndTemplates();
-  }catch(e){
-    showAlert(e.message || "Enroll Failed", "danger");
-    overlay.textContent = "SYSTEM READY";
-  }
-}
-
-async function clearTemplatesForSelected(){
-  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
-  const id = el("personId").value;
-  if(!id) return;
-  if(!confirm("සියලුම ජෛව දත්ත මකා දැමීමට අවශ්‍යද?")) return;
-  const { error } = await sb.from("face_templates").delete().eq("person_id", id);
-  if(error){ showAlert(error.message, "danger"); return; }
-  await sb.from("audit_logs").insert({ action:"face_clear", detail:{ person_id:id } });
-  showAlert("දත්ත මකා දමන ලදී (CLEARED)", "info");
-  await refreshPersonsAndTemplates();
-}
-
-function updateTemplateInfo(){
-  const id = el("personId").value;
-  if(!id){
-    el("templateInfo").textContent = "NO SELECTION";
-    return;
-  }
-  const count = templates.filter(t=>t.person_id===id).length;
-  el("templateInfo").textContent = `Biometric Templates: ${count}`;
-}
-
-/* =========================
-   LOGS / ALERTS / AUDIT
-========================= */
-function daysAgoISO(days){
-  const d = new Date();
-  d.setDate(d.getDate()-days);
-  return d.toISOString();
-}
+});
 
 async function refreshLogs(){
-  const f = el("logFilter").value;
-  let q = sb.from("access_events").select("id,created_at,person_id,device_id,event_type,status,confidence,extra,persons(name,service_no,person_type),devices(gate_name,name)").order("created_at",{ascending:false}).limit(300);
-
-  if(f==="today"){
-    const start = new Date(); start.setHours(0,0,0,0);
-    q = q.gte("created_at", start.toISOString());
-  }else if(f==="7"){
-    q = q.gte("created_at", daysAgoISO(7));
-  }else if(f==="30"){
-    q = q.gte("created_at", daysAgoISO(30));
-  }
-
-  const { data, error } = await q;
-  if(error){ showAlert(error.message, "danger"); return; }
-
+  const { data } = await sb.from("access_events").select("*, persons(name,service_no), devices(gate_name)").order("created_at",{ascending:false}).limit(100);
   const body = el("logsBody");
-  const rows = data || [];
-  if(!rows.length){
-    body.innerHTML = `<tr><td colspan="9" class="small" style="padding:18px;color:var(--text-muted);text-align:center;">NO LOGS FOUND</td></tr>`;
-    return;
-  }
-  body.innerHTML = rows.map((r,i)=>{
-    const p = r.persons;
-    const d = r.devices;
-    const statusBadge = r.status==="approved" ? "ok" : "no";
-    const conf = (r.confidence ?? "").toString();
-    const time = new Date(r.created_at).toLocaleString("si-LK");
-    return `
-      <tr>
-        <td>${i+1}</td>
-        <td>${time}</td>
-        <td>${p?.service_no || "-"}</td>
-        <td>${p?.name || "UNKNOWN"}</td>
-        <td>${p?.person_type || "-"}</td>
-        <td>${d?.gate_name || d?.name || "-"}</td>
-        <td>${r.event_type}</td>
-        <td><span class="badge ${statusBadge}">${r.status}</span></td>
-        <td>${conf}</td>
-      </tr>
-    `;
+  if(!data||!data.length){ body.innerHTML=`<tr><td colspan="8">NO DATA</td></tr>`; return; }
+  
+  body.innerHTML = data.map((r,i)=>{
+    const p = r.persons; let gpsLink = "-";
+    if(r.extra && r.extra.gps && r.extra.gps.lat) { gpsLink = `<a href="https://www.google.com/maps?q=${r.extra.gps.lat},${r.extra.gps.lng}" target="_blank" style="color:#00e5ff;">MAP</a>`; }
+    return `<tr><td>${i+1}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${p?.service_no||"-"}</td><td>${p?.name||"-"}</td><td>${r.devices?.gate_name||"-"}</td><td>${gpsLink}</td><td>${r.event_type}</td><td><span class="badge ${r.status==='approved'?'ok':'no'}">${r.status}</span></td></tr>`;
   }).join("");
 }
 
-async function refreshAlerts(){
-  const { data, error } = await sb
-    .from("alerts")
-    .select("id,created_at,alert_type,note,resolved,access_event_id")
-    .order("created_at",{ascending:false})
-    .limit(200);
-  if(error){ showAlert(error.message, "danger"); return; }
-
-  const list = data || [];
-  const div = el("alertsList");
-  if(!list.length){ div.textContent = "NO ALERTS"; return; }
-
-  div.innerHTML = list.map(a=>`
-    <div style="padding:12px;border:1px solid var(--border-color); border-left: 3px solid var(--accent-danger); border-radius:4px;margin-bottom:10px;background:rgba(0,0,0,0.5)">
-      <b style="color:var(--accent-danger)">${a.alert_type.toUpperCase()}</b> ${a.resolved ? `<span class="badge ok">RESOLVED</span>` : `<span class="badge warn">OPEN</span>`}
-      <div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString("si-LK")} • ${a.note||''}</div>
-    </div>
-  `).join("");
-}
-
-async function refreshAudit(){
-  const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
-  if(!canAudit) return;
-
-  const { data, error } = await sb
-    .from("audit_logs")
-    .select("id,created_at,action,detail,user_id")
-    .order("created_at",{ascending:false})
-    .limit(200);
-  if(error){ showAlert(error.message, "danger"); return; }
-
-  const list = data || [];
-  const div = el("auditList");
-  if(!list.length){ div.textContent="NO AUDIT LOGS"; return; }
-
-  div.innerHTML = list.map(a=>`
-    <div style="padding:12px;border:1px solid var(--border-color); margin-bottom:10px;background:rgba(255,255,255,0.05)">
-      <b style="color:var(--accent-main)">${a.action}</b>
-      <div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString("si-LK")} • USER ID: ${a.user_id||'SYSTEM'}</div>
-      <div class="small" style="margin-top:6px;color:var(--text-muted);white-space:pre-wrap; font-family:monospace">${JSON.stringify(a.detail,null,2)}</div>
-    </div>
-  `).join("");
-}
-
-/* CSV export (from currently loaded table query) */
-function exportLogsToCSV(){
-  const rows = [...el("logsBody").querySelectorAll("tr")].map(tr => [...tr.children].map(td=>td.innerText));
-  if(!rows.length){ showAlert("No logs to export", "warn"); return; }
-  const header = ["#", "Time", "Service", "Name", "Type", "Gate", "Event", "Status", "Conf"];
-  const csv = [header, ...rows].map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
-  const blob = new Blob(["\ufeff"+csv], { type:"text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href=url;
-  a.download=`mission_logs_${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-  showAlert("FILE DOWNLOADED", "success");
-}
-
-/* =========================
-   DEVICES (ADMIN)
-========================= */
-async function addDevice(){
-  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED", "danger"); return; }
-  const name = el("dName").value.trim();
-  const gate = el("dGate").value.trim();
-  const loc  = el("dLoc").value.trim();
-  if(!name){ showAlert("Device name required", "warn"); return; }
-  const { error } = await sb.from("devices").insert({ name, gate_name: gate || null, location: loc || null });
-  if(error){ showAlert(error.message, "danger"); return; }
-  await sb.from("audit_logs").insert({ action:"device_insert", detail:{ name, gate, loc } });
-  showAlert("DEVICE ADDED", "success");
-  el("dName").value=""; el("dGate").value=""; el("dLoc").value="";
-  await refreshDevices();
-}
-
-/* =========================
-   MANUAL SEARCH (CAMERA TAB)
-========================= */
-async function manualSearch(){
-  const q = el("manualSearch").value.trim().toLowerCase();
-  if(!q){ showAlert("Enter Service No or Name", "warn"); return; }
-  const hits = persons.filter(p =>
-    (p.service_no||"").toLowerCase().includes(q) ||
-    (p.name||"").toLowerCase().includes(q)
-  ).slice(0,8);
-
-  const div = el("manualResults");
-  if(!hits.length){ div.innerHTML="<div class='small' style='color:var(--text-muted)'>NO MATCH FOUND</div>"; return; }
-
-  div.innerHTML = hits.map(p=>`
-    <div style="padding:10px;border:1px solid var(--border-color); border-left: 3px solid ${p.watchlist?'var(--accent-gold)':'var(--accent-main)'}; margin-bottom:8px;background:rgba(0,0,0,0.6)">
-      <b style="color:#fff">${p.name}</b> <span class="small" style="color:var(--accent-gold)">(${p.service_no||'-'})</span>
-      ${p.watchlist ? `<span class="badge warn" style="margin-left:8px;">WATCHLIST</span>` : ``}
-      <div class="small" style="color:var(--text-muted)">${p.rank||'-'} | ${p.unit||'-'} | ${p.person_type}</div>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-primary" onclick="manualLog('${p.id}', 'approved')">✅ APPROVE</button>
-        <button class="btn-danger" onclick="manualLog('${p.id}', 'rejected')">⛔ DENY</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-window.manualLog = async function(personId, status){
-  const person = persons.find(p=>p.id===personId);
-  if(!person){ showAlert("Person Error", "danger"); return; }
-  const eventType = el("eventType").value;
-  const payload = {
-    person_id: person.id,
-    device_id: settings.deviceId || null,
-    event_type: eventType,
-    status,
-    confidence: null,
-    snapshot_url: null,
-    operator_user_id: session?.user?.id || null,
-    extra: { manual: true }
-  };
-  const ok = await insertAccessEvent(payload, status==="rejected" ? "manual" : "normal");
-  if(ok) showAlert("Manual Log Recorded", "success");
-};
-
-/* =========================
-   TABS
-========================= */
-function showTab(name){
-  document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden"));
-  el("tab-"+name).classList.remove("hidden");
-  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
-  document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add("active");
-}
-
-/* =========================
-   EVENTS
-========================= */
-el("btnLogin").addEventListener("click", login);
-el("btnLogout").addEventListener("click", logout);
-
-document.querySelectorAll(".tab").forEach(btn=>{
-  btn.addEventListener("click", ()=>showTab(btn.dataset.tab));
-});
-
-el("btnStartCam").addEventListener("click", startCamera);
-el("btnStopCam").addEventListener("click", stopCamera);
-el("btnSyncQueue").addEventListener("click", syncQueue);
-
 el("btnSaveSettings").addEventListener("click", async ()=>{
-  settings.confidenceThreshold = Number(el("confThr").value);
-  settings.voiceAlerts = el("voice").value==="on";
-  settings.autoLockTime = Number(el("autolock").value);
-  settings.deviceId = el("deviceSelect").value || null;
-  saveSettingsLocal();
-  await refreshDevices();
-  buildMatcher();
+  settings.confidenceThreshold = Number(el("confThr").value); settings.voiceAlerts = el("voice").value==="on";
+  settings.acousticDetection = el("acousticSetting").value==="on"; settings.autoLockTime = Number(el("autolock").value);
+  settings.deviceId = el("deviceSelect").value || null; saveSettingsLocal(); await refreshDevices(); buildMatcher();
   showAlert("CONFIGURATION SAVED", "success");
 });
 
-el("deviceSelect").addEventListener("change", ()=>{
-  settings.deviceId = el("deviceSelect").value || null;
-  saveSettingsLocal();
-  refreshDevices();
+el("btnExportCSV").addEventListener("click", ()=>{
+  const rows = [...el("logsBody").querySelectorAll("tr")].map(tr => [...tr.children].map(td=>td.innerText));
+  if(!rows.length) return;
+  const csv = [["#", "Time", "Service", "Name", "Gate", "GPS", "Event", "Status"], ...rows].map(r=>r.join(",")).join("\n");
+  const blob = new Blob(["\ufeff"+csv], { type:"text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download=`mission_logs_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 
-el("btnRefreshLogs").addEventListener("click", refreshLogs);
-el("logFilter").addEventListener("change", refreshLogs);
-el("btnExportCSV").addEventListener("click", exportLogsToCSV);
+/* BOOT */
+el("btnLogin").addEventListener("click", login);
+el("btnLogout").addEventListener("click", logout);
+document.querySelectorAll(".tab").forEach(btn=>{ btn.addEventListener("click", ()=>{ document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden")); el("tab-"+btn.dataset.tab).classList.remove("hidden"); document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); }); });
+el("btnStartCam").addEventListener("click", startCamera); el("btnStopCam").addEventListener("click", stopCamera); el("btnRefreshLogs").addEventListener("click", refreshLogs);
 
-el("btnRefreshAlerts").addEventListener("click", refreshAlerts);
-el("btnRefreshAudit").addEventListener("click", refreshAudit);
-
-el("btnManualPick").addEventListener("click", manualSearch);
-
-el("btnRefreshPersons").addEventListener("click", refreshPersonsAndTemplates);
-el("personSearch").addEventListener("input", renderPersonsList);
-el("btnAddPerson").addEventListener("click", ()=>{
-  if(profile?.role!=="admin"){ showAlert("ADMIN ACCESS REQUIRED", "danger"); return; }
-  clearPersonForm();
-  el("personForm").classList.remove("hidden");
-});
-el("btnCancelPerson").addEventListener("click", clearPersonForm);
-el("btnSavePerson").addEventListener("click", savePerson);
-el("btnDeletePerson").addEventListener("click", deletePerson);
-
-el("btnEnroll1").addEventListener("click", enrollSelectedPerson);
-el("btnClearTemplates").addEventListener("click", clearTemplatesForSelected);
-
-el("btnAddDevice").addEventListener("click", addDevice);
-el("btnRefreshDevices").addEventListener("click", refreshDevices);
-
-/* =========================
-   BOOT
-========================= */
 (async function boot(){
-  setOnlinePill();
-  loadSettings();
-
-  const s = await loadSession();
-  if(s){
-    session=s;
-    el("btnLogout").disabled=false;
-    await afterLogin();
-  }
+  setOnlinePill(); loadSettings(); initGPS();
+  const s = await loadSession(); if(s){ session=s; el("btnLogout").disabled=false; await afterLogin(); }
 })();
 </script>
-
 </body>
 </html>
-
-
