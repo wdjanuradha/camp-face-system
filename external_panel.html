@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SENTRY X - MONITORING PANEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+/* --- HIGH-TECH COMMAND CENTER THEME --- */
+:root {
+  --bg-dark: #020502;
+  --neon-green: #00ff41;
+  --neon-red: #ff003c;
+  --neon-blue: #00e5ff;
+  --neon-gold: #ffb300;
+  --panel-bg: rgba(0, 20, 10, 0.7);
+  --border-neon: rgba(0, 255, 65, 0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--neon-green);
+  font-family: 'Share Tech Mono', monospace;
+  overflow: hidden; /* Hide scrollbars for full screen presentation */
+  background-image: 
+    linear-gradient(rgba(0, 10, 0, 0.8), rgba(0, 20, 0, 0.9)),
+    url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+}
+
+/* CRT Scanline Effect */
+body::after {
+  content: " "; display: block; position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 999; background-size: 100% 2px, 3px 100%; pointer-events: none;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  grid-template-rows: 80px 1fr 1fr;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+}
+
+/* HEADER */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--neon-green);
+  box-shadow: 0 5px 15px var(--border-neon);
+  padding: 0 20px;
+  background: var(--panel-bg);
+}
+.header h1 {
+  font-family: 'Black Ops One', cursive;
+  font-size: 2.5rem;
+  letter-spacing: 4px;
+  text-shadow: 0 0 10px var(--neon-green);
+}
+.header .clock { font-size: 1.5rem; color: var(--neon-blue); }
+
+/* BOX STYLES */
+.box {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-neon);
+  position: relative;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.box::before {
+  content: ""; position: absolute; top: -2px; left: -2px; width: 20px; height: 20px;
+  border-top: 3px solid var(--neon-green); border-left: 3px solid var(--neon-green);
+}
+.box::after {
+  content: ""; position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px;
+  border-bottom: 3px solid var(--neon-green); border-right: 3px solid var(--neon-green);
+}
+.box-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  color: var(--neon-gold);
+  border-bottom: 1px dashed var(--border-neon);
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+/* STATUS SCREEN (GIANT INDICATOR) */
+.status-screen {
+  grid-column: 1; grid-row: 2 / 4;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.status-text {
+  font-family: 'Black Ops One', cursive;
+  font-size: 5rem;
+  letter-spacing: 5px;
+  text-shadow: 0 0 20px currentColor;
+  margin-bottom: 20px;
+}
+.id-card {
+  display: none;
+  width: 80%;
+  border: 2px solid currentColor;
+  padding: 20px;
+  background: rgba(0,0,0,0.6);
+  text-align: left;
+}
+.id-card h2 { font-size: 2.5rem; margin-bottom: 10px; font-family: 'Rajdhani', sans-serif; }
+.id-card p { font-size: 1.5rem; margin-bottom: 5px; color: #fff; }
+
+/* RADAR (IDLE STATE) */
+.radar {
+  width: 200px; height: 200px;
+  border: 2px solid var(--neon-green);
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px var(--border-neon);
+}
+.radar::before {
+  content: ""; position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, rgba(0,255,65,0) 0%, rgba(0,255,65,0.5) 100%);
+  transform-origin: left center;
+  animation: radarScan 2s linear infinite;
+}
+@keyframes radarScan { 100% { transform: rotate(360deg); } }
+
+/* 3D GATE ANIMATION */
+.gate-section {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  background: #000;
+}
+.gate-container {
+  position: relative; width: 100%; height: 150px;
+  display: flex; align-items: flex-end; padding-left: 50px;
+}
+.gate-pillar {
+  width: 30px; height: 100px; background: #444; border: 2px solid #666;
+  position: relative; z-index: 2;
+}
+.gate-arm {
+  width: 250px; height: 15px;
+  background: repeating-linear-gradient(45deg, #ff0000, #ff0000 15px, #ffffff 15px, #ffffff 30px);
+  position: absolute; left: 65px; bottom: 85px;
+  transform-origin: left center;
+  transform: rotate(0deg); /* Closed */
+  transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.8);
+}
+.gate-arm.open {
+  transform: rotate(-90deg); /* Open */
+}
+.gate-light {
+  width: 15px; height: 15px; border-radius: 50%; background: var(--neon-red);
+  position: absolute; top: 5px; left: 7.5px;
+  box-shadow: 0 0 10px var(--neon-red);
+}
+.gate-light.green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+
+/* LOGS SECTION */
+.logs-section { overflow: hidden; }
+.log-list { list-style: none; font-size: 1.1rem; }
+.log-item {
+  padding: 10px; border-bottom: 1px solid var(--border-neon);
+  display: flex; justify-content: space-between;
+  animation: slideIn 0.5s ease-out;
+}
+.log-item.granted { color: var(--neon-green); }
+.log-item.denied { color: var(--neon-red); }
+@keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* STATE CLASSES */
+.state-idle { color: var(--neon-green); border-color: var(--neon-green); }
+.state-granted { color: var(--neon-green); border-color: var(--neon-green); background: rgba(0, 255, 65, 0.1); }
+.state-denied { color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 0, 60, 0.1); }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="header">
+    <h1>SENTRY X <span style="font-size:1.2rem; color:var(--text-muted)">// MONITORING PANEL</span></h1>
+    <div class="clock" id="clock">00:00:00</div>
+  </div>
+
+  <div class="box status-screen state-idle" id="statusBox">
+    <div class="radar" id="radar"></div>
+    <div class="status-text" id="statusText">SCANNING...</div>
+    
+    <div class="id-card" id="idCard">
+      <h2 id="cardName">JOHN DOE</h2>
+      <p style="color:var(--neon-gold)" id="cardRank">RANK: SGT</p>
+      <p id="cardSvc">SVC: SLLI/0000</p>
+      <p style="margin-top:10px; font-size:1.2rem; opacity:0.8" id="cardMsg">Clearance Verified.</p>
+    </div>
+  </div>
+
+  <div class="box gate-section">
+    <div class="box-title">PHYSICAL GATE STATUS</div>
+    <div class="gate-container">
+      <div class="gate-pillar">
+        <div class="gate-light" id="gateLight"></div>
+      </div>
+      <div class="gate-arm" id="gateArm"></div>
+    </div>
+    <h2 id="gateText" style="margin-top:20px; color:var(--neon-red); font-family: 'Rajdhani', sans-serif;">RESTRICTED - CLOSED</h2>
+  </div>
+
+  <div class="box logs-section">
+    <div class="box-title">RECENT ACTIVITY LOG</div>
+    <ul class="log-list" id="logList">
+      <li class="log-item"><span style="color:#fff">SYSTEM INIT</span> <span>READY</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+// Clock Update
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+}, 1000);
+
+// Elements
+const statusBox = document.getElementById('statusBox');
+const statusText = document.getElementById('statusText');
+const radar = document.getElementById('radar');
+const idCard = document.getElementById('idCard');
+const cardName = document.getElementById('cardName');
+const cardRank = document.getElementById('cardRank');
+const cardSvc = document.getElementById('cardSvc');
+const cardMsg = document.getElementById('cardMsg');
+const gateArm = document.getElementById('gateArm');
+const gateLight = document.getElementById('gateLight');
+const gateText = document.getElementById('gateText');
+const logList = document.getElementById('logList');
+
+let resetTimeout;
+
+// Broadcast Channel Receiver
+const broadcast = new BroadcastChannel('sentryx_panel');
+
+broadcast.onmessage = (event) => {
+  const { type, payload } = event.data;
+  clearTimeout(resetTimeout);
+
+  if (type === 'ACCESS_GRANTED') {
+    triggerGranted(payload.person);
+    addLog(payload.person.name, 'ACCESS GRANTED', 'granted');
+  } 
+  else if (type === 'ACCESS_DENIED') {
+    triggerDenied(payload.message, payload.person);
+    addLog(payload.person ? payload.person.name : 'UNKNOWN', 'ACCESS DENIED', 'denied');
+  }
+
+  // Reset UI after 6 seconds
+  resetTimeout = setTimeout(resetUI, 6000);
+};
+
+function triggerGranted(person) {
+  // Update Box
+  statusBox.className = "box status-screen state-granted";
+  statusText.textContent = "ACCESS GRANTED";
+  
+  // Hide Radar, Show ID
+  radar.style.display = "none";
+  idCard.style.display = "block";
+  idCard.style.borderColor = "var(--neon-green)";
+  
+  cardName.textContent = person.name.toUpperCase();
+  cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : 'N/A'}`;
+  cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : 'N/A'}`;
+  cardMsg.textContent = "CLEARANCE VERIFIED - PROCEED";
+  cardMsg.style.color = "var(--neon-green)";
+
+  // Open Gate
+  gateArm.classList.add('open');
+  gateLight.classList.add('green');
+  gateText.textContent = "GATE OPEN - PROCEED";
+  gateText.style.color = "var(--neon-green)";
+}
+
+function triggerDenied(message, person) {
+  // Update Box
+  statusBox.className = "box status-screen state-denied";
+  statusText.textContent = "ACCESS DENIED";
+  
+  // Hide Radar, Show ID (if person exists, otherwise just message)
+  radar.style.display = "none";
+  idCard.style.display = "block";
+  idCard.style.borderColor = "var(--neon-red)";
+  
+  if (person) {
+    cardName.textContent = person.name.toUpperCase();
+    cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : 'N/A'}`;
+    cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : 'N/A'}`;
+  } else {
+    cardName.textContent = "UNKNOWN ENTITY";
+    cardRank.textContent = "";
+    cardSvc.textContent = "NO RECORD FOUND";
+  }
+  
+  cardMsg.textContent = message.toUpperCase() + " - STAND DOWN";
+  cardMsg.style.color = "var(--neon-red)";
+
+  // Keep Gate Closed
+  gateArm.classList.remove('open');
+  gateLight.classList.remove('green');
+  gateText.textContent = "RESTRICTED - CLOSED";
+  gateText.style.color = "var(--neon-red)";
+}
+
+function resetUI() {
+  statusBox.className = "box status-screen state-idle";
+  statusText.textContent = "SCANNING...";
+  radar.style.display = "block";
+  idCard.style.display = "none";
+  
+  gateArm.classList.remove('open');
+  gateLight.classList.remove('green');
+  gateText.textContent = "RESTRICTED - CLOSED";
+  gateText.style.color = "var(--neon-red)";
+}
+
+function addLog(name, action, type) {
+  const li = document.createElement('li');
+  li.className = `log-item ${type}`;
+  const time = new Date().toLocaleTimeString();
+  li.innerHTML = `<span style="color:#fff">[${time}] ${name}</span> <span>${action}</span>`;
+  
+  logList.prepend(li);
+  if (logList.children.length > 8) {
+    logList.removeChild(logList.lastChild);
+  }
+}
+</script>
+
+</body>
+</html>
