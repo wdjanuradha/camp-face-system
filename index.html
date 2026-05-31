@@ -741,31 +741,72 @@ async function insertAccessEvent(payload, kind){
 }
 
 /* =========================
-   EVENTS & LISTENERS
+   EVENTS & LISTENERS (SAFE VERSION)
 ========================= */
-el("btnConnectArduinoDash").addEventListener("click", connectArduino);
-el("btnConnectArduino").addEventListener("click", connectArduino);
-el("btnLogin").addEventListener("click", login); el("btnLogout").addEventListener("click", logout);
-el("btnStartCam").addEventListener("click", startCamera); el("btnStopCam").addEventListener("click", stopCamera); 
-el("btnPanic").addEventListener("click", async () => {
+
+// උදව්කරු Function එක (බොත්තම තිබේ නම් පමණක් Event එක එකතු කරයි)
+function safeAddEvent(id, event, func) {
+  const btn = el(id);
+  if (btn) {
+    btn.addEventListener(event, func);
+  } else {
+    console.warn("Element not found: " + id + ". Skipping...");
+  }
+}
+
+safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
+safeAddEvent("btnConnectArduino", "click", connectArduino);
+safeAddEvent("btnLogin", "click", login);
+safeAddEvent("btnLogout", "click", logout);
+safeAddEvent("btnStartCam", "click", startCamera);
+safeAddEvent("btnStopCam", "click", stopCamera);
+safeAddEvent("btnPanic", "click", async () => {
   isLockdown = !isLockdown;
   if(isLockdown) {
-    document.body.classList.add("lockdown-mode"); el("btnPanic").innerHTML = "❌ අවලංගු කරන්න (CANCEL LOCKDOWN)";
-    speak("Base Lockdown Initiated."); await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected" }, "watchlist");
+    document.body.classList.add("lockdown-mode");
+    el("btnPanic").innerHTML = "❌ අවලංගු කරන්න (CANCEL LOCKDOWN)";
+    speak("Base Lockdown Initiated.");
+    await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected" }, "watchlist");
   } else {
-    document.body.classList.remove("lockdown-mode"); el("btnPanic").innerHTML = "🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨"; speak("Lockdown cancelled.");
+    document.body.classList.remove("lockdown-mode");
+    el("btnPanic").innerHTML = "🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨";
+    speak("Lockdown cancelled.");
   }
 });
 
+// Refresh & Other Buttons
+safeAddEvent("btnRefreshLogs", "click", refreshLogs);
+safeAddEvent("logFilter", "change", refreshLogs);
+safeAddEvent("btnRefreshPersons", "click", refreshPersonsAndTemplates);
+safeAddEvent("btnRefreshAlerts", "click", refreshAlerts);
+safeAddEvent("btnRefreshAudit", "click", refreshAudit);
+safeAddEvent("btnAddPerson", "click", () => {
+  if(profile?.role !== "admin") { showAlert("ADMIN ACCESS REQUIRED", "danger"); return; }
+  el("personForm").classList.remove("hidden");
+  el("personId").value = "";
+});
+safeAddEvent("btnSaveSettings", "click", async () => {
+  settings.confidenceThreshold = Number(el("confThr").value);
+  settings.voiceAlerts = el("voice").value === "on";
+  settings.acousticDetection = el("acousticSetting").value === "on";
+  settings.autoLockTime = Number(el("autolock").value);
+  settings.deviceId = el("deviceSelect").value || null;
+  saveSettingsLocal();
+  await refreshDevices();
+  buildMatcher();
+  showAlert("CONFIGURATION SAVED", "success");
+});
+
 // Tab Switching
-document.querySelectorAll(".tab").forEach(btn=>{ 
-  btn.addEventListener("click", (e)=>{ 
-    if(btn.classList.contains("tab-link")) return;
-    document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden")); 
-    el("tab-"+btn.dataset.tab).classList.remove("hidden"); 
-    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active")); 
-    btn.classList.add("active"); 
-  }); 
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    if (btn.classList.contains("tab-link")) return;
+    document.querySelectorAll(".tab-content").forEach(x => x.classList.add("hidden"));
+    const target = el("tab-" + btn.dataset.tab);
+    if (target) target.classList.remove("hidden");
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
 });
 
 (async function boot(){
