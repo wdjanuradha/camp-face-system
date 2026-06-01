@@ -625,15 +625,42 @@ async function logout(){
 async function loadProfile(){
   if(!session?.user) return null;
   const { data } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
-  profile = data || { role:"operator" };
+  
+  profile = data || { role: "operator" };
+  
+  // 🔴 DEVELOPER OVERRIDE: Force role to admin so you can access the Troops page
+  // Remove or comment out the line below when you deploy this to production
+  profile.role = "admin"; 
+  
   pillRole.textContent = `RANK: ${profile.role.toUpperCase()}`;
+}
+
+// Function to unlock restricted UI panels for admins
+function applyRoleGuards() {
+  const isAdmin = profile?.role === "admin" || profile?.role === "commander";
+  
+  const pGuard = el("personsGuard");
+  const pArea = el("personsArea");
+  
+  if (pGuard && pArea) {
+    if (isAdmin) {
+      pGuard.classList.add("hidden"); // Hide the warning message
+      pArea.classList.remove("hidden"); // Show the troops management panel
+    } else {
+      pGuard.classList.remove("hidden");
+      pArea.classList.add("hidden");
+    }
+  }
 }
 
 async function afterLogin(){
   loginCard.classList.add("hidden"); app.classList.remove("hidden"); 
   const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = false;
   
-  setOnlinePill(); loadSettings(); initGPS(); await loadProfile(); 
+  setOnlinePill(); loadSettings(); initGPS(); 
+  
+  await loadProfile(); 
+  applyRoleGuards(); // <-- This runs the unlock check after loading your profile
   
   await loadModels(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
   
