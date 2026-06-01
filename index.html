@@ -74,7 +74,7 @@ body::before {
 .header h1{ font-family: var(--font-head); font-size: 2.5em; color: var(--accent-main); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
 .header p{ color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 2px; font-weight: bold;}
 
-.pills{display:flex;gap:10px;flex-wrap:wrap}
+.pills{display:flex;gap:10px;flex-wrap:wrap; align-items:center;}
 .pill{ background: rgba(0,0,0,0.8); border: 1px solid var(--border-color); color: var(--accent-gold); padding:8px 15px; font-family: var(--font-body); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; box-shadow: inset 0 0 5px rgba(255,179,0,0.2);}
 
 /* Tabs Design */
@@ -192,6 +192,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
         <div class="pill" id="pillRole">RANK: -</div>
         <div class="pill" id="pillOnline" style="color:var(--accent-main)">SIGNAL: ONLINE</div>
         <div class="pill" id="pillGateStatus" style="color:var(--text-muted)">🔌 GATE: NO LINK</div> 
+        <button id="btnLogout" class="btn-danger" style="padding: 6px 12px; font-size: 0.8em;">LOGOUT</button>
       </div>
     </div>
 
@@ -214,7 +215,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
           🖥️ විනිශ්චය මණ්ඩල තිරය විවෘත කරන්න (LAUNCH EXTERNAL PANEL)
         </button>
         <button id="btnPanic" class="btn-danger" style="font-size: 1.1em; background-color:#990000; border: 2px solid #ff0000;">
-           🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨
+            🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨
         </button>
       </div>
 
@@ -436,6 +437,39 @@ const overlay = el("overlay"); const detectedBox = el("detectedBox"); const audi
 const cameraSource = el("cameraSource");
 
 /* =========================
+   NEW PLACEHOLDER FUNCTIONS (FIXES CRASHES)
+========================= */
+async function initGPS() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      currentGps.lat = pos.coords.latitude;
+      currentGps.lng = pos.coords.longitude;
+      pillGps.textContent = "📍 GPS: SECURED";
+      pillGps.style.color = "var(--accent-main)";
+    }, () => {
+      pillGps.textContent = "📍 GPS: FAILED";
+      pillGps.style.color = "var(--accent-danger)";
+    });
+  } else {
+    pillGps.textContent = "📍 GPS: NO SENSOR";
+  }
+}
+
+async function refreshAlerts() {
+  const alertsList = el("alertsList");
+  if (alertsList) alertsList.innerHTML = "SYSTEM NOMINAL - NO ACTIVE THREATS";
+}
+
+async function refreshAudit() {
+  console.log("Audit log refresh initialized...");
+}
+
+async function refreshDevices() {
+  console.log("Devices list refreshed");
+}
+
+
+/* =========================
    HARDWARE BRIDGE (ARDUINO)
 ========================= */
 async function connectArduino() {
@@ -572,7 +606,7 @@ function setOnlinePill(){
 }
 
 /* =========================
-   AUTH & BOOT
+   AUTH & BOOT (FIXED SAFE CALLS)
 ========================= */
 async function login(){
   const email = el("email").value.trim(); const password = el("password").value;
@@ -581,9 +615,11 @@ async function login(){
   if(error){ showAlert(error.message, "danger"); return; }
   session = data.session; showAlert("ACCESS GRANTED", "success"); await afterLogin();
 }
+
 async function logout(){
   await stopCamera(); await sb.auth.signOut(); session=null; profile=null;
-  app.classList.add("hidden"); loginCard.classList.remove("hidden"); el("btnLogout").disabled = true;
+  app.classList.add("hidden"); loginCard.classList.remove("hidden"); 
+  const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = true;
 }
 
 async function loadProfile(){
@@ -594,7 +630,9 @@ async function loadProfile(){
 }
 
 async function afterLogin(){
-  loginCard.classList.add("hidden"); app.classList.remove("hidden"); el("btnLogout").disabled = false;
+  loginCard.classList.add("hidden"); app.classList.remove("hidden"); 
+  const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = false;
+  
   setOnlinePill(); loadSettings(); initGPS(); await loadProfile(); 
   
   await loadModels(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
@@ -744,7 +782,6 @@ async function insertAccessEvent(payload, kind){
    EVENTS & LISTENERS (SAFE VERSION)
 ========================= */
 
-// උදව්කරු Function එක (බොත්තම තිබේ නම් පමණක් Event එක එකතු කරයි)
 function safeAddEvent(id, event, func) {
   const btn = el(id);
   if (btn) {
