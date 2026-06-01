@@ -687,13 +687,56 @@ async function refreshStats(){
   el("statTotal").textContent = count || 0;
 }
 
-async function refreshLogs(){
-  const { data } = await sb.from("access_events").select("*, persons(name,service_no)").order("created_at",{ascending:false}).limit(50);
+async function refreshLogs() {
+  // 1. Dropdown එකේ තෝරාගත් අගය ලබාගැනීම
+  const filterValue = el("logFilter") ? el("logFilter").value : "all";
+  
+  // 2. මූලික Query එක සකස් කිරීම (Limit එක 200ක් දක්වා වැඩි කර ඇත)
+  let query = sb.from("access_events")
+                .select("*, persons(name,service_no)")
+                .order("created_at", { ascending: false })
+                .limit(200);
+
+  // 3. Filter එකට අදාලව Date Range එක වෙනස් කිරීම
+  const today = new Date();
+  
+  if (filterValue === "today") {
+    // අද දවසේ මුල (00:00:00)
+    today.setHours(0, 0, 0, 0);
+    query = query.gte("created_at", today.toISOString());
+  } else if (filterValue === "7") {
+    // දවස් 7කට පෙර
+    const past7Days = new Date();
+    past7Days.setDate(today.getDate() - 7);
+    query = query.gte("created_at", past7Days.toISOString());
+  } else if (filterValue === "30") {
+    // දවස් 30කට පෙර (අවශ්‍ය නම් පමණක්)
+    const past30Days = new Date();
+    past30Days.setDate(today.getDate() - 30);
+    query = query.gte("created_at", past30Days.toISOString());
+  }
+  // "all" තෝරාගෙන ඇත්නම් මුළු query එකම ධාවනය වේ
+
+  // 4. Data ලබා ගැනීම සහ Table එක Update කිරීම
+  const { data, error } = await query;
   const body = el("logsBody");
-  if(!data||!data.length){ body.innerHTML=`<tr><td colspan="7">NO DATA</td></tr>`; return; }
-  body.innerHTML = data.map((r,i)=>{
+  
+  if (error || !data || !data.length) { 
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">දත්ත කිසිවක් හමු නොවීය (NO DATA)</td></tr>`; 
+    return; 
+  }
+  
+  body.innerHTML = data.map((r, i) => {
     const p = r.persons;
-    return `<tr><td>${i+1}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${p?.service_no||"-"}</td><td>${p?.name||"-"}</td><td>${r.event_type}</td><td><span class="badge ${r.status==='approved'?'ok':'no'}">${r.status}</span></td><td><span class="small">${r.extra?.note||'-'}</span></td></tr>`;
+    return `<tr>
+      <td>${i + 1}</td>
+      <td>${new Date(r.created_at).toLocaleString()}</td>
+      <td>${p?.service_no || "-"}</td>
+      <td>${p?.name || "-"}</td>
+      <td>${r.event_type}</td>
+      <td><span class="badge ${r.status === 'approved' ? 'ok' : 'no'}">${r.status}</span></td>
+      <td><span class="small">${r.extra?.note || '-'}</span></td>
+    </tr>`;
   }).join("");
 }
 
