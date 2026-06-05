@@ -7,20 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
-/* --- MODERN MILITARY HUD THEME --- */
+/* --- MODERN MILITARY THEME --- */
 :root{
-  --bg-primary: #030804;       
-  --bg-secondary: #0a140a;     
-  --bg-card: rgba(10, 25, 15, 0.85); 
+  --bg-primary: #050a05;       
+  --bg-secondary: #0f1f15;     
+  --bg-card: rgba(20, 40, 25, 0.9); 
   
-  --accent-main: #00ff41;      
+  --accent-main: #4caf50;      
   --accent-gold: #ffb300;      
-  --accent-danger: #ff003c;    
-  --accent-cyan: #00e5ff; 
+  --accent-danger: #ff3333;    
+  --accent-cyan: #00e5ff; /* Cooldown Color */
   
   --text-primary: #e0e0e0;     
-  --text-muted: #6b8e73;       
-  --border-color: #1e4d2b;     
+  --text-muted: #8da691;       
+  --border-color: #2e5c3e;     
   
   --font-head: 'Black Ops One', cursive;
   --font-body: 'Share Tech Mono', monospace;
@@ -33,8 +33,7 @@ body{
   font-family: var(--font-body);
   background-color: var(--bg-primary);
   background-image: 
-    radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.05) 0%, transparent 60%),
-    linear-gradient(rgba(0, 10, 0, 0.85), rgba(0, 5, 0, 0.95)),
+    linear-gradient(rgba(0, 20, 0, 0.8), rgba(0, 10, 0, 0.9)),
     url("https://www.transparenttextures.com/patterns/carbon-fibre.png"); 
   color: var(--text-primary);
   min-height:100vh;
@@ -45,9 +44,9 @@ body{
 
 /* Base Lockdown Animation */
 @keyframes lockdownFlash {
-  0% { background-color: #220000; }
-  50% { background-color: #660000; box-shadow: inset 0 0 100px rgba(255,0,0,0.5); }
-  100% { background-color: #220000; }
+  0% { background-color: #330000; }
+  50% { background-color: #ff0000; }
+  100% { background-color: #330000; }
 }
 .lockdown-mode { animation: lockdownFlash 1s infinite; }
 
@@ -64,98 +63,89 @@ body::before {
 
 /* Header Design */
 .header{
-  background: linear-gradient(90deg, var(--bg-secondary) 0%, rgba(30,77,43,0.4) 100%);
-  border-left: 5px solid var(--accent-gold); 
-  border-bottom: 2px solid var(--accent-main);
+  background: linear-gradient(90deg, var(--bg-secondary) 0%, #1a3320 100%);
+  border-left: 5px solid var(--accent-gold); border-bottom: 2px solid var(--border-color);
   padding:25px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 5px 20px rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
 }
-.header h1{ font-family: var(--font-head); font-size: 2.5em; color: var(--accent-main); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
-.header p{ color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 2px; font-weight: bold;}
+.header h1{ font-family: var(--font-head); font-size: 2.5em; color: var(--accent-main); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 5px var(--accent-main); }
+.header p{ color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 1px; }
 
-.pills{display:flex;gap:10px;flex-wrap:wrap; align-items:center;}
-.pill{ background: rgba(0,0,0,0.8); border: 1px solid var(--border-color); color: var(--accent-gold); padding:8px 15px; font-family: var(--font-body); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; box-shadow: inset 0 0 5px rgba(255,179,0,0.2);}
+.pills{display:flex;gap:10px;flex-wrap:wrap}
+.pill{ background: rgba(0,0,0,0.6); border: 1px solid var(--border-color); color: var(--accent-gold); padding:8px 15px; font-family: var(--font-body); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
 
 /* Tabs Design */
-.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
-.tab{ padding:12px 25px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: var(--text-muted); cursor:pointer; font-family: var(--font-ui); font-size: 1.1em; font-weight: 700; text-transform: uppercase; transition: all 0.3s ease; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
-.tab:hover{ background: rgba(0, 255, 65, 0.15); color: var(--accent-main); border-color: var(--accent-main); transform: translateY(-2px);}
-.tab.active{ background: var(--accent-main); color: #000; border-color: var(--accent-main); box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); }
+.tabs{display:flex;gap:5px;margin-bottom:20px;flex-wrap:wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+.tab{ padding:12px 25px; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); cursor:pointer; font-family: var(--font-ui); font-weight: 700; text-transform: uppercase; transition:.3s; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 25%); }
+.tab:hover{ background: rgba(76, 175, 80, 0.1); color: var(--accent-main); }
+.tab.active{ background: var(--accent-main); color: #000; border-color: var(--accent-main); box-shadow: 0 0 10px var(--accent-main); }
 
 /* Card Design */
-.card{ background: var(--bg-card); border: 1px solid var(--border-color); padding:25px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-radius: 4px;}
-.card::before { content: ""; position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border-top: 3px solid var(--accent-cyan); border-left: 3px solid var(--accent-cyan); }
-.card::after { content: ""; position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; border-bottom: 3px solid var(--accent-main); border-right: 3px solid var(--accent-main); }
-.card h3{ margin-bottom:20px; font-size:1.5em; display:flex; align-items:center; gap:10px; color: var(--accent-gold); font-family: var(--font-ui); text-transform: uppercase; border-bottom: 1px solid rgba(255,179,0,0.3); padding-bottom: 10px; letter-spacing: 1px;}
+.card{ background: var(--bg-card); border: 1px solid var(--border-color); padding:20px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.card::after { content: ""; position: absolute; top: -1px; right: -1px; width: 20px; height: 20px; border-top: 2px solid var(--accent-gold); border-right: 2px solid var(--accent-gold); }
+.card h3{ margin-bottom:20px; font-size:1.4em; display:flex; align-items:center; gap:10px; color: var(--accent-gold); font-family: var(--font-ui); text-transform: uppercase; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; }
 
 .grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
 @media(max-width:1024px){.grid{grid-template-columns:1fr}}
 
 /* Buttons */
-button{ padding:12px 24px; border:none; cursor:pointer; transition: all 0.2s ease; font-size:1em; font-family: var(--font-head); text-transform: uppercase; letter-spacing: 1.5px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); position: relative; overflow: hidden;}
-.btn-primary{ background: var(--accent-main); color: #000; box-shadow: inset 0 0 10px rgba(255,255,255,0.4);} 
-.btn-primary:hover{ background: #00cc33; box-shadow: 0 0 20px rgba(0, 255, 65, 0.8); transform: scale(1.02);}
-.btn-danger{ background: var(--accent-danger); color: #fff; } 
-.btn-danger:hover{ background: #cc0030; box-shadow: 0 0 20px rgba(255, 0, 60, 0.8); transform: scale(1.02);}
-.btn-secondary{ background: rgba(0,0,0,0.5); border: 1px solid var(--text-muted); color: var(--text-primary); } 
-.btn-secondary:hover{ background: rgba(0, 229, 255, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);}
-button:disabled{opacity:.4;cursor:not-allowed; transform: none; box-shadow: none;}
+button{ padding:12px 24px; border:none; cursor:pointer; transition:.2s; font-size:.95em; font-family: var(--font-head); text-transform: uppercase; letter-spacing: 1px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.btn-primary{ background: var(--accent-main); color: #000; } .btn-primary:hover{ background: #388e3c; box-shadow: 0 0 15px rgba(76, 175, 80, 0.6); }
+.btn-danger{ background: var(--accent-danger); color: #fff; } .btn-danger:hover{ background: #d32f2f; box-shadow: 0 0 15px rgba(244, 67, 54, 0.6); }
+.btn-secondary{ background: transparent; border: 1px solid var(--text-muted); color: var(--text-primary); } .btn-secondary:hover{ background: rgba(255,255,255,0.1); border-color: var(--accent-main); color: var(--accent-main); }
+button:disabled{opacity:.4;cursor:not-allowed}
 
 /* Inputs */
-input,select,textarea{ width:100%; padding:14px; background: rgba(0,0,0,0.8); border: 1px solid var(--border-color); color: var(--accent-main); font-family: var(--font-body); font-size: 1.1em; outline: none; transition: 0.3s; border-radius: 2px;}
-input:focus, select:focus, textarea:focus { border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); background: rgba(0, 20, 20, 0.9);}
-label{display:block;margin-bottom:8px;font-weight:bold; color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;}
+input,select,textarea{ width:100%; padding:12px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-color); color: var(--accent-main); font-family: var(--font-body); outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent-gold); box-shadow: 0 0 5px rgba(255, 179, 0, 0.3); }
+label{display:block;margin-bottom:8px;font-weight:bold; color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; font-size: 0.85em;}
 .small{color:var(--text-muted);font-size:.85em}
 
 /* Alerts */
-.alert{ padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:10px; background: rgba(0, 0, 0, 0.8); border-left: 4px solid var(--accent-main); font-family: var(--font-body); box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+.alert{ padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:10px; background: rgba(0, 20, 10, 0.9); border: 1px solid var(--accent-main); font-family: var(--font-body); }
 .alert.success{border-color:var(--accent-main); color: var(--accent-main);} .alert.danger{border-color:var(--accent-danger); color: var(--accent-danger);} .alert.warn{border-color:var(--accent-gold); color: var(--accent-gold);}
 
-/* Modern Video Container (HUD Style) */
-.video-container{ position:relative;width:100%;max-width:720px;margin:0 auto; background:#000; border: 2px solid var(--border-color); box-shadow: 0 0 30px rgba(0,0,0,0.9); transition: filter 0.3s; overflow: hidden; border-radius: 8px;}
+/* Video & Filters */
+.video-container{ position:relative;width:100%;max-width:720px;margin:0 auto; background:#000; border: 2px solid var(--border-color); box-shadow: 0 0 20px rgba(0,0,0,0.8); transition: filter 0.3s; }
 .night-vision { filter: sepia(100%) hue-rotate(80deg) saturate(400%) contrast(150%) brightness(120%); }
-/* HUD Grid Overlay */
-.video-container::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 4; opacity: 0.3;}
-/* Target Reticle Elements */
-.video-container::after { content: "REC"; position: absolute; top: 15px; right: 20px; color: red; font-family: var(--font-ui); font-weight: bold; font-size: 1.2em; z-index: 5; animation: blink 1s infinite;}
-@keyframes blink { 50% { opacity: 0; } }
+.video-container::before { content: ""; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px; border-top: 3px solid var(--accent-main); border-left: 3px solid var(--accent-main); z-index: 5; }
+.video-container::after { content: ""; position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-bottom: 3px solid var(--accent-main); border-right: 3px solid var(--accent-main); z-index: 5; }
+video,canvas{width:100%;height:auto;display:block} canvas{position:absolute;top:0;left:0}
+.overlay{ position:absolute;top:12px;left:12px; background:rgba(0,0,0,0.7); border: 1px solid var(--accent-main); color: var(--accent-main); padding:5px 10px; font-family: var(--font-body); font-size: 0.8em; z-index: 10; }
 
-video,canvas{width:100%;height:auto;display:block} canvas{position:absolute;top:0;left:0; z-index: 3;}
-.overlay{ position:absolute;top:15px;left:15px; background:rgba(0,0,0,0.8); border: 1px solid var(--accent-main); color: var(--accent-main); padding:5px 12px; font-family: var(--font-body); font-size: 0.9em; z-index: 10; text-transform: uppercase; box-shadow: 0 0 10px rgba(0,255,65,0.3);}
+/* Audio Meter */
+.audio-meter { width: 100%; height: 10px; background: #111; border: 1px solid var(--border-color); margin-top: 10px; }
+.audio-fill { height: 100%; background: var(--accent-main); width: 0%; transition: width 0.1s; }
+.audio-fill.high { background: var(--accent-danger); }
 
-/* Tactical Map Design */
-.camp-map { position: relative; width: 100%; max-width: 450px; height: 350px; background: rgba(0, 40, 10, 0.4); border: 2px dashed var(--border-color); margin: 20px auto; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.8); }
-.camp-map::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.6) 100%); pointer-events: none; z-index: 1;}
-.perimeter { position: absolute; background: rgba(0, 255, 65, 0.2); border: 1px solid var(--accent-main); display: flex; justify-content: center; align-items: center; font-size: 0.85em; color: var(--accent-main); font-family: var(--font-body); font-weight: bold; transition: all 0.3s ease; z-index: 4; text-shadow: 0 0 5px #000;}
-.p-north { top: 10px; left: 10px; right: 10px; height: 30px; border-radius: 4px; }
-.p-south { bottom: 10px; left: 10px; right: 10px; height: 30px; border-radius: 4px; }
-.p-east  { top: 45px; right: 10px; bottom: 45px; width: 30px; writing-mode: vertical-rl; border-radius: 4px; }
-.p-west  { top: 45px; left: 10px; bottom: 45px; width: 30px; writing-mode: vertical-rl; border-radius: 4px; }
-.hq-label { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--accent-gold); font-family: var(--font-head); letter-spacing: 3px; z-index: 4; text-shadow: 0 0 10px rgba(255,179,0,0.5); text-align: center;}
+/* Tables */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse; margin-top: 10px;}
+thead{background: rgba(76, 175, 80, 0.1); border-bottom: 2px solid var(--border-color);}
+th{color: var(--accent-gold); font-family: var(--font-ui); text-transform: uppercase; padding: 12px;}
+td{padding:12px;border-bottom:1px solid #1a3320; color: var(--text-primary); font-family: var(--font-body);}
+tbody tr:hover{background:rgba(76, 175, 80, 0.05);}
 
-@keyframes breachFlash { 0% { background: rgba(255,0,0,0.8); box-shadow: 0 0 30px #ff0000; border-color: #fff; color: #fff;} 50% { background: rgba(100,0,0,0.5); box-shadow: none; border-color: #ff0000; color: #ff0000;} 100% { background: rgba(255,0,0,0.8); box-shadow: 0 0 30px #ff0000; border-color: #fff; color: #fff;} }
-.breached { animation: breachFlash 0.4s infinite !important; z-index: 5;}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px; font-family: var(--font-body); font-size: 0.75em; text-transform: uppercase; border: 1px solid transparent;}
+.badge.ok{background:rgba(76, 175, 80, 0.2); border-color: var(--accent-main); color:var(--accent-main)}
+.badge.no{background:rgba(244, 67, 54, 0.2); border-color: var(--accent-danger); color:var(--accent-danger)}
+.badge.warn{background:rgba(255, 179, 0, 0.2); border-color: var(--accent-gold); color:var(--accent-gold)}
+.badge.cool{background:rgba(0, 229, 255, 0.1); border-color: var(--accent-cyan); color:var(--accent-cyan)} /* Cooldown badge */
 
 /* Stats */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
-.stat{ background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(10,25,15,0.9) 100%); border: 1px solid var(--border-color); padding:20px; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
-.stat::before { content: ""; position: absolute; top:0; left:0; width: 5px; height: 100%; background: var(--border-color); }
-.stat.green::before{background: var(--accent-main); box-shadow: 0 0 15px var(--accent-main);} 
-.stat.red::before{background: var(--accent-danger); box-shadow: 0 0 15px var(--accent-danger);} 
-.stat.purple::before{background: var(--accent-gold); box-shadow: 0 0 15px var(--accent-gold);}
-.stat .small { text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: bold;}
-.stat .v{font-size:3em; font-family: var(--font-head); margin-top:5px; color: var(--text-primary); text-shadow: 0 0 15px rgba(255,255,255,0.2);}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+.stat{ background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); padding:15px; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+.stat::before { content: ""; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--border-color); }
+.stat.green::before{background: var(--accent-main);} .stat.red::before{background: var(--accent-danger);} .stat.purple::before{background: var(--accent-gold);}
+.stat .small { text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+.stat .v{font-size:2.5em; font-family: var(--font-head); margin-top:5px; color: var(--text-primary); text-shadow: 0 0 10px rgba(255,255,255,0.3);}
 
-/* Badges & Utility */
-.badge{display:inline-block;padding:4px 10px; font-family: var(--font-body); font-size: 0.8em; font-weight: bold; text-transform: uppercase; border: 1px solid transparent; border-radius: 3px;}
-.badge.ok{background:rgba(0, 255, 65, 0.15); border-color: var(--accent-main); color:var(--accent-main)}
-.badge.no{background:rgba(255, 0, 60, 0.15); border-color: var(--accent-danger); color:var(--accent-danger)}
-.badge.warn{background:rgba(255, 179, 0, 0.15); border-color: var(--accent-gold); color:var(--accent-gold)}
-.badge.cool{background:rgba(0, 229, 255, 0.15); border-color: var(--accent-cyan); color:var(--accent-cyan)} 
-.row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+/* Utility */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 @media(max-width:900px){.row{grid-template-columns:1fr}}
-hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.6;}
+hr{border:0;border-top:1px solid var(--border-color);margin:20px 0; opacity: 0.5;}
+.kbd{font-family: var(--font-body); background:rgba(255,255,255,0.1);padding:3px 8px; color: var(--accent-gold);}
 </style>
 </head>
 
@@ -164,19 +154,16 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
 
   <div id="alertArea"></div>
 
-  <div id="loginCard" class="card" style="max-width:520px;margin:10vh auto; text-align:center;">
-    <h3 style="justify-content:center; border:none; margin-bottom:10px;">🔐 SENTRY-X SECURE LOGIN</h3>
-    <p class="small" style="margin-bottom:25px; color:var(--accent-main);">AUTHORIZED PERSONNEL ONLY</p>
-    <div style="text-align:left; margin-bottom: 15px;">
-      <label>OFFICER IDENTIFICATION (EMAIL)</label>
-      <input id="email" type="email" placeholder="officer@army.lk" style="text-align:center;"/>
+  <div id="loginCard" class="card" style="max-width:520px;margin:80px auto;">
+    <h3>🔐 පද්ධතියට ඇතුල් වීම (SECURE LOGIN)</h3>
+    <p class="small" style="margin-bottom:12px;">දත්ත ගබඩාව/අයිතිවාසිකම් <b>Supabase High Command</b> මඟින් පාලනය වේ.</p>
+    <div class="row">
+      <div><label>නිල ඊමේල් ලිපිනය</label><input id="email" type="email" placeholder="officer@army.lk" /></div>
+      <div><label>රහස් කේතය (Password)</label><input id="password" type="password" placeholder="••••••••" /></div>
     </div>
-    <div style="text-align:left; margin-bottom: 25px;">
-      <label>CLEARANCE CODE (PASSWORD)</label>
-      <input id="password" type="password" placeholder="••••••••" style="text-align:center; letter-spacing: 5px;"/>
-    </div>
-    <div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn-primary" id="btnLogin" style="width:100%;">ACCESS GRANTED ➡️</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+      <button class="btn-primary" id="btnLogin">ACCESS GRANTED ➡️</button>
+      <button class="btn-secondary" id="btnLogout" disabled>ABORT 🚪</button>
     </div>
   </div>
 
@@ -191,65 +178,53 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
         <div class="pill" id="pillGps" style="color:#00e5ff">📍 GPS: LOCATING...</div>
         <div class="pill" id="pillRole">RANK: -</div>
         <div class="pill" id="pillOnline" style="color:var(--accent-main)">SIGNAL: ONLINE</div>
+        <div class="pill" id="pillDevice">UNIT: -</div>
         <div class="pill" id="pillGateStatus" style="color:var(--text-muted)">🔌 GATE: NO LINK</div> 
-        <button id="btnLogout" class="btn-danger" style="padding: 6px 12px; font-size: 0.8em;">LOGOUT</button>
       </div>
     </div>
 
     <div class="tabs">
       <button class="tab active" data-tab="dashboard">📊 උපකරණ පුවරුව (DASHBOARD)</button>
-      <button class="tab" data-tab="camera">📹 සජීවී මෙහෙයුම (LIVE OPS)</button>
+      <button class="tab" data-tab="camera">📹 සජීවී නිරීක්ෂණය (LIVE FEED)</button>
       <button class="tab" data-tab="persons">👥 භට කණ්ඩායම් (TROOPS)</button>
-      <button class="tab" data-tab="logs">📋 වාර්තා (LOGS)</button>
+      <button class="tab" data-tab="logs">📋 වාර්තා පොත (LOGS)</button>
       <button class="tab" data-tab="alerts">🚨 අනතුරු ඇඟවීම් (ALERTS)</button>
       <button class="tab" data-tab="settings">⚙️ පද්ධති සකසීම් (CONFIG)</button>
-       <a href="https://wdjanuradha.github.io/Camp-Vehicle-Plate-Detector/" target="_blank" class="tab tab-link" style="color: #00e5ff;" title="Open Vehicle Plate Detector">
-        🚙 වාහන හඳුනාගැනීම ↗
+      <button class="tab" data-tab="audit" id="auditTabBtn">🧾 පරීක්ෂණ වාර්තා (AUDIT)</button>
+       <a href="https://wdjanuradha.github.io/Camp-Vehicle-Plate-Detector/" target="_blank" class="tab tab-link" style="color: #ffb300;" title="Open Vehicle Plate Detector">
+        🚙 වාහන හඳුනාගැනීම (VEHICLE SCAN) ↗
       </a>
     </div>
 
     <div id="tab-dashboard" class="tab-content">
-       
-      <div class="row" style="margin-bottom: 20px;">
-        <button id="btnLaunchExternal" class="btn-secondary" style="border-color:var(--accent-cyan); color:var(--accent-cyan);">
-          🖥️ විනිශ්චය මණ්ඩල තිරය විවෘත කරන්න (LAUNCH EXTERNAL PANEL)
-        </button>
-        <button id="btnPanic" class="btn-danger" style="font-size: 1.1em; background-color:#990000; border: 2px solid #ff0000;">
-            🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨
-        </button>
-      </div>
+      
+      <button id="btnLaunchExternal" class="btn-secondary" style="width:100%; margin-bottom:15px; border-color:var(--accent-cyan); color:var(--accent-cyan);">
+        🖥️ විනිශ්චය මණ්ඩල තිරය විවෘත කරන්න (LAUNCH EXTERNAL JUDGE PANEL)
+      </button>
+
+      <button id="btnPanic" class="btn-danger" style="width:100%; padding: 20px; font-size: 1.5em; margin-bottom: 20px; background-color:#990000; border: 2px solid #ff0000;">
+         🚨 හදිසි අවස්ථා අගුලු දැමීම (INITIATE BASE LOCKDOWN) 🚨
+      </button>
 
       <div class="stats">
         <div class="stat"><div class="small">ලියාපදිංචි භටයින්</div><div class="v" id="statPersons">0</div></div>
         <div class="stat green"><div class="small">අද ඇතුල්වීම් (PASS)</div><div class="v" id="statApproved">0</div></div>
-        <div class="stat red"><div class="small">ප්‍රතික්ෂේපිත (DENIED)</div><div class="v" id="statRejected">0</div></div>
-        <div class="stat purple"><div class="small">මුළු මෙහෙයුම්</div><div class="v" id="statTotal">0</div></div>
+        <div class="stat red"><div class="small">අද ප්‍රතික්ෂේපිත (DENIED)</div><div class="v" id="statRejected">0</div></div>
+        <div class="stat purple"><div class="small">මුළු මෙහෙයුම් (TOTAL)</div><div class="v" id="statTotal">0</div></div>
       </div>
 
-      <div class="grid" style="margin-top:20px;">
-        <div class="card">
-          <h3>🗺️ කඳවුරු ආරක්ෂක සිතියම (TACTICAL MAP)</h3>
-          <p class="small">Live Perimeter Sensor Grid (Lasers & Ultrasonic)</p>
-          <div class="camp-map">
-            <canvas id="radarCanvas" width="450" height="350" style="position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; border-radius: 8px;"></canvas>
-            
-            <div id="wall-NORTH" class="perimeter p-north">NORTH (FRONT GATE)</div>
-            <div id="wall-EAST" class="perimeter p-east">EAST (RIGHT FLANK)</div>
-            <div id="wall-SOUTH" class="perimeter p-south">SOUTH (REAR SECTOR)</div>
-            <div id="wall-WEST" class="perimeter p-west">WEST (LEFT FLANK)</div>
-            <div class="hq-label">HQ / ARMORY<br><span style="font-size:0.5em; color:var(--accent-main);">SECURE ZONE</span></div>
-          </div>
+      <div class="card" style="margin-top:20px;">
+        <h3>🧠 පද්ධති තත්වය (SYSTEM STATUS)</h3>
+        <div class="row">
+          <div><label>AI NEURAL NET</label><div id="modelStatus" class="badge warn">INITIALIZING...</div></div>
+          <div><label>OPTICAL SENSOR</label><div id="cameraStatus" class="badge no">OFFLINE</div></div>
         </div>
-
-        <div class="card">
-          <h3>🧠 පද්ධති තත්වය (STATUS)</h3>
-          <div style="margin-bottom:15px;"><label>AI NEURAL NET</label><div id="modelStatus" class="badge warn">INITIALIZING...</div></div>
-          <div style="margin-bottom:15px;"><label>OPTICAL SENSOR (CAMERA)</label><div id="cameraStatus" class="badge no">OFFLINE</div></div>
-          <div style="margin-bottom:15px;"><label>RECOGNITION ENGINE</label><div id="recStatus" class="badge no">STANDBY</div></div>
-          <div style="margin-bottom:15px;"><label>DATA UPLINK QUEUE</label><div id="queueStatus" class="badge warn">0 PENDING</div></div>
-          <hr/>
-          <div style="margin-bottom:5px;"><label>HARDWARE BRIDGE (ARDUINO)</label><div id="hardwareStatus" class="badge no">DISCONNECTED</div></div>
-          <button id="btnConnectArduinoDash" class="btn-primary" style="width:100%; margin-top:10px; padding:8px; font-size:0.8em;">🔌 CONNECT HARDWARE</button>
+        <div class="row" style="margin-top:15px;">
+          <div><label>RECOGNITION ENGINE</label><div id="recStatus" class="badge no">STANDBY</div></div>
+          <div><label>DATA UPLINK QUEUE</label><div id="queueStatus" class="badge warn">0 PENDING</div></div>
+        </div>
+        <div class="row" style="margin-top:15px;">
+          <div><label>GATE HARDWARE (ARDUINO)</label><div id="hardwareStatus" class="badge no">DISCONNECTED</div></div>
         </div>
       </div>
     </div>
@@ -257,47 +232,66 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
     <div id="tab-camera" class="tab-content hidden">
       <div class="grid">
         <div class="card">
-          <h3>📹 සජීවී මෙහෙයුම (LIVE OPS HUD)</h3>
+          <h3>📹 සජීවී මෙහෙයුම (LIVE OPS)</h3>
 
           <div class="row">
-            <div><label>ක්‍රියාව (ACTION)</label><select id="eventType"><option value="IN">ඇතුල්වීම (ENTRY)</option><option value="OUT">පිටවීම (EXIT)</option></select></div>
-            <div><label>ප්‍රකාරය (MODE)</label><select id="mode"><option value="auto">ස්වයංක්‍රීය (AUTO)</option><option value="manual">මිනිස් පාලනය (MANUAL)</option></select></div>
+            <div>
+              <label>ක්‍රියාව (ACTION)</label>
+              <select id="eventType">
+                <option value="IN">ඇතුල්වීම (ENTRY)</option>
+                <option value="OUT">පිටවීම (EXIT)</option>
+              </select>
+            </div>
+            <div>
+              <label>ප්‍රකාරය (MODE)</label>
+              <select id="mode">
+                <option value="auto">ස්වයංක්‍රීය (AUTO)</option>
+                <option value="manual">මිනිස් පාලනය (MANUAL)</option>
+              </select>
+            </div>
           </div>
           
           <div class="row" style="margin-top:15px;">
-            <div><label>කැමරාව තෝරන්න</label><select id="cameraSource"><option value="">Default Camera</option></select></div>
+            <div>
+              <label>කැමරාව තෝරන්න (SELECT CAMERA)</label>
+              <select id="cameraSource">
+                <option value="">Default Camera</option>
+              </select>
+            </div>
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
-            <button id="btnStartCam" class="btn-primary">🎥 අරඹන්න (START)</button>
-            <button id="btnStopCam" class="btn-danger" disabled>⏹️ නවත්වන්න (STOP)</button>
+            <button id="btnStartCam" class="btn-primary">🎥 කැමරාව අරඹන්න</button>
+            <button id="btnStopCam" class="btn-danger" disabled>⏹️ නවත්වන්න</button>
             <button id="btnNightVision" class="btn-secondary">🌙 NIGHT VISION</button>
+            <button id="btnConnectArduino" class="btn-secondary" style="border-color:var(--accent-gold); color:var(--accent-gold);">🔌 CONNECT GATE (ARDUINO)</button>
           </div>
 
-          <div class="video-container" id="videoBox" style="margin-top:20px;">
+          <div class="video-container" id="videoBox" style="margin-top:15px;">
             <video id="video" autoplay muted playsinline></video>
             <canvas id="canvas"></canvas>
             <div class="overlay" id="overlay">SYSTEM READY</div>
           </div>
 
           <div style="margin-top:15px;">
-            <label>🎙️ ACOUSTIC THREAT SENSOR (ශබ්ද මට්ටම)</label>
+            <label>🎙️ Acoustic Threat Level (ශබ්ද සංවේදකය)</label>
             <div class="audio-meter"><div id="audioFill" class="audio-fill"></div></div>
           </div>
         </div>
 
         <div class="card">
-          <h3>🎯 ඉලක්ක විශ්ලේෂණය (TARGETS)</h3>
-          <div id="detectedBox" class="small" style="padding:20px; background:rgba(0,0,0,0.5); border: 1px dashed var(--border-color); color:var(--accent-cyan); text-align:center; font-size:1.1em;">
-            AWAITING TARGET SIGNAL...
+          <h3>🎯 ඉලක්ක (TARGETS)</h3>
+          <div id="detectedBox" class="small" style="padding:15px; border: 1px dashed var(--border-color); color:var(--text-muted); text-align:center;">
+            SCANNING AREA...
           </div>
           <hr/>
           <div>
             <label>අත්පොත සෙවීම (MANUAL OVERRIDE)</label>
             <div class="row">
               <div><input id="manualSearch" placeholder="Service No / Name..." /></div>
-              <div><button id="btnManualPick" class="btn-secondary" style="width:100%;">🔎 SCAN</button></div>
+              <div><button id="btnManualPick" class="btn-secondary">🔎 SCAN</button></div>
             </div>
+            <div id="manualResults" style="margin-top:10px;"></div>
           </div>
         </div>
       </div>
@@ -310,13 +304,16 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
         <div id="personsArea" class="hidden">
           <div class="row">
             <div><label>සෙවීම (SEARCH)</label><input id="personSearch" placeholder="Service No / Name..." /></div>
-            <div style="display:flex;gap:10px;align-items:flex-end;">
-              <button id="btnRefreshPersons" class="btn-secondary">🔄 RELOAD</button>
-              <button id="btnAddPerson" class="btn-primary">➕ නව භටයෙක්</button>
+            <div>
+              <label>විධානයන් (COMMANDS)</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="btnRefreshPersons" class="btn-secondary">🔄 RELOAD</button>
+                <button id="btnAddPerson" class="btn-primary">➕ නව භටයෙක්</button>
+              </div>
             </div>
           </div>
-          <div id="personForm" class="hidden" style="margin-top:20px; background:rgba(0,0,0,0.3); border: 1px solid var(--accent-gold); padding: 20px; border-radius: 4px;">
-            <h3 style="color:var(--accent-gold); font-size:1.2em; border:none;">➕ / ✏️ භට තොරතුරු පත්‍රිකාව</h3>
+          <div id="personForm" class="hidden" style="margin-top:20px; border: 1px solid var(--accent-gold); padding: 15px;">
+            <h3 style="color:var(--accent-gold)">➕ / ✏️ භට තොරතුරු පත්‍රිකාව</h3>
             <input type="hidden" id="personId" />
             <div class="row">
               <div><label>සේවා අංකය (SVC NO)</label><input id="pService" placeholder="SLLI/12345" /></div>
@@ -327,23 +324,42 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
               <div><label>ඒකකය (UNIT)</label><input id="pUnit" placeholder="Unit" /></div>
             </div>
             <div class="row" style="margin-top:10px;">
-              <div><label>වර්ගය (TYPE)</label><select id="pType"><option value="officer">නිලධාරී (OFFICER)</option><option value="soldier">සෙබළ (SOLDIER)</option><option value="civil">සිවිල් සේවක (CIVIL)</option><option value="visitor">අමුත්තා (VISITOR)</option></select></div>
-              <div><label>තත්ත්වය (STATUS)</label><select id="pStatus"><option value="active">සක්‍රීය සේවයේ</option><option value="pension">විශ්‍රාමික</option><option value="leave">නිවාඩු</option><option value="absent">නොපැමිණි</option></select></div>
+              <div>
+                <label>වර්ගය (TYPE)</label>
+                <select id="pType">          
+                  <option value="officer">නිලධාරී (OFFICER)</option>
+                  <option value="soldier">සෙබළ (SOLDIER)</option>
+                  <option value="civil">සිවිල් සේවක (CIVIL SERVANT)</option>
+                  <option value="visitor">අමුත්තා (VISITOR)</option>
+                </select>
+              </div>
+              <div>
+                <label>තත්ත්වය (STATUS)</label>
+                <select id="pStatus">
+                  <option value="active">සක්‍රීය සේවයේ (ON SERVICE)</option>
+                   <option value="pension">විශ්‍රාමික (PENSION)</option>
+                  <option value="leave">නිවාඩු (ON LEAVE)</option>
+                  <option value="absent">නිනොනො (ABSENT)</option>
+                </select>
+              </div>
             </div>
             <div style="margin-top:10px;">
               <label style="color:var(--accent-danger)">WATCHLIST (අවධානයට)</label>
-              <select id="pWatch" style="border-color:var(--accent-danger);"><option value="false">නැත (CLEARED)</option><option value="true">ඔව් - අවදානම් (FLAGGED)</option></select>
+              <select id="pWatch">
+                <option value="false">නැත (NO)</option>
+                <option value="true">ඔව් - අවදානම් (YES - ALERT)</option>
+              </select>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
               <button id="btnSavePerson" class="btn-primary">💾 දත්ත සුරකින්න</button>
               <button id="btnCancelPerson" class="btn-secondary">✖ අවලංගුයි</button>
               <button id="btnDeletePerson" class="btn-danger">🗑 ඉවත් කරන්න</button>
             </div>
             <hr/>
-            <h3 style="color:var(--accent-cyan); font-size:1.1em; border:none;">📸 ජෛව දත්ත ඇතුලත් කිරීම (BIOMETRICS)</h3>
+            <h3 style="color:var(--accent-main)">📸 මුහුණු දත්ත ඇතුලත් කිරීම (BIOMETRICS)</h3>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button id="btnEnroll1" class="btn-primary" style="background-color:var(--accent-cyan); color:#000;">📸 මුහුණ ස්කෑන් කරන්න (SCAN x3)</button>
-              <button id="btnClearTemplates" class="btn-danger">🧹 දත්ත මකන්න</button>
+              <button id="btnEnroll1" class="btn-primary">📸 ස්කෑන් කර සුරකින්න (SCAN x3)</button>
+              <button id="btnClearTemplates" class="btn-danger">🧹 දත්ත මකන්න (CLEAR)</button>
             </div>
             <div class="small" id="templateInfo" style="margin-top:10px;color:var(--text-muted);"></div>
           </div>
@@ -355,18 +371,33 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
 
     <div id="tab-logs" class="tab-content hidden">
       <div class="card">
-        <h3>📋 දෛනික මෙහෙයුම් වාර්තා (ACCESS LOGS)</h3>
+        <h3>📋 දෛනික වාර්තා (ACCESS LOGS)</h3>
         <div class="row">
-          <div><label>දිනය තෝරන්න (FILTER)</label><select id="logFilter"><option value="today">අද දින (TODAY)</option><option value="7">පසුගිය දින 7</option><option value="all">සියල්ල (ALL TIME)</option></select></div>
-          <div style="display:flex;gap:10px;align-items:flex-end;">
-            <button id="btnExportCSV" class="btn-primary" style="background:var(--accent-gold); color:#000;">📥 DOWNLOAD CSV</button>
-            <button id="btnRefreshLogs" class="btn-secondary">🔄 REFRESH</button>
+          <div>
+            <label>දිනය තෝරන්න (FILTER)</label>
+            <select id="logFilter">
+              <option value="today">අද දින (TODAY)</option>
+              <option value="7">පසුගිය දින 7 (LAST 7 DAYS)</option>
+              <option value="30">පසුගිය දින 30 (LAST 30 DAYS)</option>
+              <option value="all">සියල්ල (ALL TIME)</option>
+            </select>
+          </div>
+          <div>
+            <label>දත්ත ලබාගැනීම (EXPORT)</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button id="btnExportCSV" class="btn-primary">📥 DOWNLOAD CSV</button>
+              <button id="btnRefreshLogs" class="btn-secondary">🔄 REFRESH</button>
+            </div>
           </div>
         </div>
-        <div class="table-wrap" style="margin-top:20px;">
+        <div class="table-wrap" style="margin-top:15px;">
           <table>
-            <thead><tr><th>#</th><th>වේලාව</th><th>සේවා අංකය</th><th>නම</th><th>සිදුවීම (Event)</th><th>තත්ත්වය (Status)</th><th>සටහන</th></tr></thead>
-            <tbody id="logsBody"><tr><td colspan="7" style="text-align:center;">NO DATA</td></tr></tbody>
+            <thead>
+              <tr><th>#</th><th>වේලාව</th><th>සේවා අංකය</th><th>නම</th><th>ස්ථානය (Gate)</th><th>GPS ලොකේෂන්</th><th>සිදුවීම</th><th>තත්ත්වය</th></tr>
+            </thead>
+            <tbody id="logsBody">
+              <tr><td colspan="8" class="small" style="padding:18px;color:var(--text-muted);text-align:center;">NO DATA</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -375,8 +406,10 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
     <div id="tab-alerts" class="tab-content hidden">
       <div class="card">
         <h3>🚨 හදිසි අනතුරු ඇඟවීම් (SECURITY ALERTS)</h3>
-        <button id="btnRefreshAlerts" class="btn-secondary">🔄 යාවත්කාලීන කරන්න</button>
-        <div id="alertsList" class="small" style="margin-top:20px;color:var(--text-muted);">LOADING...</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button id="btnRefreshAlerts" class="btn-secondary">🔄 යාවත්කාලීන කරන්න</button>
+        </div>
+        <div id="alertsList" class="small" style="margin-top:15px;color:var(--text-muted);">LOADING...</div>
       </div>
     </div>
 
@@ -384,17 +417,43 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
       <div class="card">
         <h3>⚙️ පද්ධති සකසීම් (SYSTEM CONFIG)</h3>
         <div class="row">
-          <div><label>උපාංගය (GATE DEVICE)</label><select id="deviceSelect"></select></div>
-          <div><label>AI සංවේදීතාව (SENSITIVITY 0-1)</label><input id="confThr" type="number" min="0" max="1" step="0.05" value="0.55" /></div>
+          <div><label>උපාංගය / ගේට්ටුව (GATE DEVICE)</label><select id="deviceSelect"></select></div>
+          <div><label>සංවේදීතාව (SENSITIVITY 0-1)</label><input id="confThr" type="number" min="0" max="1" step="0.05" value="0.55" /></div>
         </div>
         <div class="row" style="margin-top:15px;">
           <div><label>හඬ දැනුම්දීම් (VOICE COMMS)</label><select id="voice"><option value="on">ON</option><option value="off">OFF</option></select></div>
-          <div><label>ශබ්ද අනතුරු ඇඟවීම (ACOUSTIC ALERT)</label><select id="acousticSetting"><option value="on">ON</option><option value="off">OFF</option></select></div>
+          <div><label>Acoustic Threat Detection (ශබ්ද අනතුරු ඇඟවීම)</label><select id="acousticSetting"><option value="on">ON</option><option value="off">OFF</option></select></div>
         </div>
         <div class="row" style="margin-top:15px;">
-          <div><label>ANTI-SPAM COOLDOWN (Sec)</label><input id="autolock" type="number" min="5" max="120" step="1" value="15" /></div>
+          <div><label>ANTI-SPAM COOLDOWN TIME (Sec)</label><input id="autolock" type="number" min="5" max="120" step="1" value="15" /><p class="small">Time before scanning the same person again.</p></div>
         </div>
-        <div style="margin-top:20px;"><button id="btnSaveSettings" class="btn-primary">💾 සුරකින්න (SAVE CONFIG)</button></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;"><button id="btnSaveSettings" class="btn-primary">💾 සුරකින්න (SAVE)</button></div>
+        <hr/>
+        <h3>📟 උපාංග කළමනාකරණය (DEVICE ADMIN)</h3>
+        <div id="devicesGuard" class="alert warn">⚠️ RESTRICTED ACCESS</div>
+        <div id="devicesArea" class="hidden">
+          <div class="row">
+            <div><label>නම (NAME)</label><input id="dName" placeholder="Gate-1 Tablet"/></div>
+            <div><label>ගේට්ටුව (GATE)</label><input id="dGate" placeholder="Gate-1"/></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div><label>ස්ථානය (LOCATION)</label><input id="dLoc" placeholder="HQ Entrance"/></div>
+            <div style="display:flex;align-items:flex-end;gap:10px;">
+              <button id="btnAddDevice" class="btn-primary">➕ උපාංගය එක් කරන්න</button>
+              <button id="btnRefreshDevices" class="btn-secondary">🔄 RELOAD</button>
+            </div>
+          </div>
+          <div id="devicesList" class="small" style="margin-top:15px;color:var(--text-muted);">LOADING...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-audit" class="tab-content hidden">
+      <div class="card">
+        <h3>🧾 පරීක්ෂණ වාර්තා (AUDIT TRAIL)</h3>
+        <p class="small">Admin / Commander / Investigator EYES ONLY</p>
+        <button id="btnRefreshAudit" class="btn-secondary">🔄 RELOAD</button>
+        <div id="auditList" class="small" style="margin-top:15px;color:var(--text-muted);">LOADING...</div>
       </div>
     </div>
 
@@ -418,255 +477,131 @@ const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models";
 ========================= */
 let session = null; let profile = null; let persons = []; let templates = []; let matcher = null;
 let settings = { confidenceThreshold: 0.55, voiceAlerts: true, acousticDetection: true, autoLockTime: 15, deviceId: null };
+
+// Anti-Spam Cooldown Memory
 const detectionCooldowns = new Map(); 
 
+// Tactical Sensors
 let currentGps = { lat: null, lng: null };
 let audioContext = null; let analyser = null; let microphone = null; let acousticLoop = null; let acousticCooldown = false;
-let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; 
-let nightVisionMode = false; let isLockdown = false; 
+let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; let currentDevice = null;
+let nightVisionMode = false; let isLockdown = false; let lastLogKey = "";
 
-// Hardware Variables
+// --- NEW HARDWARE & BROADCAST VARIABLES ---
 let serialPort = null; 
 let serialWriter = null;
 const broadcast = new BroadcastChannel('sentryx_panel');
 
+/* =========================
+   DOM ELEMENTS
+========================= */
 const el = (id)=>document.getElementById(id);
 const alertArea = el("alertArea"); const loginCard = el("loginCard"); const app = el("app");
-const pillRole = el("pillRole"); const pillOnline = el("pillOnline"); const pillGps = el("pillGps");
-const pillGateStatus = el("pillGateStatus"); const hardwareStatus = el("hardwareStatus");
+const pillRole = el("pillRole"); const pillOnline = el("pillOnline"); const pillDevice = el("pillDevice"); const pillGps = el("pillGps");
+const pillGateStatus = el("pillGateStatus"); const hardwareStatus = el("hardwareStatus"); // NEW
 const video = el("video"); const canvas = el("canvas"); const ctx = canvas.getContext("2d"); const videoBox = el("videoBox");
 const overlay = el("overlay"); const detectedBox = el("detectedBox"); const audioFill = el("audioFill");
-const cameraSource = el("cameraSource");
-
-// RADAR Canvas Setup
-const radarCanvas = el("radarCanvas");
-const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
+const cameraSource = el("cameraSource"); // NEW
 
 /* =========================
-   NEW PLACEHOLDER FUNCTIONS
-========================= */
-async function initGPS() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      currentGps.lat = pos.coords.latitude;
-      currentGps.lng = pos.coords.longitude;
-      pillGps.textContent = "📍 GPS: SECURED";
-      pillGps.style.color = "var(--accent-main)";
-    }, () => {
-      pillGps.textContent = "📍 GPS: FAILED";
-      pillGps.style.color = "var(--accent-danger)";
-    });
-  } else {
-    pillGps.textContent = "📍 GPS: NO SENSOR";
-  }
-}
-
-async function refreshAlerts() {
-  const alertsList = el("alertsList");
-  if (alertsList) alertsList.innerHTML = "SYSTEM NOMINAL - NO ACTIVE THREATS";
-}
-
-async function refreshAudit() {
-  console.log("Audit log refresh initialized...");
-}
-
-async function refreshDevices() {
-  console.log("Devices list refreshed");
-}
-
-
-/* =========================
-   HARDWARE BRIDGE (ARDUINO)
+   NEW: ARDUINO HARDWARE BRIDGE
 ========================= */
 async function connectArduino() {
   if (!('serial' in navigator)) {
-    showAlert("Web Serial API is not supported. Use Chrome/Edge.", "danger");
+    showAlert("Web Serial API is not supported in this browser. Use Chrome/Edge.", "danger");
     return;
   }
   try {
     serialPort = await navigator.serial.requestPort();
     await serialPort.open({ baudRate: 9600 });
-    
-    // Setup Writer for Gate Servo
     const encoder = new TextEncoderStream();
     encoder.readable.pipeTo(serialPort.writable);
     serialWriter = encoder.writable.getWriter();
     
     // Update UI Status
-    pillGateStatus.textContent = "🔌 HARDWARE SECURED";
+    pillGateStatus.textContent = "🔌 GATE: CONNECTED";
     pillGateStatus.style.color = "var(--accent-main)";
-    hardwareStatus.textContent = "ONLINE (LASER/SONAR)";
+    hardwareStatus.textContent = "ONLINE (CH340)";
     hardwareStatus.className = "badge ok";
-    showAlert("Hardware Connected. Perimeter Secured.", "success");
-    
-    // Start Listening for Breaches (Lasers & Ultrasonic)
-    listenToArduino();
+    showAlert("Arduino Hardware Connected Successfully!", "success");
     
   } catch (error) {
     console.error(error);
-    showAlert("Failed to connect to Hardware.", "danger");
+    showAlert("Failed to connect to Gate Hardware.", "danger");
   }
-}
-
-// Function to draw Live Radar Sweep
-function drawRadarUI(angle, distance) {
-  if(!radarCtx) return;
-  
-  // Create fade effect (trail)
-  radarCtx.fillStyle = "rgba(0, 40, 10, 0.05)"; 
-  radarCtx.fillRect(0, 0, 450, 350);
-
-  const rad = angle * Math.PI / 180;
-  const originX = 225; // Center X
-  const originY = 350; // Bottom Y
-  const maxRadius = 350;
-
-  // Draw Sweep Line (Green)
-  const sweepX = originX - maxRadius * Math.cos(rad);
-  const sweepY = originY - maxRadius * Math.sin(rad);
-  
-  radarCtx.beginPath();
-  radarCtx.moveTo(originX, originY);
-  radarCtx.lineTo(sweepX, sweepY);
-  radarCtx.strokeStyle = "rgba(0, 255, 65, 0.8)";
-  radarCtx.lineWidth = 2;
-  radarCtx.stroke();
-
-  // Draw Detected Object (Red Dot) if valid distance (e.g., < 400cm)
-  if (distance > 0 && distance < 400) {
-    // Map max distance 400cm to canvas size 350px
-    const scale = 350 / 400; 
-    const objX = originX - (distance * scale) * Math.cos(rad);
-    const objY = originY - (distance * scale) * Math.sin(rad);
-
-    radarCtx.beginPath();
-    radarCtx.arc(objX, objY, 5, 0, 2 * Math.PI);
-    radarCtx.fillStyle = "#ff003c";
-    radarCtx.fill();
-    
-    radarCtx.shadowBlur = 10;
-    radarCtx.shadowColor = "#ff003c";
-    radarCtx.fill();
-    radarCtx.shadowBlur = 0; // reset
-  }
-}
-
-// Listen to Arduino Data Stream (WITH BUFFER FIX)
-async function listenToArduino() {
-  const textDecoder = new TextDecoderStream();
-  serialPort.readable.pipeTo(textDecoder.writable);
-  const reader = textDecoder.readable.getReader();
-  
-  let buffer = ""; // This saves broken pieces of data!
-
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      
-      buffer += value; // Add new data to the holding area
-      const lines = buffer.split('\n'); // Split when a line is complete
-      buffer = lines.pop(); // Keep the incomplete piece for next time
-
-      for(let signal of lines) {
-        signal = signal.trim();
-        if(!signal) continue;
-        
-        // --- RADAR SCAN DATA ---
-        if (signal.startsWith("RADAR_")) {
-           const parts = signal.split("_")[1].split(":");
-           if(parts.length === 2) {
-              const angle = parseInt(parts[0]);
-              const distance = parseInt(parts[1]);
-              drawRadarUI(angle, distance);
-           }
-        }
-        
-        // --- PERIMETER BREACH (LASERS) ---
-        else if (signal.startsWith("BREACH_")) {
-          let side = signal.split("_")[1];
-          let distance = null;
-
-          if (side && side.includes(":")) {
-            const parts = side.split(":");
-            side = parts[0];       
-            distance = parts[1];   
-          }
-          if(side) triggerPerimeterAlarm(side, distance);
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Serial Read Error:", error);
-    hardwareStatus.textContent = "ERROR";
-    hardwareStatus.className = "badge no";
-  }
-}
-
-// Action to take on Breach (WITH ALARM SOUND)
-async function triggerPerimeterAlarm(side, distance) {
-  
-  // 1. Play Loud Alarm Beep
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    oscillator.type = 'square';
-    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.5);
-    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.5);
-  } catch (e) { console.log("Audio not supported yet"); }
-
-  // 2. Update Tactical Map UI
-  const wallElement = document.getElementById("wall-" + side);
-  if (wallElement) {
-    wallElement.classList.add("breached");
-    wallElement.innerHTML = distance ? `🚨 BREACH! Threat: ${distance}cm` : "🚨 BREACH DETECTED!";
-    
-    // Reset map visual after 10s
-    setTimeout(() => {
-      wallElement.classList.remove("breached");
-      wallElement.innerHTML = `${side} SECTOR`; 
-    }, 10000);
-  }
-
-  // 3. Trigger base lockdown if not already locked
-  if (!isLockdown) { el("btnPanic").click(); }
-  
-  // 4. Voice & Alert UI
-  const alertMsg = distance ? `${side} දිශාවෙන් සෙ.මී. ${distance} ක දුරින් ආක්‍රමණයක්!` : `${side} දිශාවෙන් ආක්‍රමණයක්!`;
-  const voiceMsg = distance ? `Warning. Breach at ${side} sector. Threat distance ${distance} centimeters.` : `Warning. Perimeter Breach at ${side} sector.`;
-  
-  showAlert(`🚨 ${alertMsg}`, "danger");
-  speak(voiceMsg);
-  broadcastEvent('BREACH_ALERT', { side: side, distance: distance });
-  
-  // 5. Log to Supabase Database
-  await insertAccessEvent({ 
-    event_type: "PERIMETER_BREACH", 
-    status: "rejected", 
-    extra: { note: distance ? `Laser/Sonar Tripped at ${side}. Target at ${distance}cm` : `Laser Tripped at ${side}` } 
-  }, "watchlist");
 }
 
 async function sendGateCommand(char) {
+  // If hardware is not connected, skip this silently (Prevents system crash)
   if (!serialWriter) return; 
-  try { await serialWriter.write(char); } catch (e) { console.error("Arduino Write Error", e); }
+  try {
+    await serialWriter.write(char);
+  } catch (e) {
+    console.error("Error sending to Arduino:", e);
+  }
 }
 
 /* =========================
-   UI HELPERS & BROADCAST
+   NEW: EXTERNAL JUDGE PANEL
 ========================= */
 el("btnLaunchExternal").addEventListener("click", () => {
+  // Opens the external panel in a new popup window
   window.open('external_panel.html', 'JudgePanel', 'width=1280,height=720,menubar=no,toolbar=no,location=no');
 });
-function broadcastEvent(type, data) { broadcast.postMessage({ type: type, payload: data }); }
 
+function broadcastEvent(type, data) {
+  // Sends data to the external panel if it's open
+  broadcast.postMessage({ type: type, payload: data });
+}
+
+/* =========================
+   TACTICAL SENSORS
+========================= */
+function initGPS() {
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition((pos) => {
+      currentGps.lat = pos.coords.latitude.toFixed(6); currentGps.lng = pos.coords.longitude.toFixed(6);
+      pillGps.textContent = `📍 GPS: ${currentGps.lat}, ${currentGps.lng}`; pillGps.style.color = "var(--accent-main)";
+    }, () => { pillGps.textContent = "📍 GPS: SIGNAL LOST"; pillGps.style.color = "var(--accent-danger)"; });
+  }
+}
+
+function startAcousticDetection(stream) {
+  if(!settings.acousticDetection) return;
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser(); microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser); analyser.fftSize = 256;
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    acousticLoop = setInterval(() => {
+      analyser.getByteFrequencyData(dataArray); let sum = 0;
+      for(let i = 0; i < analyser.frequencyBinCount; i++) sum += dataArray[i];
+      let avgVolume = sum / analyser.frequencyBinCount;
+      audioFill.style.width = Math.min(avgVolume, 100) + "%";
+      if(avgVolume > 85) { audioFill.classList.add("high"); triggerAcousticAlert(); } else { audioFill.classList.remove("high"); }
+    }, 200);
+  } catch(e) { console.warn("Acoustic detection unavailable"); }
+}
+
+async function triggerAcousticAlert() {
+  if(acousticCooldown) return; acousticCooldown = true;
+  showAlert("ACOUSTIC THREAT DETECTED! (Loud noise)", "danger"); speak("Warning. Acoustic Threat Detected.");
+  await insertAccessEvent({ event_type: "ACOUSTIC_THREAT", status: "rejected", device_id: settings.deviceId || null, extra: { gps: currentGps, volume_spike: true } }, "unknown");
+  setTimeout(() => acousticCooldown = false, 10000);
+}
+
+function playAlarmSound() {
+  const ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx2.createOscillator(); const gain = ctx2.createGain();
+  osc.connect(gain); gain.connect(ctx2.destination); osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(400, ctx2.currentTime); osc.frequency.linearRampToValueAtTime(800, ctx2.currentTime + 0.5);
+  gain.gain.setValueAtTime(0.5, ctx2.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx2.currentTime + 1);
+  osc.start(ctx2.currentTime); osc.stop(ctx2.currentTime + 1);
+}
+
+/* =========================
+   UI HELPERS & ALERTS
+========================= */
 function showAlert(msg, type="info"){
   const div=document.createElement("div"); div.className="alert "+(type==="success"?"success":type==="danger"?"danger":type==="warn"?"warn":"");
   div.innerHTML = `${type==="success"?"✅":type==="danger"?"❌":type==="warn"?"⚠️":"ℹ️"} <span>${msg}</span>`;
@@ -681,7 +616,7 @@ function speak(msg){
 
 function setOnlinePill(){
   const on = navigator.onLine; pillOnline.textContent = on ? "🌐 UPLINK: ONLINE" : "📴 UPLINK: OFFLINE";
-  pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
+  pillOnline.style.opacity = on ? "1" : ".5"; pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
 }
 
 /* =========================
@@ -689,63 +624,55 @@ function setOnlinePill(){
 ========================= */
 async function login(){
   const email = el("email").value.trim(); const password = el("password").value;
-  if(!email || !password){ showAlert("Credentials Required", "danger"); return; }
+  if(!email || !password){ showAlert("ඊමේල් සහ මුරපදය ඇතුලත් කරන්න", "danger"); return; }
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ showAlert(error.message, "danger"); return; }
-  session = data.session; showAlert("ACCESS GRANTED", "success"); await afterLogin();
+  session = data.session; showAlert("අවසර ලබා දෙන ලදී (ACCESS GRANTED)", "success"); await afterLogin();
 }
 
 async function logout(){
   await stopCamera(); await sb.auth.signOut(); session=null; profile=null;
-  app.classList.add("hidden"); loginCard.classList.remove("hidden"); 
-  const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = true;
-}
-
-async function loadProfile(){
-  if(!session?.user) return null;
-  const { data } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
-  
-  profile = data || { role: "operator" };
-  profile.role = "admin"; 
-  pillRole.textContent = `RANK: ${profile.role.toUpperCase()}`;
-}
-
-// Function to unlock restricted UI panels for admins
-function applyRoleGuards() {
-  const isAdmin = profile?.role === "admin" || profile?.role === "commander";
-  const pGuard = el("personsGuard");
-  const pArea = el("personsArea");
-  
-  if (pGuard && pArea) {
-    if (isAdmin) {
-      pGuard.classList.add("hidden"); 
-      pArea.classList.remove("hidden"); 
-    } else {
-      pGuard.classList.remove("hidden");
-      pArea.classList.add("hidden");
-    }
-  }
-}
-
-async function afterLogin(){
-  loginCard.classList.add("hidden"); app.classList.remove("hidden"); 
-  const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = false;
-  
-  setOnlinePill(); loadSettings(); initGPS(); 
-  
-  await loadProfile(); 
-  applyRoleGuards(); 
-  
-  await loadModels(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
-  
-  window.addEventListener("online", setOnlinePill); window.addEventListener("offline", setOnlinePill);
+  app.classList.add("hidden"); loginCard.classList.remove("hidden"); el("btnLogout").disabled = true;
 }
 
 function loadSettings(){
-  const s = localStorage.getItem("camp_settings_v2");
-  if(s) { try{ settings = { ...settings, ...JSON.parse(s) }; }catch{} }
+  const s = localStorage.getItem("camp_settings_v1");
+  if(s){ try{ settings = { ...settings, ...JSON.parse(s) }; }catch{} }
+  el("confThr").value = settings.confidenceThreshold; el("voice").value = settings.voiceAlerts ? "on" : "off";
+  el("acousticSetting").value = settings.acousticDetection ? "on" : "off"; el("autolock").value = settings.autoLockTime; 
 }
-function saveSettingsLocal(){ localStorage.setItem("camp_settings_v2", JSON.stringify(settings)); }
+
+function saveSettingsLocal(){ localStorage.setItem("camp_settings_v1", JSON.stringify(settings)); }
+
+async function loadProfile(){
+  if(!session?.user) return null;
+  const { data, error } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
+  profile = error ? { role:"operator", unit:"", full_name:"" } : data;
+  pillRole.textContent = `RANK: ${profile.role || "-"}`; return profile;
+}
+
+function applyRoleGuards(){
+  const isAdmin = profile?.role === "admin"; const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
+  el("personsGuard").classList.toggle("hidden", isAdmin); el("personsArea").classList.toggle("hidden", !isAdmin);
+  el("devicesGuard").classList.toggle("hidden", isAdmin); el("devicesArea").classList.toggle("hidden", !isAdmin);
+  el("auditTabBtn").classList.toggle("hidden", !canAudit); if(!canAudit) el("tab-audit").classList.add("hidden");
+}
+
+async function afterLogin(){
+  loginCard.classList.add("hidden"); app.classList.remove("hidden"); el("btnLogout").disabled = false;
+  setOnlinePill(); loadSettings(); initGPS(); await loadProfile(); applyRoleGuards();
+  
+  await loadModels(); 
+  await refreshDevices(); 
+  await refreshPersonsAndTemplates(); 
+  await refreshStats(); 
+  await refreshLogs(); 
+  await refreshAlerts(); 
+  await refreshAudit();
+  
+  window.addEventListener("online", async ()=>{ setOnlinePill(); }); 
+  window.addEventListener("offline", ()=>{ setOnlinePill(); });
+}
 
 /* =========================
    DATABASE FETCHING 
@@ -761,54 +688,66 @@ async function refreshStats(){
   el("statTotal").textContent = count || 0;
 }
 
-async function refreshLogs() {
-  const filterValue = el("logFilter") ? el("logFilter").value : "all";
-  let query = sb.from("access_events").select("*, persons(name,service_no)").order("created_at", { ascending: false }).limit(200);
-  const today = new Date();
-  
-  if (filterValue === "today") {
-    today.setHours(0, 0, 0, 0);
-    query = query.gte("created_at", today.toISOString());
-  } else if (filterValue === "7") {
-    const past7Days = new Date();
-    past7Days.setDate(today.getDate() - 7);
-    query = query.gte("created_at", past7Days.toISOString());
-  } else if (filterValue === "30") {
-    const past30Days = new Date();
-    past30Days.setDate(today.getDate() - 30);
-    query = query.gte("created_at", past30Days.toISOString());
-  }
+async function refreshAlerts(){
+  const { data } = await sb.from("alerts").select("*").order("created_at",{ascending:false}).limit(100);
+  const div = el("alertsList");
+  if(!data || !data.length){ div.textContent = "NO ALERTS"; return; }
+  div.innerHTML = data.map(a=>`<div style="padding:12px;border:1px solid var(--border-color); border-left: 3px solid var(--accent-danger); border-radius:4px;margin-bottom:10px;background:rgba(0,0,0,0.5)"><b style="color:var(--accent-danger)">${a.alert_type.toUpperCase()}</b> ${a.resolved ? `<span class="badge ok">RESOLVED</span>` : `<span class="badge warn">OPEN</span>`}<div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString()} • ${a.note||''}</div></div>`).join("");
+}
 
-  const { data, error } = await query;
+async function refreshAudit(){
+  const canAudit = ["admin","commander","investigator"].includes(profile?.role || "");
+  if(!canAudit) return;
+  const { data } = await sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(100);
+  const div = el("auditList");
+  if(!data || !data.length){ div.textContent="NO AUDIT LOGS"; return; }
+  div.innerHTML = data.map(a=>`<div style="padding:12px;border:1px solid var(--border-color); margin-bottom:10px;background:rgba(255,255,255,0.05)"><b style="color:var(--accent-main)">${a.action}</b><div class="small" style="margin-top:6px;color:var(--text-muted)">${new Date(a.created_at).toLocaleString()} • USER ID: ${a.user_id||'SYSTEM'}</div><div class="small" style="margin-top:6px;color:var(--text-muted);white-space:pre-wrap; font-family:monospace">${JSON.stringify(a.detail,null,2)}</div></div>`).join("");
+}
+
+async function refreshLogs(){
+  const f = el("logFilter") ? el("logFilter").value : "all";
+  let q = sb.from("access_events").select("*, persons(name,service_no), devices(gate_name)").order("created_at",{ascending:false}).limit(200);
+  if(f==="today"){ const start = new Date(); start.setHours(0,0,0,0); q = q.gte("created_at", start.toISOString()); }
+  const { data } = await q;
   const body = el("logsBody");
-  
-  if (error || !data || !data.length) { 
-    body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">දත්ත කිසිවක් හමු නොවීය (NO DATA)</td></tr>`; 
-    return; 
-  }
-  
-  body.innerHTML = data.map((r, i) => {
-    const p = r.persons;
-    return `<tr>
-      <td>${i + 1}</td>
-      <td>${new Date(r.created_at).toLocaleString()}</td>
-      <td>${p?.service_no || "-"}</td>
-      <td>${p?.name || "-"}</td>
-      <td>${r.event_type}</td>
-      <td><span class="badge ${r.status === 'approved' ? 'ok' : 'no'}">${r.status}</span></td>
-      <td><span class="small">${r.extra?.note || '-'}</span></td>
-    </tr>`;
+  if(!data||!data.length){ body.innerHTML=`<tr><td colspan="8">NO DATA</td></tr>`; return; }
+  body.innerHTML = data.map((r,i)=>{
+    const p = r.persons; let gpsLink = "-";
+    if(r.extra && r.extra.gps && r.extra.gps.lat) { gpsLink = `<a href="https://www.google.com/maps?q=${r.extra.gps.lat},${r.extra.gps.lng}" target="_blank" style="color:#00e5ff;">MAP</a>`; }
+    return `<tr><td>${i+1}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${p?.service_no||"-"}</td><td>${p?.name||"-"}</td><td>${r.devices?.gate_name||"-"}</td><td>${gpsLink}</td><td>${r.event_type}</td><td><span class="badge ${r.status==='approved'?'ok':'no'}">${r.status}</span></td></tr>`;
   }).join("");
 }
 
 async function refreshPersonsAndTemplates(){
   const { data: p } = await sb.from("persons").select("*").order("created_at",{ascending:false}); persons = p || [];
   const { data: t } = await sb.from("face_templates").select("id, person_id, descriptor"); templates = t || [];
-  buildMatcher(); 
+  buildMatcher(); renderPersonsList(); updateTemplateInfo();
+}
+
+function renderPersonsList(){
+  const q = (el("personSearch").value||"").toLowerCase().trim();
+  const list = persons.filter(p=>{ if(!q) return true; return (p.service_no||"").toLowerCase().includes(q) || (p.name||"").toLowerCase().includes(q); }).slice(0,200);
+  const div = el("personsList");
+  if(!list.length){ div.innerHTML = "NO RECORDS FOUND"; return; }
+  div.innerHTML = list.map(p=>`<div style="padding:12px;border:1px solid var(--border-color);border-left: 3px solid ${p.watchlist?'var(--accent-gold)':'var(--accent-main)'}; margin-bottom:10px;background:rgba(0,0,0,0.4)"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><div><b style="color:var(--text-primary); font-size:1.1em">${p.name}</b> <span class="small" style="color:var(--accent-gold)">(${p.rank||'-'})</span><br/><span class="small">Svc: ${p.service_no||'-'} | Unit: ${p.unit||'-'} | Type: ${p.person_type} | Status: ${p.status}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">${p.watchlist ? `<span class="badge warn">WATCHLIST</span>` : `<span class="badge ok">CLEARED</span>`}<button class="btn-secondary" onclick="openPersonForm('${p.id}')">EDIT</button></div></div></div>`).join("");
+}
+
+function updateTemplateInfo(){
+  const id = el("personId").value;
+  if(!id){ el("templateInfo").textContent = "NO SELECTION"; return; }
+  const count = templates.filter(t=>t.person_id===id).length;
+  el("templateInfo").textContent = `Biometric Templates: ${count}`;
+}
+
+async function refreshDevices(){
+  const { data } = await sb.from("devices").select("*").eq("is_active", true);
+  const select = el("deviceSelect"); select.innerHTML = "";
+  (data||[]).forEach(d=>{ select.appendChild(new Option(`${d.name} (${d.gate_name || "-"})`, d.id)); });
+  if(settings.deviceId) select.value = settings.deviceId;
 }
 
 /* =========================
-   MODELS & CAMERA
+   MODELS
 ========================= */
 async function loadModels(){
   try{
@@ -831,152 +770,235 @@ function buildMatcher(){
     const person = persons.find(x=>x.id===pid); if(person) labeled.push(new faceapi.LabeledFaceDescriptors(`${person.service_no||"NO-SVC"} | ${person.name}`, descs));
   }
   matcher = labeled.length ? new faceapi.FaceMatcher(labeled, maxDistance) : null;
-  el("recStatus").textContent = matcher ? "ACTIVE" : "STANDBY"; el("recStatus").className = matcher ? "badge ok" : "badge warn";
+  el("recStatus").textContent = matcher ? "ACTIVE" : "NO DATA"; el("recStatus").className = matcher ? "badge ok" : "badge warn";
+}
+
+/* =========================
+   CAMERA & DETECTIONS
+========================= */
+// NEW: Populate Camera List
+async function getCameras() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoInputs = devices.filter(device => device.kind === 'videoinput');
+    cameraSource.innerHTML = "";
+    videoInputs.forEach(device => {
+      const option = document.createElement('option');
+      option.value = device.deviceId;
+      option.text = device.label || `Camera ${cameraSource.length + 1}`;
+      cameraSource.appendChild(option);
+    });
+  } catch(e) { console.error("Error fetching cameras."); }
 }
 
 async function startCamera(){
   if(cameraStream) return;
   try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: {facingMode:"user", width:{ideal:640}, height:{ideal:480}}, audio: true });
+    const selectedCamId = cameraSource.value;
+    const constraints = {
+      video: selectedCamId ? { deviceId: { exact: selectedCamId }, width:{ideal:640}, height:{ideal:480} } : { facingMode:"user", width:{ideal:640}, height:{ideal:480} },
+      audio: true
+    };
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = cameraStream; await new Promise(r=>video.onloadedmetadata=r);
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
+    startAcousticDetection(cameraStream);
+    
     el("cameraStatus").textContent = "ONLINE"; el("cameraStatus").className = "badge ok";
     el("btnStartCam").disabled = true; el("btnStopCam").disabled = false;
     startDetectionLoop();
-  }catch(e){ showAlert("Camera Error", "danger"); }
+  }catch(e){ showAlert("Camera/Mic Error", "danger"); }
 }
 
 async function stopCamera(){
-  if(detectTimer) clearInterval(detectTimer); detectTimer=null;
+  if(detectTimer){ clearInterval(detectTimer); detectTimer=null; }
+  if(acousticLoop){ clearInterval(acousticLoop); acousticLoop=null; }
   if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
   video.srcObject=null; ctx.clearRect(0,0,canvas.width,canvas.height);
   el("btnStartCam").disabled = false; el("btnStopCam").disabled = true;
 }
 
+function drawBox(box, color, text){
+  ctx.strokeStyle=color; ctx.lineWidth=3; ctx.strokeRect(box.x, box.y, box.width, box.height);
+  ctx.fillStyle=color; ctx.fillRect(box.x-2, box.y-2, 10, 4); ctx.fillRect(box.x-2, box.y-2, 4, 10);
+  ctx.fillRect(box.x+box.width-8, box.y-2, 10, 4); ctx.fillRect(box.x+box.width-2, box.y-2, 4, 10);
+  ctx.fillRect(box.x, Math.max(0, box.y-28), box.width, 28);
+  ctx.fillStyle="#000"; ctx.font="bold 16px 'Share Tech Mono'"; ctx.fillText(text, box.x+6, Math.max(18, box.y-8));
+}
+
+function bestMatchToConfidence(distance){ return Math.max(0, Math.min(1, 1 - distance)); }
+
 function startDetectionLoop(){
   if(detectTimer) clearInterval(detectTimer);
+  
   detectTimer = setInterval(async ()=>{
     if(!cameraStream) return;
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    const dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+    const dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 })).withFaceLandmarks().withFaceDescriptors();
     
-    overlay.textContent = `TRACKING: ${dets.length}`;
-    if(dets.length===0){ detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING AREA...</span>"; return; }
+    overlay.textContent = `TARGETS: ${dets.length}`;
+    if(dets.length===0){ detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING...</span>"; return; }
 
     const now = Date.now();
+    const cooldownMs = (settings.autoLockTime || 15) * 1000;
+
     for(const d of dets){
+      const box = d.detection.box;
       let label="Unknown"; let distance=1; let person=null;
+      
       if(matcher){
         const best = matcher.findBestMatch(d.descriptor);
         label = best.label; distance = best.distance;
-        if(label !== "unknown") person = persons.find(p=>p.service_no===label.split("|")[0].trim());
+        if(label !== "unknown"){
+          const svc = label.split("|")[0].trim(); person = persons.find(p=>p.service_no===svc);
+        }
       }
       
+      const conf = bestMatchToConfidence(distance);
       const isUnknown = !person;
-      const targetId = isUnknown ? "UNKNOWN" : person.id;
-      const inCooldown = (now - (detectionCooldowns.get(targetId) || 0)) < (settings.autoLockTime*1000);
+      const targetId = isUnknown ? "UNKNOWN_TARGET" : person.id;
 
-      const box = d.detection.box; const color = isUnknown ? "#ff003c" : (person.watchlist ? "#ffb300" : "#00ff41");
-      ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(box.x, box.y, box.width, box.height);
+      const lastSeen = detectionCooldowns.get(targetId) || 0;
+      const timeSinceSeen = now - lastSeen;
+      const inCooldown = timeSinceSeen < cooldownMs;
+      const timeLeft = Math.ceil((cooldownMs - timeSinceSeen) / 1000);
+
+      let boxColor = isUnknown ? "#ff3333" : (person.watchlist ? "#ffb300" : "#4caf50");
+      let boxText = isUnknown ? "UNKNOWN" : (person.watchlist ? "WATCHLIST" : "IDENTIFIED");
       
+      if(inCooldown) { boxColor = "#00e5ff"; boxText += ` (WAIT ${timeLeft}s)`; }
+      drawBox(box, boxColor, boxText);
+
       if(isUnknown){
-        detectedBox.innerHTML = `<h3 style="color:var(--accent-danger)">UNKNOWN TARGET</h3><p>ACCESS DENIED</p>`;
-        if(!inCooldown && el("mode").value==="auto") { detectionCooldowns.set(targetId, now); autoLogUnknown(); }
+        detectedBox.innerHTML = `<div style="text-align:center;padding:8px;"><div class="badge ${inCooldown ? 'cool' : 'no'}">${inCooldown ? 'COOLDOWN' : 'UNKNOWN'}</div><p class="small" style="margin-top:8px;color:var(--text-muted)">VERIFY ID</p></div>`;
+        if(el("mode").value==="auto" && !inCooldown) { detectionCooldowns.set("UNKNOWN_TARGET", now); autoLogUnknown(conf); }
       }else{
-        detectedBox.innerHTML = `<h3 style="color:${color}">${person.name}</h3><p>${person.rank||''} | ${person.watchlist?'WATCHLIST':'CLEARED'}</p>`;
-        if(!inCooldown && el("mode").value==="auto") { detectionCooldowns.set(targetId, now); autoLogKnown(person); }
+        detectedBox.innerHTML = `<div style="text-align:center;padding:8px;"><div class="badge ${inCooldown ? 'cool' : (person.watchlist?'warn':'ok')}">${inCooldown ? `⏳ WAIT ${timeLeft}s` : (person.watchlist?'⚠️ WATCHLIST':'✅ CLEARED')}</div><h3 style="margin-top:8px;color:var(--text-primary)">${person.name}</h3><p class="small" style="color:var(--accent-gold)">${person.rank||''} | ${person.service_no||''}</p></div>`;
+        if(el("mode").value==="auto" && !inCooldown){ detectionCooldowns.set(person.id, now); autoLogKnown(person, conf); }
       }
     }
-  }, 1000);
+  }, 900);
 }
 
-async function autoLogUnknown(){
-  sendGateCommand('D'); broadcastEvent('ACCESS_DENIED', { message: "UNKNOWN TARGET" });
-  await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected" }, "unknown"); speak("Alert. Unauthorized person.");
+// --- MODIFIED LOGGING & HARDWARE TRIGGERS ---
+async function autoLogUnknown(conf){
+  // Trigger Hardware and Broadcast
+  sendGateCommand('D'); 
+  broadcastEvent('ACCESS_DENIED', { message: "UNKNOWN PERSON DETECTED", time: new Date().toLocaleTimeString() });
+
+  await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected", confidence: conf, extra: { gps: currentGps } }, "unknown");
+  speak("Unauthorized person detected");
 }
 
-async function autoLogKnown(person){
+async function autoLogKnown(person, conf){
   if(person.watchlist) {
-    sendGateCommand('D'); broadcastEvent('ACCESS_DENIED', { person: person }); speak("Watchlist target detected.");
+    sendGateCommand('D');
+    broadcastEvent('ACCESS_DENIED', { message: "WATCHLIST DETECTED", person: person });
+    speak("Watchlist individual detected");
   } else {
-    sendGateCommand('A'); broadcastEvent('ACCESS_GRANTED', { person: person }); speak("Access granted.");
+    sendGateCommand('A');
+    broadcastEvent('ACCESS_GRANTED', { person: person, time: new Date().toLocaleTimeString() });
+    speak("Access granted");
   }
-  await insertAccessEvent({ person_id: person.id, event_type: "SCAN", status: person.watchlist?"rejected":"approved" }, person.watchlist?"watchlist":"normal");
+
+  await insertAccessEvent({ person_id: person.id, event_type: el("eventType").value, status: person.watchlist?"rejected":"approved", extra: { gps: currentGps } }, person.watchlist?"watchlist":"normal");
 }
 
 async function insertAccessEvent(payload, kind){
-  try{ await sb.from("access_events").insert(payload); refreshStats(); refreshLogs(); return true; }catch(e){ return false; }
+  try{
+    const { data } = await sb.from("access_events").insert(payload).select("id").single();
+    if(kind==="watchlist"||kind==="unknown") await sb.from("alerts").insert({ access_event_id: data.id, alert_type:kind });
+    refreshStats(); refreshLogs(); refreshAlerts(); return true;
+  }catch(e){ return false; }
 }
 
 /* =========================
-   EVENTS & LISTENERS (SAFE VERSION)
+   UI BUTTONS & EXPORT
 ========================= */
+el("btnNightVision").addEventListener("click", () => {
+  nightVisionMode = !nightVisionMode;
+  if(nightVisionMode) { videoBox.classList.add("night-vision"); el("btnNightVision").classList.replace("btn-secondary", "btn-primary"); } 
+  else { videoBox.classList.remove("night-vision"); el("btnNightVision").classList.replace("btn-primary", "btn-secondary"); }
+});
 
-function safeAddEvent(id, event, func) {
-  const btn = el(id);
-  if (btn) {
-    btn.addEventListener(event, func);
-  }
-}
-
-// අනවශ්‍ය පේළි ඉවත් කර නිවැරදි කරන ලද කොටස
-safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
-safeAddEvent("btnLogin", "click", login);
-safeAddEvent("btnLogout", "click", logout);
-safeAddEvent("btnStartCam", "click", startCamera);
-safeAddEvent("btnStopCam", "click", stopCamera);
-
-safeAddEvent("btnPanic", "click", async () => {
+el("btnPanic").addEventListener("click", async () => {
   isLockdown = !isLockdown;
   if(isLockdown) {
-    document.body.classList.add("lockdown-mode");
-    el("btnPanic").innerHTML = "❌ අවලංගු කරන්න (CANCEL LOCKDOWN)";
-    speak("Base Lockdown Initiated.");
-    await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected" }, "watchlist");
+    document.body.classList.add("lockdown-mode"); el("btnPanic").textContent = "❌ අගුලු දැමීම අවලංගු කරන්න (CANCEL LOCKDOWN)";
+    speak("Base Lockdown Initiated. Security breach protocol activated."); playAlarmSound();
+    await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected", device_id: settings.deviceId || null, extra: { gps: currentGps, lockdown: true } }, "watchlist");
   } else {
-    document.body.classList.remove("lockdown-mode");
-    el("btnPanic").innerHTML = "🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨";
-    speak("Lockdown cancelled.");
+    document.body.classList.remove("lockdown-mode"); el("btnPanic").innerHTML = "🚨 හදිසි අවස්ථා අගුලු දැමීම (INITIATE BASE LOCKDOWN) 🚨"; speak("Lockdown cancelled.");
   }
 });
 
-safeAddEvent("btnRefreshLogs", "click", refreshLogs);
-safeAddEvent("logFilter", "change", refreshLogs);
-safeAddEvent("btnRefreshPersons", "click", refreshPersonsAndTemplates);
-safeAddEvent("btnRefreshAlerts", "click", refreshAlerts);
-
-safeAddEvent("btnAddPerson", "click", () => {
-  if(profile?.role !== "admin") { showAlert("ADMIN ACCESS REQUIRED", "danger"); return; }
-  el("personForm").classList.remove("hidden");
-  el("personId").value = "";
-});
-
-safeAddEvent("btnSaveSettings", "click", async () => {
-  settings.confidenceThreshold = Number(el("confThr").value);
-  settings.voiceAlerts = el("voice").value === "on";
-  settings.acousticDetection = el("acousticSetting").value === "on";
-  settings.autoLockTime = Number(el("autolock").value);
-  settings.deviceId = el("deviceSelect").value || null;
-  saveSettingsLocal();
-  await refreshDevices();
-  buildMatcher();
+el("btnSaveSettings").addEventListener("click", async ()=>{
+  settings.confidenceThreshold = Number(el("confThr").value); settings.voiceAlerts = el("voice").value==="on";
+  settings.acousticDetection = el("acousticSetting").value==="on"; settings.autoLockTime = Number(el("autolock").value);
+  settings.deviceId = el("deviceSelect").value || null; saveSettingsLocal(); await refreshDevices(); buildMatcher();
   showAlert("CONFIGURATION SAVED", "success");
 });
 
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", (e) => {
-    if (btn.classList.contains("tab-link")) return;
-    document.querySelectorAll(".tab-content").forEach(x => x.classList.add("hidden"));
-    const target = el("tab-" + btn.dataset.tab);
-    if (target) target.classList.remove("hidden");
-    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-  });
+el("btnExportCSV").addEventListener("click", ()=>{
+  const rows = [...el("logsBody").querySelectorAll("tr")].map(tr => [...tr.children].map(td=>td.innerText));
+  if(!rows.length) return;
+  const csv = [["#", "Time", "Service", "Name", "Gate", "GPS", "Event", "Status"], ...rows].map(r=>r.join(",")).join("\n");
+  const blob = new Blob(["\ufeff"+csv], { type:"text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download=`mission_logs_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
+
+// Admin Control Panel Forms
+window.openPersonForm = function(id){
+  const p = persons.find(x=>x.id===id); if(!p) return;
+  el("personForm").classList.remove("hidden"); el("personId").value = p.id; el("pService").value = p.service_no || ""; el("pName").value = p.name || "";
+  el("pRank").value = p.rank || ""; el("pUnit").value = p.unit || ""; el("pType").value = p.person_type || "soldier"; el("pStatus").value = p.status || "active";
+  el("pWatch").value = String(!!p.watchlist); selectedPersonId = p.id; updateTemplateInfo();
+};
+el("btnCancelPerson").addEventListener("click", ()=>{ el("personForm").classList.add("hidden"); });
+
+el("btnSavePerson").addEventListener("click", async ()=>{
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
+  const id = el("personId").value || null;
+  const payload = { service_no: el("pService").value.trim() || null, name: el("pName").value.trim(), rank: el("pRank").value.trim() || null, unit: el("pUnit").value.trim() || null, person_type: el("pType").value, status: el("pStatus").value, watchlist: el("pWatch").value==="true" };
+  if(!payload.name){ showAlert("නම අත්‍යවශ්‍යයි (NAME REQUIRED)", "danger"); return; }
+  try{
+    if(id){ await sb.from("persons").update(payload).eq("id", id); } else { await sb.from("persons").insert(payload); }
+    await refreshPersonsAndTemplates(); await refreshStats(); el("personForm").classList.add("hidden"); showAlert("දත්ත යාවත්කාලීන කරන ලදී (UPDATED)", "success");
+  }catch(e){ showAlert(e.message, "danger"); }
+});
+
+el("btnEnroll1").addEventListener("click", async ()=>{
+  if(profile?.role!=="admin"){ showAlert("ACCESS DENIED: ADMIN ONLY", "danger"); return; }
+  const id = el("personId").value; if(!id) return; if(!cameraStream){ showAlert("කැමරාව අරඹන්න (START CAMERA)", "warn"); return; }
+  const captures = [];
+  for(let i=0;i<3;i++){
+    overlay.textContent = `SCANNING ${i+1}/3...`;
+    const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 })).withFaceLandmarks().withFaceDescriptor();
+    if(!det){ showAlert("මුහුණක් අනාවරණය නොවිණි.", "danger"); overlay.textContent = "STANDBY"; return; }
+    captures.push(Array.from(det.descriptor).map(n=>Number(n))); await new Promise(r=>setTimeout(r, 600));
+  }
+  overlay.textContent = "SAVING...";
+  const rows = captures.map(desc=>({ person_id: id, descriptor: desc, model_version: "faceapi-0.22.2" }));
+  await sb.from("face_templates").insert(rows);
+  showAlert("ජෛව දත්ත සුරකින ලදී (BIOMETRICS SAVED)", "success"); overlay.textContent = "SYSTEM READY"; await refreshPersonsAndTemplates();
+});
+
+/* BOOT */
+navigator.mediaDevices.enumerateDevices().then(getCameras); // Load CCTV cameras
+el("btnConnectArduino").addEventListener("click", connectArduino); // Bind Arduino
+
+el("btnLogin").addEventListener("click", login); el("btnLogout").addEventListener("click", logout);
+document.querySelectorAll(".tab").forEach(btn=>{ btn.addEventListener("click", ()=>{ document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden")); el("tab-"+btn.dataset.tab).classList.remove("hidden"); document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); }); });
+el("btnStartCam").addEventListener("click", startCamera); el("btnStopCam").addEventListener("click", stopCamera); 
+el("btnRefreshLogs").addEventListener("click", refreshLogs); el("logFilter").addEventListener("change", refreshLogs);
+el("btnRefreshPersons").addEventListener("click", refreshPersonsAndTemplates); el("personSearch").addEventListener("input", renderPersonsList);
+el("btnRefreshAlerts").addEventListener("click", refreshAlerts); el("btnRefreshAudit").addEventListener("click", refreshAudit);
+el("btnAddPerson").addEventListener("click", ()=>{ if(profile?.role!=="admin"){ showAlert("ADMIN ACCESS REQUIRED", "danger"); return; } el("personForm").classList.remove("hidden"); el("personId").value=""; });
+
 (async function boot(){
-  setOnlinePill(); 
-  const {data} = await sb.auth.getSession(); 
-  if(data?.session){ session=data.session; await afterLogin(); }
+  setOnlinePill(); loadSettings(); initGPS();
+  const s = await loadSession(); if(s){ session=s; el("btnLogout").disabled=false; await afterLogin(); }
 })();
 </script>
 </body>
