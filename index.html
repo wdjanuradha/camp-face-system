@@ -916,17 +916,16 @@ function safeAddEvent(id, event, func) {
   const btn = el(id);
   if (btn) {
     btn.addEventListener(event, func);
-  } else {
-    console.warn("Element not found: " + id + ". Skipping...");
   }
 }
 
+// අනවශ්‍ය පේළි ඉවත් කර නිවැරදි කරන ලද කොටස
 safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
-safeAddEvent("btnConnectArduino", "click", connectArduino);
 safeAddEvent("btnLogin", "click", login);
 safeAddEvent("btnLogout", "click", logout);
 safeAddEvent("btnStartCam", "click", startCamera);
 safeAddEvent("btnStopCam", "click", stopCamera);
+
 safeAddEvent("btnPanic", "click", async () => {
   isLockdown = !isLockdown;
   if(isLockdown) {
@@ -945,12 +944,13 @@ safeAddEvent("btnRefreshLogs", "click", refreshLogs);
 safeAddEvent("logFilter", "change", refreshLogs);
 safeAddEvent("btnRefreshPersons", "click", refreshPersonsAndTemplates);
 safeAddEvent("btnRefreshAlerts", "click", refreshAlerts);
-safeAddEvent("btnRefreshAudit", "click", refreshAudit);
+
 safeAddEvent("btnAddPerson", "click", () => {
   if(profile?.role !== "admin") { showAlert("ADMIN ACCESS REQUIRED", "danger"); return; }
   el("personForm").classList.remove("hidden");
   el("personId").value = "";
 });
+
 safeAddEvent("btnSaveSettings", "click", async () => {
   settings.confidenceThreshold = Number(el("confThr").value);
   settings.voiceAlerts = el("voice").value === "on";
@@ -973,7 +973,6 @@ document.querySelectorAll(".tab").forEach(btn => {
     btn.classList.add("active");
   });
 });
-
 (async function boot(){
   setOnlinePill(); 
   const {data} = await sb.auth.getSession(); 
