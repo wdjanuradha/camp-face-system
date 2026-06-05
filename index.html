@@ -127,12 +127,12 @@ video,canvas{width:100%;height:auto;display:block} canvas{position:absolute;top:
 /* Tactical Map Design */
 .camp-map { position: relative; width: 100%; max-width: 450px; height: 350px; background: rgba(0, 40, 10, 0.4); border: 2px dashed var(--border-color); margin: 20px auto; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.8); }
 .camp-map::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.6) 100%); pointer-events: none; z-index: 1;}
-.perimeter { position: absolute; background: rgba(0, 255, 65, 0.2); border: 1px solid var(--accent-main); display: flex; justify-content: center; align-items: center; font-size: 0.85em; color: var(--accent-main); font-family: var(--font-body); font-weight: bold; transition: all 0.3s ease; z-index: 2; text-shadow: 0 0 5px #000;}
+.perimeter { position: absolute; background: rgba(0, 255, 65, 0.2); border: 1px solid var(--accent-main); display: flex; justify-content: center; align-items: center; font-size: 0.85em; color: var(--accent-main); font-family: var(--font-body); font-weight: bold; transition: all 0.3s ease; z-index: 4; text-shadow: 0 0 5px #000;}
 .p-north { top: 10px; left: 10px; right: 10px; height: 30px; border-radius: 4px; }
 .p-south { bottom: 10px; left: 10px; right: 10px; height: 30px; border-radius: 4px; }
 .p-east  { top: 45px; right: 10px; bottom: 45px; width: 30px; writing-mode: vertical-rl; border-radius: 4px; }
 .p-west  { top: 45px; left: 10px; bottom: 45px; width: 30px; writing-mode: vertical-rl; border-radius: 4px; }
-.hq-label { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--accent-gold); font-family: var(--font-head); letter-spacing: 3px; z-index: 2; text-shadow: 0 0 10px rgba(255,179,0,0.5); text-align: center;}
+.hq-label { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--accent-gold); font-family: var(--font-head); letter-spacing: 3px; z-index: 4; text-shadow: 0 0 10px rgba(255,179,0,0.5); text-align: center;}
 
 @keyframes breachFlash { 0% { background: rgba(255,0,0,0.8); box-shadow: 0 0 30px #ff0000; border-color: #fff; color: #fff;} 50% { background: rgba(100,0,0,0.5); box-shadow: none; border-color: #ff0000; color: #ff0000;} 100% { background: rgba(255,0,0,0.8); box-shadow: 0 0 30px #ff0000; border-color: #fff; color: #fff;} }
 .breached { animation: breachFlash 0.4s infinite !important; z-index: 5;}
@@ -209,7 +209,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
     </div>
 
     <div id="tab-dashboard" class="tab-content">
-      
+       
       <div class="row" style="margin-bottom: 20px;">
         <button id="btnLaunchExternal" class="btn-secondary" style="border-color:var(--accent-cyan); color:var(--accent-cyan);">
           🖥️ විනිශ්චය මණ්ඩල තිරය විවෘත කරන්න (LAUNCH EXTERNAL PANEL)
@@ -231,6 +231,8 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
           <h3>🗺️ කඳවුරු ආරක්ෂක සිතියම (TACTICAL MAP)</h3>
           <p class="small">Live Perimeter Sensor Grid (Lasers & Ultrasonic)</p>
           <div class="camp-map">
+            <canvas id="radarCanvas" width="450" height="350" style="position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; border-radius: 8px;"></canvas>
+            
             <div id="wall-NORTH" class="perimeter p-north">NORTH (FRONT GATE)</div>
             <div id="wall-EAST" class="perimeter p-east">EAST (RIGHT FLANK)</div>
             <div id="wall-SOUTH" class="perimeter p-south">SOUTH (REAR SECTOR)</div>
@@ -436,6 +438,10 @@ const video = el("video"); const canvas = el("canvas"); const ctx = canvas.getCo
 const overlay = el("overlay"); const detectedBox = el("detectedBox"); const audioFill = el("audioFill");
 const cameraSource = el("cameraSource");
 
+// RADAR Canvas Setup
+const radarCanvas = el("radarCanvas");
+const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
+
 /* =========================
    NEW PLACEHOLDER FUNCTIONS (FIXES CRASHES)
 ========================= */
@@ -502,6 +508,49 @@ async function connectArduino() {
   }
 }
 
+// Function to draw Live Radar Sweep
+function drawRadarUI(angle, distance) {
+  if(!radarCtx) return;
+  
+  // Create fade effect (trail)
+  radarCtx.fillStyle = "rgba(0, 40, 10, 0.05)"; 
+  radarCtx.fillRect(0, 0, 450, 350);
+
+  const rad = angle * Math.PI / 180;
+  const originX = 225; // Center X
+  const originY = 350; // Bottom Y
+  const maxRadius = 350;
+
+  // Draw Sweep Line (Green)
+  const sweepX = originX - maxRadius * Math.cos(rad);
+  const sweepY = originY - maxRadius * Math.sin(rad);
+  
+  radarCtx.beginPath();
+  radarCtx.moveTo(originX, originY);
+  radarCtx.lineTo(sweepX, sweepY);
+  radarCtx.strokeStyle = "rgba(0, 255, 65, 0.8)";
+  radarCtx.lineWidth = 2;
+  radarCtx.stroke();
+
+  // Draw Detected Object (Red Dot) if valid distance (e.g., < 400cm)
+  if (distance > 0 && distance < 400) {
+    // Map max distance 400cm to canvas size 350px
+    const scale = 350 / 400; 
+    const objX = originX - (distance * scale) * Math.cos(rad);
+    const objY = originY - (distance * scale) * Math.sin(rad);
+
+    radarCtx.beginPath();
+    radarCtx.arc(objX, objY, 5, 0, 2 * Math.PI);
+    radarCtx.fillStyle = "#ff003c";
+    radarCtx.fill();
+    
+    radarCtx.shadowBlur = 10;
+    radarCtx.shadowColor = "#ff003c";
+    radarCtx.fill();
+    radarCtx.shadowBlur = 0; // reset
+  }
+}
+
 // Listen to Arduino Data Stream
 async function listenToArduino() {
   const textDecoder = new TextDecoderStream();
@@ -517,9 +566,21 @@ async function listenToArduino() {
       const signals = value.split('\n');
       for(let signal of signals) {
         signal = signal.trim();
+        if(!signal) continue;
         
-        // If signal is a Perimeter Breach
-        if (signal.startsWith("BREACH_")) {
+        // --- NEW: RADAR SCAN DATA ---
+        // Expected format: RADAR_90:45 (Angle_90 : Distance_45)
+        if (signal.startsWith("RADAR_")) {
+           const parts = signal.split("_")[1].split(":");
+           if(parts.length === 2) {
+              const angle = parseInt(parts[0]);
+              const distance = parseInt(parts[1]);
+              drawRadarUI(angle, distance);
+           }
+        }
+        
+        // --- EXISTING: PERIMETER BREACH (LASERS) ---
+        else if (signal.startsWith("BREACH_")) {
           let side = signal.split("_")[1]; // e.g., NORTH, SOUTH:45
           let distance = null;
 
