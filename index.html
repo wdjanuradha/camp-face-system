@@ -443,7 +443,7 @@ const radarCanvas = el("radarCanvas");
 const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
 
 /* =========================
-   NEW PLACEHOLDER FUNCTIONS (FIXES CRASHES)
+   NEW PLACEHOLDER FUNCTIONS
 ========================= */
 async function initGPS() {
   if (navigator.geolocation) {
@@ -551,25 +551,28 @@ function drawRadarUI(angle, distance) {
   }
 }
 
-// Listen to Arduino Data Stream
+// Listen to Arduino Data Stream (WITH BUFFER FIX)
 async function listenToArduino() {
   const textDecoder = new TextDecoderStream();
   serialPort.readable.pipeTo(textDecoder.writable);
   const reader = textDecoder.readable.getReader();
+  
+  let buffer = ""; // This saves broken pieces of data!
 
   try {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
       
-      // Parse incoming data (handle multiple lines in one chunk)
-      const signals = value.split('\n');
-      for(let signal of signals) {
+      buffer += value; // Add new data to the holding area
+      const lines = buffer.split('\n'); // Split when a line is complete
+      buffer = lines.pop(); // Keep the incomplete piece for next time
+
+      for(let signal of lines) {
         signal = signal.trim();
         if(!signal) continue;
         
-        // --- NEW: RADAR SCAN DATA ---
-        // Expected format: RADAR_90:45 (Angle_90 : Distance_45)
+        // --- RADAR SCAN DATA ---
         if (signal.startsWith("RADAR_")) {
            const parts = signal.split("_")[1].split(":");
            if(parts.length === 2) {
@@ -579,18 +582,16 @@ async function listenToArduino() {
            }
         }
         
-        // --- EXISTING: PERIMETER BREACH (LASERS) ---
+        // --- PERIMETER BREACH (LASERS) ---
         else if (signal.startsWith("BREACH_")) {
-          let side = signal.split("_")[1]; // e.g., NORTH, SOUTH:45
+          let side = signal.split("_")[1];
           let distance = null;
 
-          // Check if distance is included (Ultrasonic Sensor on SOUTH)
           if (side && side.includes(":")) {
             const parts = side.split(":");
             side = parts[0];       
             distance = parts[1];   
           }
-          
           if(side) triggerPerimeterAlarm(side, distance);
         }
       }
@@ -602,9 +603,26 @@ async function listenToArduino() {
   }
 }
 
-// Action to take on Breach
+// Action to take on Breach (WITH ALARM SOUND)
 async function triggerPerimeterAlarm(side, distance) {
-  // Update Tactical Map UI
+  
+  // 1. Play Loud Alarm Beep
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.5);
+    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.5);
+  } catch (e) { console.log("Audio not supported yet"); }
+
+  // 2. Update Tactical Map UI
   const wallElement = document.getElementById("wall-" + side);
   if (wallElement) {
     wallElement.classList.add("breached");
@@ -617,10 +635,10 @@ async function triggerPerimeterAlarm(side, distance) {
     }, 10000);
   }
 
-  // Trigger base lockdown if not already locked
+  // 3. Trigger base lockdown if not already locked
   if (!isLockdown) { el("btnPanic").click(); }
   
-  // Voice & Alert UI
+  // 4. Voice & Alert UI
   const alertMsg = distance ? `${side} දිශාවෙන් සෙ.මී. ${distance} ක දුරින් ආක්‍රමණයක්!` : `${side} දිශාවෙන් ආක්‍රමණයක්!`;
   const voiceMsg = distance ? `Warning. Breach at ${side} sector. Threat distance ${distance} centimeters.` : `Warning. Perimeter Breach at ${side} sector.`;
   
@@ -628,7 +646,7 @@ async function triggerPerimeterAlarm(side, distance) {
   speak(voiceMsg);
   broadcastEvent('BREACH_ALERT', { side: side, distance: distance });
   
-  // Log to Supabase Database
+  // 5. Log to Supabase Database
   await insertAccessEvent({ 
     event_type: "PERIMETER_BREACH", 
     status: "rejected", 
@@ -667,7 +685,7 @@ function setOnlinePill(){
 }
 
 /* =========================
-   AUTH & BOOT (FIXED SAFE CALLS)
+   AUTH & BOOT
 ========================= */
 async function login(){
   const email = el("email").value.trim(); const password = el("password").value;
@@ -688,25 +706,20 @@ async function loadProfile(){
   const { data } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
   
   profile = data || { role: "operator" };
-  
-  // 🔴 DEVELOPER OVERRIDE: Force role to admin so you can access the Troops page
-  // Remove or comment out the line below when you deploy this to production
   profile.role = "admin"; 
-  
   pillRole.textContent = `RANK: ${profile.role.toUpperCase()}`;
 }
 
 // Function to unlock restricted UI panels for admins
 function applyRoleGuards() {
   const isAdmin = profile?.role === "admin" || profile?.role === "commander";
-  
   const pGuard = el("personsGuard");
   const pArea = el("personsArea");
   
   if (pGuard && pArea) {
     if (isAdmin) {
-      pGuard.classList.add("hidden"); // Hide the warning message
-      pArea.classList.remove("hidden"); // Show the troops management panel
+      pGuard.classList.add("hidden"); 
+      pArea.classList.remove("hidden"); 
     } else {
       pGuard.classList.remove("hidden");
       pArea.classList.add("hidden");
@@ -721,7 +734,7 @@ async function afterLogin(){
   setOnlinePill(); loadSettings(); initGPS(); 
   
   await loadProfile(); 
-  applyRoleGuards(); // <-- This runs the unlock check after loading your profile
+  applyRoleGuards(); 
   
   await loadModels(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
   
@@ -749,36 +762,23 @@ async function refreshStats(){
 }
 
 async function refreshLogs() {
-  // 1. Dropdown එකේ තෝරාගත් අගය ලබාගැනීම
   const filterValue = el("logFilter") ? el("logFilter").value : "all";
-  
-  // 2. මූලික Query එක සකස් කිරීම (Limit එක 200ක් දක්වා වැඩි කර ඇත)
-  let query = sb.from("access_events")
-                .select("*, persons(name,service_no)")
-                .order("created_at", { ascending: false })
-                .limit(200);
-
-  // 3. Filter එකට අදාලව Date Range එක වෙනස් කිරීම
+  let query = sb.from("access_events").select("*, persons(name,service_no)").order("created_at", { ascending: false }).limit(200);
   const today = new Date();
   
   if (filterValue === "today") {
-    // අද දවසේ මුල (00:00:00)
     today.setHours(0, 0, 0, 0);
     query = query.gte("created_at", today.toISOString());
   } else if (filterValue === "7") {
-    // දවස් 7කට පෙර
     const past7Days = new Date();
     past7Days.setDate(today.getDate() - 7);
     query = query.gte("created_at", past7Days.toISOString());
   } else if (filterValue === "30") {
-    // දවස් 30කට පෙර (අවශ්‍ය නම් පමණක්)
     const past30Days = new Date();
     past30Days.setDate(today.getDate() - 30);
     query = query.gte("created_at", past30Days.toISOString());
   }
-  // "all" තෝරාගෙන ඇත්නම් මුළු query එකම ධාවනය වේ
 
-  // 4. Data ලබා ගැනීම සහ Table එක Update කිරීම
   const { data, error } = await query;
   const body = el("logsBody");
   
@@ -876,7 +876,6 @@ function startDetectionLoop(){
       const targetId = isUnknown ? "UNKNOWN" : person.id;
       const inCooldown = (now - (detectionCooldowns.get(targetId) || 0)) < (settings.autoLockTime*1000);
 
-      // Draw Box on Canvas
       const box = d.detection.box; const color = isUnknown ? "#ff003c" : (person.watchlist ? "#ffb300" : "#00ff41");
       ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(box.x, box.y, box.width, box.height);
       
@@ -942,7 +941,6 @@ safeAddEvent("btnPanic", "click", async () => {
   }
 });
 
-// Refresh & Other Buttons
 safeAddEvent("btnRefreshLogs", "click", refreshLogs);
 safeAddEvent("logFilter", "change", refreshLogs);
 safeAddEvent("btnRefreshPersons", "click", refreshPersonsAndTemplates);
@@ -965,7 +963,6 @@ safeAddEvent("btnSaveSettings", "click", async () => {
   showAlert("CONFIGURATION SAVED", "success");
 });
 
-// Tab Switching
 document.querySelectorAll(".tab").forEach(btn => {
   btn.addEventListener("click", (e) => {
     if (btn.classList.contains("tab-link")) return;
