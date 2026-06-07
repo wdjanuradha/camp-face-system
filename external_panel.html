@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI GUARDIAN - EXTERNAL PANEL</title>
+<title>AI GUARDIAN - JUDGE PANEL</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
@@ -65,9 +65,10 @@ body::after {
 
 /* AI VOICE WAVEFORM ANIMATION */
 .voice-wave { display: none; align-items: center; gap: 5px; margin-top: 20px; }
-.voice-wave span { display: block; width: 8px; height: 20px; background: var(--neon-blue); border-radius: 4px; animation: wave 1s infinite ease-in-out; }
+.voice-wave span { display: block; width: 8px; height: 20px; background: var(--neon-cyan); border-radius: 4px; animation: wave 1s infinite ease-in-out; }
 .voice-wave span:nth-child(2) { animation-delay: 0.1s; } .voice-wave span:nth-child(3) { animation-delay: 0.2s; } .voice-wave span:nth-child(4) { animation-delay: 0.3s; } .voice-wave span:nth-child(5) { animation-delay: 0.4s; }
 @keyframes wave { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(2.5); background: var(--neon-gold); } }
+
 .ai-subtitles { font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; color: var(--neon-gold); margin-top: 15px; display: none; background: rgba(0,0,0,0.8); padding: 10px 20px; border: 1px solid var(--neon-gold); border-radius: 5px; }
 
 /* RADAR */
@@ -75,12 +76,12 @@ body::after {
 .radar::before { content: ""; position: absolute; top: 0; left: 50%; width: 50%; height: 100%; background: linear-gradient(90deg, rgba(0,255,65,0) 0%, rgba(0,255,65,0.5) 100%); transform-origin: left center; animation: radarScan 2s linear infinite; }
 @keyframes radarScan { 100% { transform: rotate(360deg); } }
 
-/* 3D GATE - SYNCED TO 45 DEGREES */
+/* 3D GATE */
 .gate-section { display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; }
 .gate-container { position: relative; width: 100%; height: 150px; display: flex; align-items: flex-end; padding-left: 50px; }
 .gate-pillar { width: 30px; height: 100px; background: #444; border: 2px solid #666; position: relative; z-index: 2; }
-.gate-arm { width: 250px; height: 15px; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 15px, #ffffff 15px, #ffffff 30px); position: absolute; left: 65px; bottom: 85px; transform-origin: left center; transform: rotate(0deg); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 5px 10px rgba(0,0,0,0.8); }
-.gate-arm.open { transform: rotate(-45deg); }
+.gate-arm { width: 250px; height: 15px; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 15px, #ffffff 15px, #ffffff 30px); position: absolute; left: 65px; bottom: 85px; transform-origin: left center; transform: rotate(0deg); transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 5px 10px rgba(0,0,0,0.8); }
+.gate-arm.open { transform: rotate(-90deg); }
 .gate-light { width: 15px; height: 15px; border-radius: 50%; background: var(--neon-red); position: absolute; top: 5px; left: 7.5px; box-shadow: 0 0 10px var(--neon-red); }
 .gate-light.green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
 
@@ -150,14 +151,15 @@ body::after {
 <script>
 function initPanel() {
   document.getElementById('audioStarter').style.display = 'none';
-  // Google Chrome වල සද්දෙ එන්න නම් මුලින්ම මොනවා හරි play වෙන්න ඕනෙ
-  const unlockSpeech = new SpeechSynthesisUtterance("System Initialized");
-  unlockSpeech.volume = 0; // සද්දෙ ඇහෙන්නෙ නැති වෙන්න
+  // Speak a silent utterance to unlock the speech API
+  const unlockSpeech = new SpeechSynthesisUtterance(" ");
   window.speechSynthesis.speak(unlockSpeech);
 }
 
+// Clock
 setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
 
+// Elements
 const statusBox = document.getElementById('statusBox'); const statusText = document.getElementById('statusText');
 const radar = document.getElementById('radar'); const idCard = document.getElementById('idCard');
 const cardName = document.getElementById('cardName'); const cardRank = document.getElementById('cardRank');
@@ -167,36 +169,27 @@ const gateText = document.getElementById('gateText'); const logList = document.g
 const voiceWave = document.getElementById('voiceWave'); const aiSubtitles = document.getElementById('aiSubtitles');
 
 let resetTimeout;
+
+// Receive Data from Main System
 const broadcast = new BroadcastChannel('sentryx_panel');
 
 broadcast.onmessage = (event) => {
   const { type, payload } = event.data;
   clearTimeout(resetTimeout);
-  window.speechSynthesis.cancel(); 
-
-  // දත්ත ආරක්ෂිතව කියවීම (Error එක එන්නේ නැති වෙන්න)
-  let p = null;
-  if (payload && payload.person) {
-    p = payload.person;
-  } else if (payload) {
-    p = payload; 
-  }
+  window.speechSynthesis.cancel(); // Stop any currently speaking voice
 
   if (type === 'ACCESS_GRANTED') {
-    triggerGranted(p);
-    addLog(p ? p.name : 'UNKNOWN', 'ACCESS GRANTED', 'granted');
-    speakSinhala(p, true);
-    
-    // SYNC TIMING: අර 100ms දාලා හැදුව නිසා මෙතනත් ඒකට ගැලපෙන විදිහට Sync වේවි
-    resetTimeout = setTimeout(resetUI, 5500); 
+    triggerGranted(payload.person);
+    addLog(payload.person.name, 'ACCESS GRANTED', 'granted');
+    speakSinhala(payload.person, true);
   } 
   else if (type === 'ACCESS_DENIED') {
-    triggerDenied(payload.message, p);
-    addLog(p ? p.name : 'UNKNOWN', 'ACCESS DENIED', 'denied');
-    speakSinhala(p, false);
-    
-    resetTimeout = setTimeout(resetUI, 4000);
+    triggerDenied(payload.message, payload.person);
+    addLog(payload.person ? payload.person.name : 'UNKNOWN', 'ACCESS DENIED', 'denied');
+    speakSinhala(payload.person, false);
   }
+
+  resetTimeout = setTimeout(resetUI, 9000); // 9 seconds wait for voice to finish
 };
 
 function triggerGranted(person) {
@@ -204,10 +197,9 @@ function triggerGranted(person) {
   statusText.textContent = "ACCESS GRANTED";
   radar.style.display = "none"; idCard.style.display = "block"; idCard.style.borderColor = "var(--neon-green)";
   
-  // දත්ත නැති වුණත් Error එන්නේ නැතිවෙන්න හදලා තියෙන්නේ
-  cardName.textContent = (person && person.name) ? person.name.toUpperCase() : "AUTHORIZED OFFICER";
-  cardRank.textContent = `RANK: ${(person && person.rank) ? person.rank.toUpperCase() : '-'}`;
-  cardSvc.textContent = `SVC: ${(person && person.service_no) ? person.service_no : '-'}`;
+  cardName.textContent = person.name.toUpperCase();
+  cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : 'N/A'}`;
+  cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : 'N/A'}`;
   cardMsg.textContent = "CLEARANCE VERIFIED - PROCEED"; cardMsg.style.color = "var(--neon-green)";
 
   gateArm.classList.add('open'); gateLight.classList.add('green');
@@ -219,15 +211,15 @@ function triggerDenied(message, person) {
   statusText.textContent = "ACCESS DENIED";
   radar.style.display = "none"; idCard.style.display = "block"; idCard.style.borderColor = "var(--neon-red)";
   
-  if (person && person.name) {
+  if (person) {
     cardName.textContent = person.name.toUpperCase();
-    cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : '-'}`;
-    cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : '-'}`;
+    cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : 'N/A'}`;
+    cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : 'N/A'}`;
   } else {
     cardName.textContent = "UNKNOWN ENTITY"; cardRank.textContent = ""; cardSvc.textContent = "NO RECORD FOUND";
   }
   
-  cardMsg.textContent = (message || "UNAUTHORIZED") + " - STAND DOWN"; cardMsg.style.color = "var(--neon-red)";
+  cardMsg.textContent = message.toUpperCase() + " - STAND DOWN"; cardMsg.style.color = "var(--neon-red)";
 
   gateArm.classList.remove('open'); gateLight.classList.remove('green');
   gateText.textContent = "RESTRICTED - CLOSED"; gateText.style.color = "var(--neon-red)";
@@ -247,42 +239,45 @@ function addLog(name, action, type) {
   logList.prepend(li); if (logList.children.length > 8) { logList.removeChild(logList.lastChild); }
 }
 
+// ============================================
+// NEW: AI SINHALA VOICE ENGINE
+// ============================================
 function speakSinhala(person, isGranted) {
   const hour = new Date().getHours();
   let greeting = "";
   
-  // වෙලාව අනුව Greeting එක
+  // Time Based Greeting
   if (hour >= 5 && hour < 12) { greeting = "සුබ උදෑසනක්"; } 
   else if (hour >= 12 && hour < 17) { greeting = "සුබ දහවලක්"; } 
   else { greeting = "සුබ සන්ධ්‍යාවක්"; }
 
-  let nameAndRank = "";
-  if (person && person.name) {
-      nameAndRank = (person.rank ? person.rank + " " : "") + person.name;
-  } else {
-      nameAndRank = "නිලධාරිතුමා";
-  }
-
   let textToSpeak = "";
+  let nameAndRank = person ? `${person.rank || ''} ${person.name || ''}` : "මහත්මයා";
+
+  // Instruction Message
   if (isGranted) {
     textToSpeak = `${greeting} ${nameAndRank}. ඔබගේ අනන්‍යතාවය තහවුරුයි. කරුණාකර කඳවුරට ඇතුළු වන්න.`;
   } else {
     textToSpeak = "අවධානයයි! ඔබගේ අනන්‍යතාවය තහවුරු කළ නොහැක. කරුණාකර පරීක්ෂාව සඳහා රැඳී සිටින්න.";
   }
 
+  // Show Subtitles & Waveform
   voiceWave.style.display = "flex";
   aiSubtitles.style.display = "block";
   aiSubtitles.textContent = textToSpeak;
 
+  // Speak
   const utterance = new SpeechSynthesisUtterance(textToSpeak);
-  utterance.lang = 'si-LK'; 
-  utterance.rate = 0.9;     
-  utterance.pitch = 1.0;    
+  utterance.lang = 'si-LK'; // Sinhala Language Code
+  utterance.rate = 0.9;     // Voice Speed
+  utterance.pitch = 1.0;    // Voice Pitch
 
   utterance.onend = () => {
+    // Hide UI when speaking is done
     voiceWave.style.display = "none";
     aiSubtitles.style.display = "none";
   };
+
   window.speechSynthesis.speak(utterance);
 }
 </script>
