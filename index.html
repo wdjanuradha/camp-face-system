@@ -532,14 +532,19 @@ function drawRadarUI(angle, distance) {
     const objX = originX - (distance * scale) * Math.cos(rad);
     const objY = originY - (distance * scale) * Math.sin(rad);
 
+    // රතු පාට තිත ඇඳීම
     radarCtx.beginPath();
     radarCtx.arc(objX, objY, 5, 0, 2 * Math.PI);
     radarCtx.fillStyle = "#ff003c";
-    radarCtx.fill();
     radarCtx.shadowBlur = 10;
     radarCtx.shadowColor = "#ff003c";
     radarCtx.fill();
     radarCtx.shadowBlur = 0; 
+
+    // දුර (CM වලින්) තිත අසලින් ලිවීම
+    radarCtx.fillStyle = "#00ff41"; // ලා කොළ පැහැති අකුරු
+    radarCtx.font = "bold 14px Share Tech Mono";
+    radarCtx.fillText(distance + " CM", objX + 10, objY - 10);
   }
 }
 
