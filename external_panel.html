@@ -80,7 +80,7 @@ body::after {
 .gate-container { position: relative; width: 100%; height: 150px; display: flex; align-items: flex-end; padding-left: 50px; }
 .gate-pillar { width: 30px; height: 100px; background: #444; border: 2px solid #666; position: relative; z-index: 2; }
 .gate-arm { width: 250px; height: 15px; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 15px, #ffffff 15px, #ffffff 30px); position: absolute; left: 65px; bottom: 85px; transform-origin: left center; transform: rotate(0deg); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 5px 10px rgba(0,0,0,0.8); }
-.gate-arm.open { transform: rotate(-45deg); } /* අංශක 45ට පමණක් විවෘත වේ */
+.gate-arm.open { transform: rotate(-45deg); }
 .gate-light { width: 15px; height: 15px; border-radius: 50%; background: var(--neon-red); position: absolute; top: 5px; left: 7.5px; box-shadow: 0 0 10px var(--neon-red); }
 .gate-light.green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
 
@@ -109,7 +109,7 @@ body::after {
 
 <div class="container">
   <div class="header">
-    <h1>AI GUARDIAN <span style="font-size:1.2rem; color:var(--text-muted)"></span></h1>
+    <h1>AI GUARDIAN <span style="font-size:1.2rem; color:var(--text-muted)">// JUDGE PANEL</span></h1>
     <div class="clock" id="clock">00:00:00</div>
   </div>
 
@@ -150,7 +150,9 @@ body::after {
 <script>
 function initPanel() {
   document.getElementById('audioStarter').style.display = 'none';
-  const unlockSpeech = new SpeechSynthesisUtterance(" ");
+  // Google Chrome වල සද්දෙ එන්න නම් මුලින්ම මොනවා හරි play වෙන්න ඕනෙ
+  const unlockSpeech = new SpeechSynthesisUtterance("System Initialized");
+  unlockSpeech.volume = 0; // සද්දෙ ඇහෙන්නෙ නැති වෙන්න
   window.speechSynthesis.speak(unlockSpeech);
 }
 
@@ -165,7 +167,6 @@ const gateText = document.getElementById('gateText'); const logList = document.g
 const voiceWave = document.getElementById('voiceWave'); const aiSubtitles = document.getElementById('aiSubtitles');
 
 let resetTimeout;
-
 const broadcast = new BroadcastChannel('sentryx_panel');
 
 broadcast.onmessage = (event) => {
@@ -173,18 +174,26 @@ broadcast.onmessage = (event) => {
   clearTimeout(resetTimeout);
   window.speechSynthesis.cancel(); 
 
+  // දත්ත ආරක්ෂිතව කියවීම (Error එක එන්නේ නැති වෙන්න)
+  let p = null;
+  if (payload && payload.person) {
+    p = payload.person;
+  } else if (payload) {
+    p = payload; 
+  }
+
   if (type === 'ACCESS_GRANTED') {
-    triggerGranted(payload.person);
-    addLog(payload.person.name, 'ACCESS GRANTED', 'granted');
-    speakSinhala(payload.person, true);
+    triggerGranted(p);
+    addLog(p ? p.name : 'UNKNOWN', 'ACCESS GRANTED', 'granted');
+    speakSinhala(p, true);
     
-    // SYNC TIMING: 5.5 Seconds (5000ms delay in Arduino + 500ms safety buffer)
+    // SYNC TIMING: අර 100ms දාලා හැදුව නිසා මෙතනත් ඒකට ගැලපෙන විදිහට Sync වේවි
     resetTimeout = setTimeout(resetUI, 5500); 
   } 
   else if (type === 'ACCESS_DENIED') {
-    triggerDenied(payload.message, payload.person);
-    addLog(payload.person ? payload.person.name : 'UNKNOWN', 'ACCESS DENIED', 'denied');
-    speakSinhala(payload.person, false);
+    triggerDenied(payload.message, p);
+    addLog(p ? p.name : 'UNKNOWN', 'ACCESS DENIED', 'denied');
+    speakSinhala(p, false);
     
     resetTimeout = setTimeout(resetUI, 4000);
   }
@@ -195,9 +204,10 @@ function triggerGranted(person) {
   statusText.textContent = "ACCESS GRANTED";
   radar.style.display = "none"; idCard.style.display = "block"; idCard.style.borderColor = "var(--neon-green)";
   
-  cardName.textContent = person.name.toUpperCase();
-  cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : 'N/A'}`;
-  cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : 'N/A'}`;
+  // දත්ත නැති වුණත් Error එන්නේ නැතිවෙන්න හදලා තියෙන්නේ
+  cardName.textContent = (person && person.name) ? person.name.toUpperCase() : "AUTHORIZED OFFICER";
+  cardRank.textContent = `RANK: ${(person && person.rank) ? person.rank.toUpperCase() : '-'}`;
+  cardSvc.textContent = `SVC: ${(person && person.service_no) ? person.service_no : '-'}`;
   cardMsg.textContent = "CLEARANCE VERIFIED - PROCEED"; cardMsg.style.color = "var(--neon-green)";
 
   gateArm.classList.add('open'); gateLight.classList.add('green');
@@ -209,15 +219,15 @@ function triggerDenied(message, person) {
   statusText.textContent = "ACCESS DENIED";
   radar.style.display = "none"; idCard.style.display = "block"; idCard.style.borderColor = "var(--neon-red)";
   
-  if (person) {
+  if (person && person.name) {
     cardName.textContent = person.name.toUpperCase();
-    cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : 'N/A'}`;
-    cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : 'N/A'}`;
+    cardRank.textContent = `RANK: ${person.rank ? person.rank.toUpperCase() : '-'}`;
+    cardSvc.textContent = `SVC: ${person.service_no ? person.service_no : '-'}`;
   } else {
     cardName.textContent = "UNKNOWN ENTITY"; cardRank.textContent = ""; cardSvc.textContent = "NO RECORD FOUND";
   }
   
-  cardMsg.textContent = message.toUpperCase() + " - STAND DOWN"; cardMsg.style.color = "var(--neon-red)";
+  cardMsg.textContent = (message || "UNAUTHORIZED") + " - STAND DOWN"; cardMsg.style.color = "var(--neon-red)";
 
   gateArm.classList.remove('open'); gateLight.classList.remove('green');
   gateText.textContent = "RESTRICTED - CLOSED"; gateText.style.color = "var(--neon-red)";
@@ -240,13 +250,20 @@ function addLog(name, action, type) {
 function speakSinhala(person, isGranted) {
   const hour = new Date().getHours();
   let greeting = "";
+  
+  // වෙලාව අනුව Greeting එක
   if (hour >= 5 && hour < 12) { greeting = "සුබ උදෑසනක්"; } 
   else if (hour >= 12 && hour < 17) { greeting = "සුබ දහවලක්"; } 
   else { greeting = "සුබ සන්ධ්‍යාවක්"; }
 
-  let textToSpeak = "";
-  let nameAndRank = person ? `${person.rank || ''} ${person.name || ''}` : "මහත්මයා";
+  let nameAndRank = "";
+  if (person && person.name) {
+      nameAndRank = (person.rank ? person.rank + " " : "") + person.name;
+  } else {
+      nameAndRank = "නිලධාරිතුමා";
+  }
 
+  let textToSpeak = "";
   if (isGranted) {
     textToSpeak = `${greeting} ${nameAndRank}. ඔබගේ අනන්‍යතාවය තහවුරුයි. කරුණාකර කඳවුරට ඇතුළු වන්න.`;
   } else {
