@@ -851,9 +851,16 @@ async function autoLogUnknown(){
 
 async function autoLogKnown(person){
   if(person.watchlist) {
-    sendGateCommand('D'); broadcastEvent('ACCESS_DENIED', { person: person }); speak("Watchlist target detected.");
+    sendGateCommand('D'); 
+    broadcastEvent('ACCESS_DENIED', { person: person }); 
+    speak("Watchlist target detected.");
   } else {
-    sendGateCommand('A'); broadcastEvent('ACCESS_GRANTED', { person: person }); speak("Access granted.");
+    sendGateCommand('A'); // මෝටරය පටන් ගනී (අංශක 45ට)
+    
+    // External Panel එකට පණිවිඩය යවන්න
+    broadcastEvent('GATE_OPENING', { person: person, duration: 5000 }); 
+    
+    speak("Access granted.");
   }
   await insertAccessEvent({ person_id: person.id, event_type: "SCAN", status: person.watchlist?"rejected":"approved" }, person.watchlist?"watchlist":"normal");
 }
