@@ -424,6 +424,9 @@ let currentGps = { lat: null, lng: null };
 let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; 
 let nightVisionMode = false; let isLockdown = false; 
 
+// --- NEW FIX: FACE COOLDOWN LOCK ---
+let isProcessingFace = false; 
+
 // Hardware Variables
 let serialPort = null; 
 let serialWriter = null;
@@ -481,8 +484,17 @@ function initAudio() {
   }
 }
 
+// --- UPDATED: Connects Nikon Camera + Arduino ---
 async function connectArduino() {
   initAudio(); // Required to unlock sound on browsers
+
+  try {
+    await startCamera(); // Start Nikon Camera immediately
+    showAlert("Camera Initialized.", "info");
+  } catch (err) {
+    showAlert("Camera connection error: " + err.message, "danger");
+  }
+
   if (!('serial' in navigator)) {
     showAlert("Web Serial API is not supported. Use Chrome/Edge.", "danger"); return;
   }
@@ -496,7 +508,7 @@ async function connectArduino() {
     
     pillGateStatus.textContent = "🔌 HARDWARE SECURED";
     pillGateStatus.style.color = "var(--accent-main)";
-    hardwareStatus.textContent = "ONLINE (LASER/SONAR)";
+    hardwareStatus.textContent = "ONLINE (LASER/SONAR/CAM)";
     hardwareStatus.className = "badge ok";
     showAlert("Hardware Connected. Perimeter Secured.", "success");
     
@@ -590,7 +602,6 @@ async function listenToArduino() {
 }
 
 async function triggerPerimeterAlarm(side, distance) {
-  // New Alarm Sound Logic
   if (globalAudioCtx) {
     try {
       const oscillator = globalAudioCtx.createOscillator();
@@ -793,10 +804,28 @@ function buildMatcher(){
   el("recStatus").textContent = matcher ? "ACTIVE" : "STANDBY"; el("recStatus").className = matcher ? "badge ok" : "badge warn";
 }
 
+// --- UPDATED: Nikon Camera Detection ---
 async function startCamera(){
   if(cameraStream) return;
   try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: {facingMode:"user", width:{ideal:640}, height:{ideal:480}}, audio: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+    
+    // Nikon හෝ USB කැමරාව තෝරනවා
+    const nikonCamera = videoDevices.find(d => 
+        d.label.toLowerCase().includes('nikon') || 
+        d.label.toLowerCase().includes('video')
+    );
+
+    const constraints = {
+      video: {
+        deviceId: nikonCamera ? { exact: nikonCamera.deviceId } : undefined,
+        facingMode: nikonCamera ? undefined : "user",
+        width:{ideal:1280}, height:{ideal:720}
+      }, audio: false // Echo නොවීමට audio අක්‍රියයි
+    };
+
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = cameraStream; await new Promise(r=>video.onloadedmetadata=r);
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
     el("cameraStatus").textContent = "ONLINE"; el("cameraStatus").className = "badge ok";
@@ -812,10 +841,15 @@ async function stopCamera(){
   el("btnStartCam").disabled = false; el("btnStopCam").disabled = true;
 }
 
+// --- UPDATED: Cooldown Lock added for Face detection ---
 function startDetectionLoop(){
   if(detectTimer) clearInterval(detectTimer);
   detectTimer = setInterval(async ()=>{
     if(!cameraStream) return;
+    
+    // මේක තමයි කෙනෙක්ව අඳුරගත්තම ආයේ Unknown වෙන එක නවත්වන්නේ
+    if(isProcessingFace) return; 
+
     ctx.clearRect(0,0,canvas.width,canvas.height);
     const dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
     
@@ -840,10 +874,20 @@ function startDetectionLoop(){
       
       if(isUnknown){
         detectedBox.innerHTML = `<h3 style="color:var(--accent-danger)">UNKNOWN TARGET</h3><p>ACCESS DENIED</p>`;
-        if(!inCooldown && el("mode").value==="auto") { detectionCooldowns.set(targetId, now); autoLogUnknown(); }
+        if(!inCooldown && el("mode").value==="auto") { 
+          isProcessingFace = true;
+          detectionCooldowns.set(targetId, now); 
+          autoLogUnknown(); 
+          setTimeout(() => isProcessingFace = false, 4000); // තත්පර 4කට ලොක්
+        }
       }else{
         detectedBox.innerHTML = `<h3 style="color:${color}">${person.name}</h3><p>${person.rank||''} | ${person.watchlist?'WATCHLIST':'CLEARED'}</p>`;
-        if(!inCooldown && el("mode").value==="auto") { detectionCooldowns.set(targetId, now); autoLogKnown(person); }
+        if(!inCooldown && el("mode").value==="auto") { 
+          isProcessingFace = true;
+          detectionCooldowns.set(targetId, now); 
+          autoLogKnown(person); 
+          setTimeout(() => isProcessingFace = false, 6000); // තත්පර 6කට ලොක්
+        }
       }
     }
   }, 1000);
@@ -854,6 +898,7 @@ async function autoLogUnknown(){
   await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected" }, "unknown"); speak("Alert. Unauthorized person.");
 }
 
+// --- UPDATED: External panel EVENT fixed (ACCESS_GRANTED) ---
 async function autoLogKnown(person){
   if(person.watchlist) {
     sendGateCommand('D'); 
@@ -862,8 +907,8 @@ async function autoLogKnown(person){
   } else {
     sendGateCommand('A'); // මෝටරය පටන් ගනී (අංශක 45ට)
     
-    // External Panel එකට පණිවිඩය යවන්න
-    broadcastEvent('GATE_OPENING', { person: person, duration: 5000 }); 
+    // External Panel එකට පණිවිඩය යවන්න (නිවැරදි කරන ලදී)
+    broadcastEvent('ACCESS_GRANTED', { person: person, duration: 5000 }); 
     
     speak("Access granted.");
   }
