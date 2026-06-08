@@ -209,7 +209,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
     </div>
 
     <div id="tab-dashboard" class="tab-content">
-       
+        
       <div class="row" style="margin-bottom: 20px;">
         <button id="btnLaunchExternal" class="btn-secondary" style="border-color:var(--accent-cyan); color:var(--accent-cyan);">
           🖥️ විනිශ්චය මණ්ඩල තිරය විවෘත කරන්න (LAUNCH EXTERNAL PANEL)
@@ -265,7 +265,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
           </div>
           
           <div class="row" style="margin-top:15px;">
-            <div><label>කැමරාව තෝරන්න</label><select id="cameraSource"><option value="">Default Camera</option></select></div>
+            <div><label>කැමරාව තෝරන්න</label><select id="cameraSource"><option value="">Default Camera / Nikon</option></select></div>
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
@@ -418,19 +418,18 @@ const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models";
 ========================= */
 let session = null; let profile = null; let persons = []; let templates = []; let matcher = null;
 let settings = { confidenceThreshold: 0.55, voiceAlerts: true, acousticDetection: true, autoLockTime: 15, deviceId: null };
-const detectionCooldowns = new Map(); 
+
+// ---- FIX: Face Detection Cooldown Variables ----
+let isProcessingFace = false;
 
 let currentGps = { lat: null, lng: null };
 let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; 
 let nightVisionMode = false; let isLockdown = false; 
 
-// --- NEW FIX: FACE COOLDOWN LOCK ---
-let isProcessingFace = false; 
-
 // Hardware Variables
 let serialPort = null; 
 let serialWriter = null;
-let globalAudioCtx = null; // New: For playing sounds
+let globalAudioCtx = null; 
 
 const broadcast = new BroadcastChannel('sentryx_panel');
 
@@ -469,13 +468,10 @@ async function refreshAlerts() {
   const alertsList = el("alertsList");
   if (alertsList) alertsList.innerHTML = "SYSTEM NOMINAL - NO ACTIVE THREATS";
 }
-
-async function refreshDevices() {
-  console.log("Devices list refreshed");
-}
+async function refreshDevices() { console.log("Devices list refreshed"); }
 
 /* =========================
-   NEW: HARDWARE BRIDGE & RADAR 
+   HARDWARE BRIDGE & RADAR 
 ========================= */
 function initAudio() {
   if (!globalAudioCtx) {
@@ -484,17 +480,8 @@ function initAudio() {
   }
 }
 
-// --- UPDATED: Connects Nikon Camera + Arduino ---
 async function connectArduino() {
-  initAudio(); // Required to unlock sound on browsers
-
-  try {
-    await startCamera(); // Start Nikon Camera immediately
-    showAlert("Camera Initialized.", "info");
-  } catch (err) {
-    showAlert("Camera connection error: " + err.message, "danger");
-  }
-
+  initAudio(); 
   if (!('serial' in navigator)) {
     showAlert("Web Serial API is not supported. Use Chrome/Edge.", "danger"); return;
   }
@@ -508,7 +495,7 @@ async function connectArduino() {
     
     pillGateStatus.textContent = "🔌 HARDWARE SECURED";
     pillGateStatus.style.color = "var(--accent-main)";
-    hardwareStatus.textContent = "ONLINE (LASER/SONAR/CAM)";
+    hardwareStatus.textContent = "ONLINE (LASER/SONAR)";
     hardwareStatus.className = "badge ok";
     showAlert("Hardware Connected. Perimeter Secured.", "success");
     
@@ -544,7 +531,6 @@ function drawRadarUI(angle, distance) {
     const objX = originX - (distance * scale) * Math.cos(rad);
     const objY = originY - (distance * scale) * Math.sin(rad);
 
-    // රතු පාට තිත ඇඳීම
     radarCtx.beginPath();
     radarCtx.arc(objX, objY, 5, 0, 2 * Math.PI);
     radarCtx.fillStyle = "#ff003c";
@@ -553,8 +539,7 @@ function drawRadarUI(angle, distance) {
     radarCtx.fill();
     radarCtx.shadowBlur = 0; 
 
-    // දුර (CM වලින්) තිත අසලින් ලිවීම
-    radarCtx.fillStyle = "#00ff41"; // ලා කොළ පැහැති අකුරු
+    radarCtx.fillStyle = "#00ff41"; 
     radarCtx.font = "bold 14px Share Tech Mono";
     radarCtx.fillText(distance + " CM", objX + 10, objY - 10);
   }
@@ -565,7 +550,7 @@ async function listenToArduino() {
   serialPort.readable.pipeTo(textDecoder.writable);
   const reader = textDecoder.readable.getReader();
   
-  let buffer = ""; // This fixes the data fragmentation!
+  let buffer = ""; 
 
   try {
     while (true) {
@@ -596,7 +581,6 @@ async function listenToArduino() {
       }
     }
   } catch (error) {
-    console.error("Serial Error:", error);
     hardwareStatus.textContent = "ERROR"; hardwareStatus.className = "badge no";
   }
 }
@@ -778,7 +762,7 @@ async function refreshPersonsAndTemplates(){
 }
 
 /* =========================
-   MODELS & CAMERA
+   MODELS & CAMERA (NIKON INTEGRATED)
 ========================= */
 async function loadModels(){
   try{
@@ -804,34 +788,28 @@ function buildMatcher(){
   el("recStatus").textContent = matcher ? "ACTIVE" : "STANDBY"; el("recStatus").className = matcher ? "badge ok" : "badge warn";
 }
 
-// --- UPDATED: Nikon Camera Detection ---
 async function startCamera(){
   if(cameraStream) return;
   try{
+    // --- FIX 4: Nikon Camera Support ---
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter(d => d.kind === 'videoinput');
-    
-    // Nikon හෝ USB කැමරාව තෝරනවා
-    const nikonCamera = videoDevices.find(d => 
-        d.label.toLowerCase().includes('nikon') || 
-        d.label.toLowerCase().includes('video')
-    );
+    const nikonCamera = videoDevices.find(d => d.label.toLowerCase().includes('nikon') || d.label.toLowerCase().includes('video'));
 
     const constraints = {
       video: {
         deviceId: nikonCamera ? { exact: nikonCamera.deviceId } : undefined,
-        facingMode: nikonCamera ? undefined : "user",
-        width:{ideal:1280}, height:{ideal:720}
-      }, audio: false // Echo නොවීමට audio අක්‍රියයි
+        facingMode: "user", width:{ideal:1280}, height:{ideal:720}
+      }, audio: true
     };
-
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    
     video.srcObject = cameraStream; await new Promise(r=>video.onloadedmetadata=r);
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    el("cameraStatus").textContent = "ONLINE"; el("cameraStatus").className = "badge ok";
+    el("cameraStatus").textContent = "ONLINE (NIKON/USB)"; el("cameraStatus").className = "badge ok";
     el("btnStartCam").disabled = true; el("btnStopCam").disabled = false;
     startDetectionLoop();
-  }catch(e){ showAlert("Camera Error", "danger"); }
+  }catch(e){ showAlert("Camera Error: Check connection", "danger"); }
 }
 
 async function stopCamera(){
@@ -841,14 +819,11 @@ async function stopCamera(){
   el("btnStartCam").disabled = false; el("btnStopCam").disabled = true;
 }
 
-// --- UPDATED: Cooldown Lock added for Face detection ---
 function startDetectionLoop(){
   if(detectTimer) clearInterval(detectTimer);
   detectTimer = setInterval(async ()=>{
     if(!cameraStream) return;
-    
-    // මේක තමයි කෙනෙක්ව අඳුරගත්තම ආයේ Unknown වෙන එක නවත්වන්නේ
-    if(isProcessingFace) return; 
+    if(isProcessingFace) return; // --- FIX 3: Cooldown Lock (Overwriting Prevented) ---
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
     const dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
@@ -856,61 +831,52 @@ function startDetectionLoop(){
     overlay.textContent = `TRACKING: ${dets.length}`;
     if(dets.length===0){ detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING AREA...</span>"; return; }
 
-    const now = Date.now();
-    for(const d of dets){
-      let label="Unknown"; let distance=1; let person=null;
-      if(matcher){
-        const best = matcher.findBestMatch(d.descriptor);
-        label = best.label; distance = best.distance;
-        if(label !== "unknown") person = persons.find(p=>p.service_no===label.split("|")[0].trim());
-      }
-      
-      const isUnknown = !person;
-      const targetId = isUnknown ? "UNKNOWN" : person.id;
-      const inCooldown = (now - (detectionCooldowns.get(targetId) || 0)) < (settings.autoLockTime*1000);
-
-      const box = d.detection.box; const color = isUnknown ? "#ff003c" : (person.watchlist ? "#ffb300" : "#00ff41");
-      ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(box.x, box.y, box.width, box.height);
-      
-      if(isUnknown){
-        detectedBox.innerHTML = `<h3 style="color:var(--accent-danger)">UNKNOWN TARGET</h3><p>ACCESS DENIED</p>`;
-        if(!inCooldown && el("mode").value==="auto") { 
-          isProcessingFace = true;
-          detectionCooldowns.set(targetId, now); 
-          autoLogUnknown(); 
-          setTimeout(() => isProcessingFace = false, 4000); // තත්පර 4කට ලොක්
-        }
-      }else{
-        detectedBox.innerHTML = `<h3 style="color:${color}">${person.name}</h3><p>${person.rank||''} | ${person.watchlist?'WATCHLIST':'CLEARED'}</p>`;
-        if(!inCooldown && el("mode").value==="auto") { 
-          isProcessingFace = true;
-          detectionCooldowns.set(targetId, now); 
-          autoLogKnown(person); 
-          setTimeout(() => isProcessingFace = false, 6000); // තත්පර 6කට ලොක්
-        }
-      }
+    // Use only the most prominent face to prevent glitching
+    const d = dets[0]; 
+    let label="Unknown"; let person=null;
+    if(matcher){
+      const best = matcher.findBestMatch(d.descriptor);
+      label = best.label; 
+      if(label !== "unknown") person = persons.find(p=>p.service_no===label.split("|")[0].trim());
     }
+    
+    const isUnknown = !person;
+    const box = d.detection.box; 
+    const color = isUnknown ? "#ff003c" : (person.watchlist ? "#ffb300" : "#00ff41");
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(box.x, box.y, box.width, box.height);
+    
+    isProcessingFace = true; // Lock the scanning
+
+    if(isUnknown){
+      detectedBox.innerHTML = `<h3 style="color:var(--accent-danger)">UNKNOWN TARGET</h3><p>ACCESS DENIED</p>`;
+      if(el("mode").value==="auto") { autoLogUnknown(); }
+      setTimeout(() => { isProcessingFace = false; }, 4000); // Unknown lock for 4s
+    }else{
+      detectedBox.innerHTML = `<h3 style="color:${color}">${person.name}</h3><p>${person.rank||''} | ${person.watchlist?'WATCHLIST':'CLEARED'}</p>`;
+      if(el("mode").value==="auto") { autoLogKnown(person); }
+      setTimeout(() => { isProcessingFace = false; }, 6000); // Known lock for 6s
+    }
+    
   }, 1000);
 }
 
 async function autoLogUnknown(){
-  sendGateCommand('D'); broadcastEvent('ACCESS_DENIED', { message: "UNKNOWN TARGET" });
-  await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected" }, "unknown"); speak("Alert. Unauthorized person.");
+  sendGateCommand('D'); 
+  broadcastEvent('ACCESS_DENIED', { message: "UNKNOWN TARGET" });
+  await insertAccessEvent({ event_type: "UNKNOWN", status: "rejected" }, "unknown"); 
+  speak("Alert. Unauthorized person.");
 }
 
-// --- UPDATED: External panel EVENT fixed (ACCESS_GRANTED) ---
 async function autoLogKnown(person){
   if(person.watchlist) {
     sendGateCommand('D'); 
     broadcastEvent('ACCESS_DENIED', { person: person }); 
     speak("Watchlist target detected.");
   } else {
-    sendGateCommand('A'); // මෝටරය පටන් ගනී (අංශක 45ට)
-    
-    // External Panel එකට පණිවිඩය යවන්න (නිවැරදි කරන ලදී)
-    broadcastEvent('ACCESS_GRANTED', { person: person, duration: 5000 }); 
-    
-    speak("Access granted.");
+    sendGateCommand('A'); // ගේට්ටුව අංශක 45ට විවෘත වේ
+    // --- FIX 2: External Panel එකට හරියටම ACCESS_GRANTED යැවීම ---
+    broadcastEvent('ACCESS_GRANTED', { person: person }); 
+    speak("Access granted. Proceed.");
   }
   await insertAccessEvent({ person_id: person.id, event_type: "SCAN", status: person.watchlist?"rejected":"approved" }, person.watchlist?"watchlist":"normal");
 }
@@ -929,7 +895,6 @@ function safeAddEvent(id, event, func) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Bind Actions securely
   safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
   safeAddEvent("btnLogin", "click", login);
   safeAddEvent("btnLogout", "click", logout);
@@ -973,7 +938,6 @@ document.addEventListener('DOMContentLoaded', () => {
     showAlert("CONFIGURATION SAVED", "success");
   });
 
-  // Tab UI Logic
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", (e) => {
       if (btn.classList.contains("tab-link")) return;
