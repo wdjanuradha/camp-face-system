@@ -343,13 +343,15 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
             <hr/>
             <h3 style="color:var(--accent-cyan); font-size:1.1em; border:none;">📸 ජෛව දත්ත ඇතුලත් කිරීම (BIOMETRICS)</h3>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button id="btnEnroll1" class="btn-primary" style="background-color:var(--accent-cyan); color:#000;">📸 මුහුණ ස්කෑන් කරන්න (SCAN x3)</button>
+              <button id="btnEnroll1" class="btn-primary" style="background-color:var(--accent-cyan); color:#000;">📸 මුහුණ ස්කෑන් කරන්න (SCAN FACE)</button>
               <button id="btnClearTemplates" class="btn-danger">🧹 දත්ත මකන්න</button>
             </div>
-            <div class="small" id="templateInfo" style="margin-top:10px;color:var(--text-muted);"></div>
+            <div class="small" id="templateInfo" style="margin-top:10px;color:var(--accent-gold);"></div>
           </div>
           <hr/>
-          <div id="personsList" class="small" style="color:var(--text-muted);">LISTING PERSONNEL...</div>
+          <div id="personsList" style="color:var(--text-primary); margin-top:15px; background:rgba(0,0,0,0.4); border-radius:4px; padding:10px;">
+              LISTING PERSONNEL...
+          </div>
         </div>
       </div>
     </div>
@@ -420,8 +422,8 @@ const MODEL_URL = "https://wdjanuradha.github.io/camp-face-system/models";
 let session = null; let profile = null; let persons = []; let templates = []; let matcher = null;
 let settings = { confidenceThreshold: 0.55, voiceAlerts: true, acousticDetection: true, autoLockTime: 15, deviceId: null };
 
-// ---- FIX: Face Detection Cooldown Variables ----
 let isProcessingFace = false;
+let tempFaceDescriptor = null;
 
 let currentGps = { lat: null, lng: null };
 let cameraStream = null; let detectTimer = null; let speaking = false; let selectedPersonId = null; 
@@ -430,10 +432,10 @@ let nightVisionMode = false; let isLockdown = false;
 // Hardware Variables
 let serialPort = null; 
 let serialWriter = null;
-let serialReader = null; // Added reader variable for clean disconnect
+let serialReader = null; 
 let globalAudioCtx = null; 
 
-const broadcast = new BroadcastChannel('ai_guardian_panel'); // Updated Name
+const broadcast = new BroadcastChannel('ai_guardian_panel'); 
 
 const el = (id)=>document.getElementById(id);
 const alertArea = el("alertArea"); const loginCard = el("loginCard"); const app = el("app");
@@ -442,219 +444,8 @@ const pillGateStatus = el("pillGateStatus"); const hardwareStatus = el("hardware
 const video = el("video"); const canvas = el("canvas"); const ctx = canvas.getContext("2d"); const videoBox = el("videoBox");
 const overlay = el("overlay"); const detectedBox = el("detectedBox"); const audioFill = el("audioFill");
 const cameraSource = el("cameraSource");
-
-// RADAR Canvas Setup
 const radarCanvas = el("radarCanvas");
 const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
-
-/* =========================
-   PLACEHOLDER FUNCTIONS
-========================= */
-async function initGPS() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      currentGps.lat = pos.coords.latitude;
-      currentGps.lng = pos.coords.longitude;
-      pillGps.textContent = "📍 GPS: SECURED";
-      pillGps.style.color = "var(--accent-main)";
-    }, () => {
-      pillGps.textContent = "📍 GPS: FAILED";
-      pillGps.style.color = "var(--accent-danger)";
-    });
-  } else {
-    pillGps.textContent = "📍 GPS: NO SENSOR";
-  }
-}
-
-async function refreshAlerts() {
-  const alertsList = el("alertsList");
-  if (alertsList) alertsList.innerHTML = "SYSTEM NOMINAL - NO ACTIVE THREATS";
-}
-async function refreshDevices() { console.log("Devices list refreshed"); }
-
-/* =========================
-   HARDWARE BRIDGE & RADAR 
-========================= */
-function initAudio() {
-  if (!globalAudioCtx) {
-    globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    globalAudioCtx.resume();
-  }
-}
-
-async function connectArduino() {
-  initAudio(); 
-  if (!('serial' in navigator)) {
-    showAlert("Web Serial API is not supported. Use Chrome/Edge.", "danger"); return;
-  }
-  try {
-    serialPort = await navigator.serial.requestPort();
-    await serialPort.open({ baudRate: 9600 });
-    
-    const encoder = new TextEncoderStream();
-    encoder.readable.pipeTo(serialPort.writable);
-    serialWriter = encoder.writable.getWriter();
-    
-    pillGateStatus.textContent = "🔌 HARDWARE SECURED";
-    pillGateStatus.style.color = "var(--accent-main)";
-    hardwareStatus.textContent = "ONLINE (LASER/SONAR)";
-    hardwareStatus.className = "badge ok";
-    
-    // Toggle UI Buttons
-    el("btnConnectArduinoDash").classList.add("hidden");
-    el("btnDisconnectArduinoDash").classList.remove("hidden");
-    
-    showAlert("Hardware Connected. Perimeter Secured.", "success");
-    
-    listenToArduino();
-  } catch (error) {
-    console.error(error);
-    showAlert("Failed to connect to Hardware.", "danger");
-  }
-}
-
-async function disconnectArduino() {
-  try {
-    if (serialReader) { await serialReader.cancel(); serialReader = null; }
-    if (serialWriter) { serialWriter.releaseLock(); serialWriter = null; }
-    if (serialPort) { await serialPort.close(); serialPort = null; }
-
-    pillGateStatus.textContent = "🔌 GATE: NO LINK";
-    pillGateStatus.style.color = "var(--text-muted)";
-    hardwareStatus.textContent = "DISCONNECTED";
-    hardwareStatus.className = "badge no";
-    
-    el("btnConnectArduinoDash").classList.remove("hidden");
-    el("btnDisconnectArduinoDash").classList.add("hidden");
-    
-    showAlert("Hardware Disconnected Successfully.", "warn");
-  } catch (error) {
-    console.error("Disconnect Error:", error);
-  }
-}
-
-function drawRadarUI(angle, distance) {
-  if(!radarCtx) return;
-  radarCtx.fillStyle = "rgba(0, 40, 10, 0.05)"; 
-  radarCtx.fillRect(0, 0, 450, 350);
-
-  const rad = angle * Math.PI / 180;
-  const originX = 225; 
-  const originY = 350; 
-  const maxRadius = 350;
-
-  const sweepX = originX - maxRadius * Math.cos(rad);
-  const sweepY = originY - maxRadius * Math.sin(rad);
-  
-  radarCtx.beginPath();
-  radarCtx.moveTo(originX, originY);
-  radarCtx.lineTo(sweepX, sweepY);
-  radarCtx.strokeStyle = "rgba(0, 255, 65, 0.8)";
-  radarCtx.lineWidth = 2;
-  radarCtx.stroke();
-
-  if (distance > 0 && distance < 400) {
-    const scale = 350 / 400; 
-    const objX = originX - (distance * scale) * Math.cos(rad);
-    const objY = originY - (distance * scale) * Math.sin(rad);
-
-    radarCtx.beginPath();
-    radarCtx.arc(objX, objY, 5, 0, 2 * Math.PI);
-    radarCtx.fillStyle = "#ff003c";
-    radarCtx.shadowBlur = 10;
-    radarCtx.shadowColor = "#ff003c";
-    radarCtx.fill();
-    radarCtx.shadowBlur = 0; 
-
-    radarCtx.fillStyle = "#00ff41"; 
-    radarCtx.font = "bold 14px Share Tech Mono";
-    radarCtx.fillText(distance + " CM", objX + 10, objY - 10);
-  }
-}
-
-async function listenToArduino() {
-  const textDecoder = new TextDecoderStream();
-  serialPort.readable.pipeTo(textDecoder.writable);
-  serialReader = textDecoder.readable.getReader(); // Assigned to global variable
-  
-  let buffer = ""; 
-
-  try {
-    while (true) {
-      const { value, done } = await serialReader.read();
-      if (done) break;
-      
-      buffer += value; 
-      const lines = buffer.split('\n'); 
-      buffer = lines.pop(); 
-
-      for(let signal of lines) {
-        signal = signal.trim();
-        if(!signal) continue;
-        
-        if (signal.startsWith("RADAR_")) {
-           const parts = signal.split("_")[1].split(":");
-           if(parts.length === 2) drawRadarUI(parseInt(parts[0]), parseInt(parts[1]));
-        }
-        else if (signal.startsWith("BREACH_")) {
-          let side = signal.split("_")[1];
-          let distance = null;
-          if (side && side.includes(":")) {
-            const parts = side.split(":");
-            side = parts[0]; distance = parts[1];   
-          }
-          if(side) triggerPerimeterAlarm(side, distance);
-        }
-      }
-    }
-  } catch (error) {
-    hardwareStatus.textContent = "ERROR"; hardwareStatus.className = "badge no";
-  }
-}
-
-async function triggerPerimeterAlarm(side, distance) {
-  if (globalAudioCtx) {
-    try {
-      const oscillator = globalAudioCtx.createOscillator();
-      const gainNode = globalAudioCtx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(globalAudioCtx.destination);
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(800, globalAudioCtx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(300, globalAudioCtx.currentTime + 0.5);
-      gainNode.gain.setValueAtTime(1, globalAudioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.5);
-      oscillator.start();
-      oscillator.stop(globalAudioCtx.currentTime + 0.5);
-    } catch (e) { console.log(e); }
-  }
-
-  const wallElement = document.getElementById("wall-" + side);
-  if (wallElement) {
-    wallElement.classList.add("breached");
-    wallElement.innerHTML = distance ? `🚨 BREACH! Threat: ${distance}cm` : "🚨 BREACH DETECTED!";
-    setTimeout(() => {
-      wallElement.classList.remove("breached");
-      wallElement.innerHTML = `${side} SECTOR`; 
-    }, 10000);
-  }
-
-  if (!isLockdown) { el("btnPanic").click(); }
-  
-  const alertMsg = distance ? `${side} දිශාවෙන් සෙ.මී. ${distance} ක දුරින් ආක්‍රමණයක්!` : `${side} දිශාවෙන් ආක්‍රමණයක්!`;
-  const voiceMsg = distance ? `Warning. Breach at ${side} sector. Threat distance ${distance} centimeters.` : `Warning. Perimeter Breach at ${side} sector.`;
-  
-  showAlert(`🚨 ${alertMsg}`, "danger");
-  speak(voiceMsg);
-  broadcastEvent('BREACH_ALERT', { side: side, distance: distance });
-  
-  await insertAccessEvent({ event_type: "PERIMETER_BREACH", status: "rejected", extra: { note: distance ? `Target at ${distance}cm` : `Laser Tripped at ${side}` } }, "watchlist");
-}
-
-async function sendGateCommand(char) {
-  if (!serialWriter) return; 
-  try { await serialWriter.write(char); } catch (e) { console.error("Write Error", e); }
-}
 
 /* =========================
    UI HELPERS & BROADCAST
@@ -662,7 +453,10 @@ async function sendGateCommand(char) {
 el("btnLaunchExternal").addEventListener("click", () => {
   window.open('external_panel.html', 'JudgePanel', 'width=1280,height=720,menubar=no,toolbar=no,location=no');
 });
-function broadcastEvent(type, data) { broadcast.postMessage({ type: type, payload: data }); }
+
+function broadcastEvent(type, data) { 
+  broadcast.postMessage({ type: type, payload: data }); 
+}
 
 function showAlert(msg, type="info"){
   const div=document.createElement("div"); div.className="alert "+(type==="success"?"success":type==="danger"?"danger":type==="warn"?"warn":"");
@@ -676,13 +470,116 @@ function speak(msg){
   setTimeout(()=>speaking=false, 2500);
 }
 
-function setOnlinePill(){
-  const on = navigator.onLine; pillOnline.textContent = on ? "🌐 UPLINK: ONLINE" : "📴 UPLINK: OFFLINE";
-  pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
+/* =========================
+   HARDWARE BRIDGE & RADAR 
+========================= */
+function initAudio() {
+  if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); globalAudioCtx.resume(); }
+}
+
+async function connectArduino() {
+  initAudio(); 
+  if (!('serial' in navigator)) { showAlert("Web Serial API is not supported. Use Chrome/Edge.", "danger"); return; }
+  try {
+    serialPort = await navigator.serial.requestPort();
+    await serialPort.open({ baudRate: 9600 });
+    const encoder = new TextEncoderStream();
+    encoder.readable.pipeTo(serialPort.writable);
+    serialWriter = encoder.writable.getWriter();
+    pillGateStatus.textContent = "🔌 HARDWARE SECURED"; pillGateStatus.style.color = "var(--accent-main)";
+    hardwareStatus.textContent = "ONLINE (LASER/SONAR)"; hardwareStatus.className = "badge ok";
+    el("btnConnectArduinoDash").classList.add("hidden"); el("btnDisconnectArduinoDash").classList.remove("hidden");
+    showAlert("Hardware Connected. Perimeter Secured.", "success");
+    listenToArduino();
+  } catch (error) { showAlert("Failed to connect to Hardware.", "danger"); }
+}
+
+async function disconnectArduino() {
+  try {
+    if (serialReader) { await serialReader.cancel(); serialReader = null; }
+    if (serialWriter) { serialWriter.releaseLock(); serialWriter = null; }
+    if (serialPort) { await serialPort.close(); serialPort = null; }
+    pillGateStatus.textContent = "🔌 GATE: NO LINK"; pillGateStatus.style.color = "var(--text-muted)";
+    hardwareStatus.textContent = "DISCONNECTED"; hardwareStatus.className = "badge no";
+    el("btnConnectArduinoDash").classList.remove("hidden"); el("btnDisconnectArduinoDash").classList.add("hidden");
+    showAlert("Hardware Disconnected Successfully.", "warn");
+  } catch (error) { console.error("Disconnect Error:", error); }
+}
+
+function drawRadarUI(angle, distance) {
+  if(!radarCtx) return;
+  radarCtx.fillStyle = "rgba(0, 40, 10, 0.05)"; radarCtx.fillRect(0, 0, 450, 350);
+  const rad = angle * Math.PI / 180;
+  const originX = 225, originY = 350, maxRadius = 350;
+  const sweepX = originX - maxRadius * Math.cos(rad); const sweepY = originY - maxRadius * Math.sin(rad);
+  radarCtx.beginPath(); radarCtx.moveTo(originX, originY); radarCtx.lineTo(sweepX, sweepY);
+  radarCtx.strokeStyle = "rgba(0, 255, 65, 0.8)"; radarCtx.lineWidth = 2; radarCtx.stroke();
+
+  if (distance > 0 && distance < 400) {
+    const scale = 350 / 400; 
+    const objX = originX - (distance * scale) * Math.cos(rad); const objY = originY - (distance * scale) * Math.sin(rad);
+    radarCtx.beginPath(); radarCtx.arc(objX, objY, 5, 0, 2 * Math.PI);
+    radarCtx.fillStyle = "#ff003c"; radarCtx.shadowBlur = 10; radarCtx.shadowColor = "#ff003c"; radarCtx.fill(); radarCtx.shadowBlur = 0; 
+    radarCtx.fillStyle = "#00ff41"; radarCtx.font = "bold 14px Share Tech Mono"; radarCtx.fillText(distance + " CM", objX + 10, objY - 10);
+  }
+}
+
+async function listenToArduino() {
+  const textDecoder = new TextDecoderStream();
+  serialPort.readable.pipeTo(textDecoder.writable);
+  serialReader = textDecoder.readable.getReader(); 
+  let buffer = ""; 
+  try {
+    while (true) {
+      const { value, done } = await serialReader.read();
+      if (done) break;
+      buffer += value; const lines = buffer.split('\n'); buffer = lines.pop(); 
+      for(let signal of lines) {
+        signal = signal.trim(); if(!signal) continue;
+        if (signal.startsWith("RADAR_")) {
+           const parts = signal.split("_")[1].split(":");
+           if(parts.length === 2) drawRadarUI(parseInt(parts[0]), parseInt(parts[1]));
+        } else if (signal.startsWith("BREACH_")) {
+          let side = signal.split("_")[1], distance = null;
+          if (side && side.includes(":")) { const parts = side.split(":"); side = parts[0]; distance = parts[1]; }
+          if(side) triggerPerimeterAlarm(side, distance);
+        }
+      }
+    }
+  } catch (error) { hardwareStatus.textContent = "ERROR"; hardwareStatus.className = "badge no"; }
+}
+
+async function triggerPerimeterAlarm(side, distance) {
+  if (globalAudioCtx) {
+    try {
+      const osc = globalAudioCtx.createOscillator(); const gain = globalAudioCtx.createGain();
+      osc.connect(gain); gain.connect(globalAudioCtx.destination);
+      osc.type = 'square'; osc.frequency.setValueAtTime(800, globalAudioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, globalAudioCtx.currentTime + 0.5);
+      gain.gain.setValueAtTime(1, globalAudioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.5);
+      osc.start(); osc.stop(globalAudioCtx.currentTime + 0.5);
+    } catch (e) {}
+  }
+  const wallElement = document.getElementById("wall-" + side);
+  if (wallElement) {
+    wallElement.classList.add("breached");
+    wallElement.innerHTML = distance ? `🚨 BREACH! Threat: ${distance}cm` : "🚨 BREACH DETECTED!";
+    setTimeout(() => { wallElement.classList.remove("breached"); wallElement.innerHTML = `${side} SECTOR`; }, 10000);
+  }
+  if (!isLockdown) el("btnPanic").click(); 
+  const alertMsg = distance ? `${side} දිශාවෙන් සෙ.මී. ${distance} ක දුරින් ආක්‍රමණයක්!` : `${side} දිශාවෙන් ආක්‍රමණයක්!`;
+  showAlert(`🚨 ${alertMsg}`, "danger");
+  speak(distance ? `Warning. Breach at ${side} sector. Distance ${distance} centimeters.` : `Warning. Perimeter Breach at ${side} sector.`);
+  broadcastEvent('BREACH_ALERT', { side: side, distance: distance });
+  await insertAccessEvent({ event_type: "PERIMETER_BREACH", status: "rejected", extra: { note: distance ? `Target at ${distance}cm` : `Laser Tripped at ${side}` } }, "watchlist");
+}
+
+async function sendGateCommand(char) {
+  if (!serialWriter) return; try { await serialWriter.write(char); } catch (e) { console.error("Write Error", e); }
 }
 
 /* =========================
-   AUTH & BOOT 
+   AUTH & SYSTEM BOOT 
 ========================= */
 async function login(){
   const email = el("email").value.trim(); const password = el("password").value;
@@ -694,25 +591,21 @@ async function login(){
 
 async function logout(){
   await stopCamera(); await sb.auth.signOut(); session=null; profile=null;
-  app.classList.add("hidden"); loginCard.classList.remove("hidden"); 
-  const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = true;
+  app.classList.add("hidden"); loginCard.classList.remove("hidden"); el("btnLogout").disabled = true;
 }
 
 async function loadProfile(){
   if(!session?.user) return null;
   const { data } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
-  profile = data || { role: "operator" };
-  profile.role = "admin"; // Force admin for testing
+  profile = data || { role: "admin" }; // Defaulting to Admin for registration access
   pillRole.textContent = `RANK: ${profile.role.toUpperCase()}`;
 }
 
 function applyRoleGuards() {
   const isAdmin = profile?.role === "admin" || profile?.role === "commander";
-  const pGuard = el("personsGuard");
-  const pArea = el("personsArea");
-  if (pGuard && pArea) {
-    if (isAdmin) { pGuard.classList.add("hidden"); pArea.classList.remove("hidden"); } 
-    else { pGuard.classList.remove("hidden"); pArea.classList.add("hidden"); }
+  if (el("personsGuard") && el("personsArea")) {
+    if (isAdmin) { el("personsGuard").classList.add("hidden"); el("personsArea").classList.remove("hidden"); } 
+    else { el("personsGuard").classList.remove("hidden"); el("personsArea").classList.add("hidden"); }
   }
 }
 
@@ -721,37 +614,24 @@ async function loadCameras() {
     await navigator.mediaDevices.getUserMedia({ video: true });
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter(device => device.kind === 'videoinput');
-    const camSelect = el("cameraSource");
-    camSelect.innerHTML = '';
+    const camSelect = el("cameraSource"); camSelect.innerHTML = '';
     videoDevices.forEach((device, index) => {
       const option = document.createElement('option');
-      option.value = device.deviceId;
-      option.text = device.label || `Camera ${index + 1}`;
+      option.value = device.deviceId; option.text = device.label || `Camera ${index + 1}`;
       camSelect.appendChild(option);
     });
-  } catch (err) { console.error("Error loading cameras", err); }
+  } catch (err) {}
 }
 
 async function afterLogin(){
-  loginCard.classList.add("hidden"); app.classList.remove("hidden"); 
-  const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = false;
-  
-  setOnlinePill(); loadSettings(); initGPS(); 
-  await loadProfile(); applyRoleGuards(); 
-  
-  await loadCameras(); // Load available cameras into dropdown
-  await loadModels(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
-  window.addEventListener("online", setOnlinePill); window.addEventListener("offline", setOnlinePill);
+  loginCard.classList.add("hidden"); app.classList.remove("hidden"); el("btnLogout").disabled = false;
+  const on = navigator.onLine; pillOnline.textContent = on ? "🌐 UPLINK: ONLINE" : "📴 UPLINK: OFFLINE"; pillOnline.style.color = on ? "var(--accent-main)" : "var(--accent-danger)";
+  await loadProfile(); applyRoleGuards(); await loadCameras(); await loadModels(); 
+  await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
 }
-
-function loadSettings(){
-  const s = localStorage.getItem("camp_settings_v2");
-  if(s) { try{ settings = { ...settings, ...JSON.parse(s) }; }catch{} }
-}
-function saveSettingsLocal(){ localStorage.setItem("camp_settings_v2", JSON.stringify(settings)); }
 
 /* =========================
-   DATABASE FETCHING 
+   DATABASE FETCHING & PERSON RENDER
 ========================= */
 async function refreshStats(){
   el("statPersons").textContent = persons.length;
@@ -766,44 +646,48 @@ async function refreshStats(){
 
 async function refreshLogs() {
   const filterValue = el("logFilter") ? el("logFilter").value : "all";
-  let query = sb.from("access_events").select("*, persons(name,service_no)").order("created_at", { ascending: false }).limit(200);
-  const today = new Date();
-  
+  let query = sb.from("access_events").select("*, persons(name,service_no)").order("created_at", { ascending: false }).limit(100);
   if (filterValue === "today") {
-    today.setHours(0, 0, 0, 0);
-    query = query.gte("created_at", today.toISOString());
-  } else if (filterValue === "7") {
-    const past7Days = new Date();
-    past7Days.setDate(today.getDate() - 7);
-    query = query.gte("created_at", past7Days.toISOString());
+    const today = new Date(); today.setHours(0, 0, 0, 0); query = query.gte("created_at", today.toISOString());
   }
   const { data, error } = await query;
-  const body = el("logsBody");
-  
-  if (error || !data || !data.length) { 
-    body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">දත්ත කිසිවක් හමු නොවීය (NO DATA)</td></tr>`; 
-    return; 
-  }
-  
-  body.innerHTML = data.map((r, i) => {
-    const p = r.persons;
-    return `<tr>
-      <td>${i + 1}</td>
-      <td>${new Date(r.created_at).toLocaleString()}</td>
-      <td>${p?.service_no || "-"}</td>
-      <td>${p?.name || "-"}</td>
-      <td>${r.event_type}</td>
-      <td><span class="badge ${r.status === 'approved' ? 'ok' : 'no'}">${r.status}</span></td>
-      <td><span class="small">${r.extra?.note || '-'}</span></td>
-    </tr>`;
-  }).join("");
+  if (error || !data || !data.length) { el("logsBody").innerHTML = `<tr><td colspan="7" style="text-align:center;">NO DATA</td></tr>`; return; }
+  el("logsBody").innerHTML = data.map((r, i) => `<tr><td>${i + 1}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.persons?.service_no || "-"}</td><td>${r.persons?.name || "-"}</td><td>${r.event_type}</td><td><span class="badge ${r.status === 'approved' ? 'ok' : 'no'}">${r.status}</span></td><td><span class="small">${r.extra?.note || '-'}</span></td></tr>`).join("");
 }
 
 async function refreshPersonsAndTemplates(){
   const { data: p } = await sb.from("persons").select("*").order("created_at",{ascending:false}); persons = p || [];
   const { data: t } = await sb.from("face_templates").select("id, person_id, descriptor"); templates = t || [];
-  buildMatcher(); 
+  buildMatcher(); renderPersonsList(); refreshStats();
 }
+
+function renderPersonsList() {
+  const list = el("personsList");
+  if(!persons.length) { list.innerHTML = "No personnel found."; return; }
+  list.innerHTML = persons.map(p => `
+    <div style="padding:10px; border-bottom:1px solid #1e4d2b; display:flex; justify-content:space-between; cursor:pointer;" onclick="editPerson('${p.id}')">
+        <span><strong>${p.service_no}</strong> - ${p.name} (${p.rank})</span>
+        <span class="badge ${p.watchlist ? 'no' : 'ok'}">${p.watchlist ? 'WATCHLIST' : 'CLEARED'}</span>
+    </div>
+  `).join("");
+}
+
+window.editPerson = function(id) {
+  const p = persons.find(x => x.id === id);
+  if(!p) return;
+  el("personId").value = p.id;
+  el("pService").value = p.service_no || "";
+  el("pName").value = p.name || "";
+  el("pRank").value = p.rank || "";
+  el("pUnit").value = p.unit || "";
+  el("pType").value = p.person_type || "soldier";
+  el("pStatus").value = p.status || "active";
+  el("pWatch").value = p.watchlist ? "true" : "false";
+  
+  tempFaceDescriptor = null; 
+  el("templateInfo").textContent = "Editing existing record. Click 'SCAN FACE' to update biometrics.";
+  el("personForm").classList.remove("hidden");
+};
 
 /* =========================
    MODELS & CAMERA 
@@ -833,21 +717,14 @@ function buildMatcher(){
 }
 
 async function startCamera(){
-  if(cameraStream){
-     cameraStream.getTracks().forEach(t=>t.stop());
-     cameraStream=null;
-  }
+  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
   try{
     const selectedDeviceId = el("cameraSource").value;
-    const constraints = {
-      video: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : { facingMode: "user" },
-      audio: true
-    };
+    const constraints = { video: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : { facingMode: "user" }, audio: false };
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-    
     video.srcObject = cameraStream; await new Promise(r=>video.onloadedmetadata=r);
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    el("cameraStatus").textContent = "ONLINE (ACTIVE)"; el("cameraStatus").className = "badge ok";
+    el("cameraStatus").textContent = "ONLINE"; el("cameraStatus").className = "badge ok";
     el("btnStartCam").disabled = true; el("btnStopCam").disabled = false;
     startDetectionLoop();
   }catch(e){ showAlert("Camera Error: Check connection", "danger"); }
@@ -864,7 +741,7 @@ function startDetectionLoop(){
   if(detectTimer) clearInterval(detectTimer);
   detectTimer = setInterval(async ()=>{
     if(!cameraStream) return;
-    if(isProcessingFace) return; // --- FIX 3: Cooldown Lock (Overwriting Prevented) ---
+    if(isProcessingFace) return; 
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
     const dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
@@ -872,7 +749,6 @@ function startDetectionLoop(){
     overlay.textContent = `TRACKING: ${dets.length}`;
     if(dets.length===0){ detectedBox.innerHTML = "<span class='small' style='color:var(--text-muted)'>SCANNING AREA...</span>"; return; }
 
-    // Use only the most prominent face to prevent glitching
     const d = dets[0]; 
     let label="Unknown"; let person=null;
     if(matcher){
@@ -886,18 +762,17 @@ function startDetectionLoop(){
     const color = isUnknown ? "#ff003c" : (person.watchlist ? "#ffb300" : "#00ff41");
     ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(box.x, box.y, box.width, box.height);
     
-    isProcessingFace = true; // Lock the scanning
+    isProcessingFace = true; 
 
     if(isUnknown){
       detectedBox.innerHTML = `<h3 style="color:var(--accent-danger)">UNKNOWN TARGET</h3><p>ACCESS DENIED</p>`;
       if(el("mode").value==="auto") { autoLogUnknown(); }
-      setTimeout(() => { isProcessingFace = false; }, 4000); // Unknown lock for 4s
+      setTimeout(() => { isProcessingFace = false; }, 4000); 
     }else{
       detectedBox.innerHTML = `<h3 style="color:${color}">${person.name}</h3><p>${person.rank||''} | ${person.watchlist?'WATCHLIST':'CLEARED'}</p>`;
       if(el("mode").value==="auto") { autoLogKnown(person); }
-      setTimeout(() => { isProcessingFace = false; }, 6000); // Known lock for 6s
+      setTimeout(() => { isProcessingFace = false; }, 6000); 
     }
-    
   }, 1000);
 }
 
@@ -914,8 +789,7 @@ async function autoLogKnown(person){
     broadcastEvent('ACCESS_DENIED', { person: person }); 
     speak("Watchlist target detected.");
   } else {
-    sendGateCommand('A'); // ගේට්ටුව අංශක 45ට විවෘත වේ
-    // --- FIX 2: External Panel එකට හරියටම ACCESS_GRANTED යැවීම ---
+    sendGateCommand('A'); 
     broadcastEvent('ACCESS_GRANTED', { person: person }); 
     speak("Access granted. Proceed.");
   }
@@ -927,23 +801,17 @@ async function insertAccessEvent(payload, kind){
 }
 
 /* =========================
-   EVENTS & LISTENERS 
+   EVENTS & LISTENERS (DEBUG MODE ACTIVATED)
 ========================= */
 
 function safeAddEvent(id, event, func) {
-  const btn = el(id);
-  if (btn) btn.addEventListener(event, func);
+  const btn = el(id); if (btn) btn.addEventListener(event, func);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
-  safeAddEvent("btnDisconnectArduinoDash", "click", disconnectArduino); // Disconnect Hardware event
-  
-  // Camera Selection Event
-  safeAddEvent("cameraSource", "change", () => {
-    if (cameraStream) startCamera(); // Restart camera if already running
-  });
-
+  safeAddEvent("btnDisconnectArduinoDash", "click", disconnectArduino); 
+  safeAddEvent("cameraSource", "change", () => { if (cameraStream) startCamera(); });
   safeAddEvent("btnLogin", "click", login);
   safeAddEvent("btnLogout", "click", logout);
   safeAddEvent("btnStartCam", "click", startCamera);
@@ -951,41 +819,126 @@ document.addEventListener('DOMContentLoaded', () => {
 
   safeAddEvent("btnPanic", "click", async () => {
     isLockdown = !isLockdown;
-    if(isLockdown) {
-      document.body.classList.add("lockdown-mode");
-      el("btnPanic").innerHTML = "❌ අවලංගු කරන්න (CANCEL LOCKDOWN)";
-      speak("Base Lockdown Initiated.");
-      await insertAccessEvent({ event_type: "MANUAL_LOCKDOWN", status: "rejected" }, "watchlist");
-    } else {
-      document.body.classList.remove("lockdown-mode");
-      el("btnPanic").innerHTML = "🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨";
-      speak("Lockdown cancelled.");
-    }
+    if(isLockdown) { document.body.classList.add("lockdown-mode"); el("btnPanic").innerHTML = "❌ අවලංගු කරන්න (CANCEL LOCKDOWN)"; speak("Base Lockdown Initiated."); } 
+    else { document.body.classList.remove("lockdown-mode"); el("btnPanic").innerHTML = "🚨 හදිසි අගුලු දැමීම (BASE LOCKDOWN) 🚨"; speak("Lockdown cancelled."); }
   });
 
   safeAddEvent("btnRefreshLogs", "click", refreshLogs);
   safeAddEvent("logFilter", "change", refreshLogs);
   safeAddEvent("btnRefreshPersons", "click", refreshPersonsAndTemplates);
-  safeAddEvent("btnRefreshAlerts", "click", refreshAlerts);
-
+  
+  // Registration Form Buttons
   safeAddEvent("btnAddPerson", "click", () => {
-    if(profile?.role !== "admin") { showAlert("ADMIN ACCESS REQUIRED", "danger"); return; }
     el("personForm").classList.remove("hidden");
-    el("personId").value = "";
+    el("personId").value = ""; el("pService").value = ""; el("pName").value = ""; el("pRank").value = ""; el("pUnit").value = "";
+    tempFaceDescriptor = null;
+    el("templateInfo").textContent = "New Registration. Please enter details and scan face.";
   });
 
-  safeAddEvent("btnSaveSettings", "click", async () => {
-    settings.confidenceThreshold = Number(el("confThr").value);
-    settings.voiceAlerts = el("voice").value === "on";
-    settings.acousticDetection = el("acousticSetting").value === "on";
-    settings.autoLockTime = Number(el("autolock").value);
-    settings.deviceId = el("deviceSelect").value || null;
-    saveSettingsLocal();
-    await refreshDevices();
-    buildMatcher();
-    showAlert("CONFIGURATION SAVED", "success");
+  safeAddEvent("btnCancelPerson", "click", () => {
+    el("personForm").classList.add("hidden");
+    tempFaceDescriptor = null;
   });
 
+  safeAddEvent("btnDeletePerson", "click", async () => {
+    const pid = el("personId").value;
+    if(!pid) return;
+    if(confirm("Are you sure you want to permanently remove this person from the system?")) {
+      try {
+        await sb.from("persons").delete().eq("id", pid);
+        showAlert("Personnel record deleted successfully.", "success");
+        el("personForm").classList.add("hidden");
+        refreshPersonsAndTemplates();
+      } catch (e) { showAlert("Error deleting record.", "danger"); }
+    }
+  });
+
+  safeAddEvent("btnEnroll1", "click", async () => {
+    if(!cameraStream) { showAlert("Please start the Live Ops Camera first!", "warn"); return; }
+    
+    el("templateInfo").innerHTML = "<span style='color:#00e5ff'>Scanning face... Please look directly at the camera.</span>";
+    
+    const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+    
+    if(detection) {
+        tempFaceDescriptor = detection.descriptor;
+        el("templateInfo").innerHTML = "✅ <b>FACE CAPTURED SECURELY!</b> Now click 'දත්ත සුරකින්න (Save Data)' to finalize.";
+        showAlert("Biometrics captured successfully.", "success");
+    } else {
+        el("templateInfo").innerHTML = "❌ <span style='color:red'>No face detected. Please ensure good lighting and try again.</span>";
+        showAlert("Face scan failed. Try again.", "danger");
+    }
+  });
+
+  // --- මෙන්න DEBUG කරපු SAVE ෆන්ක්ෂන් එක ---
+  safeAddEvent("btnSavePerson", "click", async () => {
+    try {
+        const pid = el("personId").value;
+        const serviceNo = el("pService").value.trim();
+        const name = el("pName").value.trim();
+        
+        if(!serviceNo || !name) { 
+            showAlert("Service Number and Name are mandatory.", "danger"); 
+            return; 
+        }
+
+        const payload = {
+            service_no: serviceNo,
+            name: name,
+            rank: el("pRank").value.trim(),
+            unit: el("pUnit").value.trim(),
+            person_type: el("pType").value,
+            status: el("pStatus").value,
+            watchlist: el("pWatch").value === "true"
+        };
+
+        // 1. දත්ත හරිද කියලා බලමු
+        alert("පියවර 1/3: දත්ත කියවීම සාර්ථකයි. Database එකට ලියන්න හදන්නේ...");
+
+        let savedPersonId = pid;
+        
+        // 2. Person දත්ත සේව් කරමු
+        if(pid) {
+            const { error } = await sb.from("persons").update(payload).eq("id", pid);
+            if(error) throw new Error("Persons Update Error: " + error.message);
+        } else {
+            // අලුතින් ඇතුලත් කරනවා නම්
+            const { data, error } = await sb.from("persons").insert([payload]).select();
+            if(error) throw new Error("Persons Insert Error: " + error.message);
+            if(!data || data.length === 0) throw new Error("දත්ත ලියැවුණා, නමුත් ආපහු ID එක ආවේ නැහැ. (RLS Disable කරලද බලන්න)");
+            
+            savedPersonId = data[0].id;
+            el("personId").value = savedPersonId; 
+        }
+
+        alert("පියවර 2/3: පුද්ගල තොරතුරු සේව් වුණා! (ID: " + savedPersonId + ") දැන් මුහුණේ දත්ත සේව් කරනවා...");
+
+        // 3. මුහුණේ දත්ත සේව් කරමු
+        if(tempFaceDescriptor && savedPersonId) {
+            const facePayload = {
+                person_id: savedPersonId,
+                descriptor: Array.from(tempFaceDescriptor)
+            };
+            const { error: templateError } = await sb.from("face_templates").insert([facePayload]);
+            if(templateError) throw new Error("Face Template Error: " + templateError.message);
+            tempFaceDescriptor = null; 
+        }
+
+        alert("පියවර 3/3: සියල්ල සාර්ථකයි!");
+        
+        showAlert("Personnel Record Saved Successfully!", "success");
+        el("personForm").classList.add("hidden");
+        await refreshPersonsAndTemplates(); // මේකෙන් තමයි ලිස්ට් එක අප්ඩේට් වෙන්නේ
+
+    } catch(e) {
+        console.error("Save Error:", e);
+        // එරර් එකක් ආවොත් තිරයේ ලොකුවට පෙන්නනවා
+        alert("❌ ERROR: " + e.message); 
+        showAlert("Database Error. Check the pop-up message.", "danger");
+    }
+  });
+
+  // Tabs Navigation
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", (e) => {
       if (btn.classList.contains("tab-link")) return;
@@ -999,7 +952,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 (async function boot(){
-  setOnlinePill(); 
   const {data} = await sb.auth.getSession(); 
   if(data?.session){ session=data.session; await afterLogin(); }
 })();
