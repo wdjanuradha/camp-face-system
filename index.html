@@ -165,7 +165,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
   <div id="alertArea"></div>
 
   <div id="loginCard" class="card" style="max-width:520px;margin:10vh auto; text-align:center;">
-    <h3 style="justify-content:center; border:none; margin-bottom:10px;">🔐 SENTRY-X SECURE LOGIN</h3>
+    <h3 style="justify-content:center; border:none; margin-bottom:10px;">🔐 AI GUARDIAN SECURE LOGIN</h3>
     <p class="small" style="margin-bottom:25px; color:var(--accent-main);">AUTHORIZED PERSONNEL ONLY</p>
     <div style="text-align:left; margin-bottom: 15px;">
       <label>OFFICER IDENTIFICATION (EMAIL)</label>
@@ -250,6 +250,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
           <hr/>
           <div style="margin-bottom:5px;"><label>HARDWARE BRIDGE (ARDUINO)</label><div id="hardwareStatus" class="badge no">DISCONNECTED</div></div>
           <button id="btnConnectArduinoDash" class="btn-primary" style="width:100%; margin-top:10px; padding:8px; font-size:0.8em;">🔌 CONNECT HARDWARE</button>
+          <button id="btnDisconnectArduinoDash" class="btn-danger hidden" style="width:100%; margin-top:10px; padding:8px; font-size:0.8em;">🔌 DISCONNECT HARDWARE</button>
         </div>
       </div>
     </div>
@@ -265,7 +266,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
           </div>
           
           <div class="row" style="margin-top:15px;">
-            <div><label>කැමරාව තෝරන්න</label><select id="cameraSource"><option value="">Default Camera / Nikon</option></select></div>
+            <div><label>කැමරාව තෝරන්න</label><select id="cameraSource"><option value="">Loading Cameras...</option></select></div>
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
@@ -429,9 +430,10 @@ let nightVisionMode = false; let isLockdown = false;
 // Hardware Variables
 let serialPort = null; 
 let serialWriter = null;
+let serialReader = null; // Added reader variable for clean disconnect
 let globalAudioCtx = null; 
 
-const broadcast = new BroadcastChannel('sentryx_panel');
+const broadcast = new BroadcastChannel('ai_guardian_panel'); // Updated Name
 
 const el = (id)=>document.getElementById(id);
 const alertArea = el("alertArea"); const loginCard = el("loginCard"); const app = el("app");
@@ -497,12 +499,37 @@ async function connectArduino() {
     pillGateStatus.style.color = "var(--accent-main)";
     hardwareStatus.textContent = "ONLINE (LASER/SONAR)";
     hardwareStatus.className = "badge ok";
+    
+    // Toggle UI Buttons
+    el("btnConnectArduinoDash").classList.add("hidden");
+    el("btnDisconnectArduinoDash").classList.remove("hidden");
+    
     showAlert("Hardware Connected. Perimeter Secured.", "success");
     
     listenToArduino();
   } catch (error) {
     console.error(error);
     showAlert("Failed to connect to Hardware.", "danger");
+  }
+}
+
+async function disconnectArduino() {
+  try {
+    if (serialReader) { await serialReader.cancel(); serialReader = null; }
+    if (serialWriter) { serialWriter.releaseLock(); serialWriter = null; }
+    if (serialPort) { await serialPort.close(); serialPort = null; }
+
+    pillGateStatus.textContent = "🔌 GATE: NO LINK";
+    pillGateStatus.style.color = "var(--text-muted)";
+    hardwareStatus.textContent = "DISCONNECTED";
+    hardwareStatus.className = "badge no";
+    
+    el("btnConnectArduinoDash").classList.remove("hidden");
+    el("btnDisconnectArduinoDash").classList.add("hidden");
+    
+    showAlert("Hardware Disconnected Successfully.", "warn");
+  } catch (error) {
+    console.error("Disconnect Error:", error);
   }
 }
 
@@ -548,13 +575,13 @@ function drawRadarUI(angle, distance) {
 async function listenToArduino() {
   const textDecoder = new TextDecoderStream();
   serialPort.readable.pipeTo(textDecoder.writable);
-  const reader = textDecoder.readable.getReader();
+  serialReader = textDecoder.readable.getReader(); // Assigned to global variable
   
   let buffer = ""; 
 
   try {
     while (true) {
-      const { value, done } = await reader.read();
+      const { value, done } = await serialReader.read();
       if (done) break;
       
       buffer += value; 
@@ -689,6 +716,22 @@ function applyRoleGuards() {
   }
 }
 
+async function loadCameras() {
+  try {
+    await navigator.mediaDevices.getUserMedia({ video: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    const camSelect = el("cameraSource");
+    camSelect.innerHTML = '';
+    videoDevices.forEach((device, index) => {
+      const option = document.createElement('option');
+      option.value = device.deviceId;
+      option.text = device.label || `Camera ${index + 1}`;
+      camSelect.appendChild(option);
+    });
+  } catch (err) { console.error("Error loading cameras", err); }
+}
+
 async function afterLogin(){
   loginCard.classList.add("hidden"); app.classList.remove("hidden"); 
   const btnLout = el("btnLogout"); if(btnLout) btnLout.disabled = false;
@@ -696,6 +739,7 @@ async function afterLogin(){
   setOnlinePill(); loadSettings(); initGPS(); 
   await loadProfile(); applyRoleGuards(); 
   
+  await loadCameras(); // Load available cameras into dropdown
   await loadModels(); await refreshPersonsAndTemplates(); await refreshStats(); await refreshLogs();
   window.addEventListener("online", setOnlinePill); window.addEventListener("offline", setOnlinePill);
 }
@@ -762,7 +806,7 @@ async function refreshPersonsAndTemplates(){
 }
 
 /* =========================
-   MODELS & CAMERA (NIKON INTEGRATED)
+   MODELS & CAMERA 
 ========================= */
 async function loadModels(){
   try{
@@ -789,24 +833,21 @@ function buildMatcher(){
 }
 
 async function startCamera(){
-  if(cameraStream) return;
+  if(cameraStream){
+     cameraStream.getTracks().forEach(t=>t.stop());
+     cameraStream=null;
+  }
   try{
-    // --- FIX 4: Nikon Camera Support ---
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevices = devices.filter(d => d.kind === 'videoinput');
-    const nikonCamera = videoDevices.find(d => d.label.toLowerCase().includes('nikon') || d.label.toLowerCase().includes('video'));
-
+    const selectedDeviceId = el("cameraSource").value;
     const constraints = {
-      video: {
-        deviceId: nikonCamera ? { exact: nikonCamera.deviceId } : undefined,
-        facingMode: "user", width:{ideal:1280}, height:{ideal:720}
-      }, audio: true
+      video: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : { facingMode: "user" },
+      audio: true
     };
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     
     video.srcObject = cameraStream; await new Promise(r=>video.onloadedmetadata=r);
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    el("cameraStatus").textContent = "ONLINE (NIKON/USB)"; el("cameraStatus").className = "badge ok";
+    el("cameraStatus").textContent = "ONLINE (ACTIVE)"; el("cameraStatus").className = "badge ok";
     el("btnStartCam").disabled = true; el("btnStopCam").disabled = false;
     startDetectionLoop();
   }catch(e){ showAlert("Camera Error: Check connection", "danger"); }
@@ -896,6 +937,13 @@ function safeAddEvent(id, event, func) {
 
 document.addEventListener('DOMContentLoaded', () => {
   safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
+  safeAddEvent("btnDisconnectArduinoDash", "click", disconnectArduino); // Disconnect Hardware event
+  
+  // Camera Selection Event
+  safeAddEvent("cameraSource", "change", () => {
+    if (cameraStream) startCamera(); // Restart camera if already running
+  });
+
   safeAddEvent("btnLogin", "click", login);
   safeAddEvent("btnLogout", "click", logout);
   safeAddEvent("btnStartCam", "click", startCamera);
