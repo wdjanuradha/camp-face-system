@@ -105,7 +105,9 @@ const gateText = document.getElementById('gateText'); const logList = document.g
 const voiceWave = document.getElementById('voiceWave'); const aiSubtitles = document.getElementById('aiSubtitles');
 
 let resetTimeout;
-const broadcast = new BroadcastChannel('sentryx_panel');
+
+// FIX: Channel Name Updated to match the main panel exactly
+const broadcast = new BroadcastChannel('ai_guardian_panel');
 
 broadcast.onmessage = (event) => {
   try {
@@ -113,6 +115,7 @@ broadcast.onmessage = (event) => {
     clearTimeout(resetTimeout);
     window.speechSynthesis.cancel(); 
 
+    // Extracting person from payload securely
     let p = null;
     if (payload && payload.person) p = payload.person;
     else if (payload) p = payload; 
