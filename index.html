@@ -6,6 +6,8 @@
 <title> AI Guardian - Camp Security System (Tactical Edition)</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 <style>
 /* --- MODERN MILITARY HUD THEME --- */
 :root{
@@ -338,7 +340,7 @@ hr{border:0;border-top:1px dashed var(--border-color);margin:25px 0; opacity: 0.
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
               <button id="btnSavePerson" class="btn-primary">💾 දත්ත සුරකින්න</button>
               <button id="btnCancelPerson" class="btn-secondary">✖ අවලංගුයි</button>
-              <button id="btnDeletePerson" class="btn-danger">🗑 ඉවත් කරන්න</button>
+              <button id="btnDeletePerson" class="btn-danger">🗑 ಇවත් කරන්න</button>
             </div>
             <hr/>
             <h3 style="color:var(--accent-cyan); font-size:1.1em; border:none;">📸 ජෛව දත්ත ඇතුලත් කිරීම (BIOMETRICS)</h3>
@@ -447,27 +449,30 @@ const cameraSource = el("cameraSource");
 const radarCanvas = el("radarCanvas");
 const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
 
-  // EmailJS Init
-(function(){
-   emailjs.init("cVn06zo6_dMDXjpLl");
-})();
-
+/* =========================
+   SAFE EMAILJS TRANSMISSION FEATURE
+========================= */
 async function sendDutyOfficerEmail(side, distance) {
+    // Check if EmailJS SDK is securely loaded inside browser state
+    if (typeof emailjs === 'undefined') {
+        console.warn("⚠️ EmailJS core framework not loaded yet. Retrying in background...");
+        return;
+    }
+
     const templateParams = {
         perimeter_side: side,
-        distance: distance || "UNKNOWN",
+        distance: distance || "UNKNOWN SECTOR TRIGGER",
         officer_email: "hq2vir@gmail.com"
     };
 
     emailjs.send('service_qxi3ywv', 'template_gip78r3', templateParams)
         .then(function(response) {
-           console.log("Email Sent Successfully!", response.status);
+           console.log("⚡ [AI GUARDIAN] Tactical Email Transmitted Successfully!", response.status);
         }, function(error) {
-           console.log("Email Failed...", error);
+           console.error("❌ Tactical Email transmission critical failure:", error);
         });
 }
 
-/* =========================
 /* =========================
    UI HELPERS & BROADCAST
 ========================= */
@@ -580,7 +585,6 @@ async function triggerPerimeterAlarm(side, distance) {
       gain.gain.setValueAtTime(1, globalAudioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.5);
       osc.start(); osc.stop(globalAudioCtx.currentTime + 0.5);
     } catch (e) {}
-    sendDutyOfficerEmail(side, distance); // මේක අනිවාර්යයෙන්ම දාන්න
   }
   const wallElement = document.getElementById("wall-" + side);
   if (wallElement) {
@@ -593,6 +597,10 @@ async function triggerPerimeterAlarm(side, distance) {
   showAlert(`🚨 ${alertMsg}`, "danger");
   speak(distance ? `Warning. Breach at ${side} sector. Distance ${distance} centimeters.` : `Warning. Perimeter Breach at ${side} sector.`);
   broadcastEvent('BREACH_ALERT', { side: side, distance: distance });
+  
+  // EXECUTE TACTICAL PUSH EMAIL IMMEDIATELY
+  sendDutyOfficerEmail(side, distance);
+
   await insertAccessEvent({ event_type: "PERIMETER_BREACH", status: "rejected", extra: { note: distance ? `Target at ${distance}cm` : `Laser Tripped at ${side}` } }, "watchlist");
 }
 
@@ -619,7 +627,7 @@ async function logout(){
 async function loadProfile(){
   if(!session?.user) return null;
   const { data } = await sb.from("profiles").select("role, unit, full_name").eq("user_id", session.user.id).single();
-  profile = data || { role: "admin" }; // Defaulting to Admin for registration access
+  profile = data || { role: "admin" }; 
   pillRole.textContent = `RANK: ${profile.role.toUpperCase()}`;
 }
 
@@ -823,14 +831,19 @@ async function insertAccessEvent(payload, kind){
 }
 
 /* =========================
-   EVENTS & LISTENERS (DEBUG MODE ACTIVATED)
+   EVENTS & LISTENERS
 ========================= */
-
 function safeAddEvent(id, event, func) {
   const btn = el(id); if (btn) btn.addEventListener(event, func);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Safe Initialization of EmailJS Framework inside DOM Flow
+  if (typeof emailjs !== 'undefined') {
+      emailjs.init("cVn06zo6_dMDXjpLl");
+      console.log("✅ [AI GUARDIAN] EmailJS Core Engine Initialized.");
+  }
+
   safeAddEvent("btnConnectArduinoDash", "click", connectArduino);
   safeAddEvent("btnDisconnectArduinoDash", "click", disconnectArduino); 
   safeAddEvent("cameraSource", "change", () => { if (cameraStream) startCamera(); });
@@ -849,7 +862,6 @@ document.addEventListener('DOMContentLoaded', () => {
   safeAddEvent("logFilter", "change", refreshLogs);
   safeAddEvent("btnRefreshPersons", "click", refreshPersonsAndTemplates);
   
-  // Registration Form Buttons
   safeAddEvent("btnAddPerson", "click", () => {
     el("personForm").classList.remove("hidden");
     el("personId").value = ""; el("pService").value = ""; el("pName").value = ""; el("pRank").value = ""; el("pUnit").value = "";
@@ -877,11 +889,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   safeAddEvent("btnEnroll1", "click", async () => {
     if(!cameraStream) { showAlert("Please start the Live Ops Camera first!", "warn"); return; }
-    
     el("templateInfo").innerHTML = "<span style='color:#00e5ff'>Scanning face... Please look directly at the camera.</span>";
-    
     const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-    
     if(detection) {
         tempFaceDescriptor = detection.descriptor;
         el("templateInfo").innerHTML = "✅ <b>FACE CAPTURED SECURELY!</b> Now click 'දත්ත සුරකින්න (Save Data)' to finalize.";
@@ -892,17 +901,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- මෙන්න DEBUG කරපු SAVE ෆන්ක්ෂන් එක ---
   safeAddEvent("btnSavePerson", "click", async () => {
     try {
         const pid = el("personId").value;
         const serviceNo = el("pService").value.trim();
         const name = el("pName").value.trim();
         
-        if(!serviceNo || !name) { 
-            showAlert("Service Number and Name are mandatory.", "danger"); 
-            return; 
-        }
+        if(!serviceNo || !name) { showAlert("Service Number and Name are mandatory.", "danger"); return; }
 
         const payload = {
             service_no: serviceNo,
@@ -914,53 +919,34 @@ document.addEventListener('DOMContentLoaded', () => {
             watchlist: el("pWatch").value === "true"
         };
 
-        // 1. දත්ත හරිද කියලා බලමු
-        alert("පියවර 1/3: දත්ත කියවීම සාර්ථකයි. Database එකට ලියන්න හදන්නේ...");
-
         let savedPersonId = pid;
-        
-        // 2. Person දත්ත සේව් කරමු
         if(pid) {
             const { error } = await sb.from("persons").update(payload).eq("id", pid);
-            if(error) throw new Error("Persons Update Error: " + error.message);
+            if(error) throw error;
         } else {
-            // අලුතින් ඇතුලත් කරනවා නම්
             const { data, error } = await sb.from("persons").insert([payload]).select();
-            if(error) throw new Error("Persons Insert Error: " + error.message);
-            if(!data || data.length === 0) throw new Error("දත්ත ලියැවුණා, නමුත් ආපහු ID එක ආවේ නැහැ. (RLS Disable කරලද බලන්න)");
-            
+            if(error) throw error;
             savedPersonId = data[0].id;
             el("personId").value = savedPersonId; 
         }
 
-        alert("පියවර 2/3: පුද්ගල තොරතුරු සේව් වුණා! (ID: " + savedPersonId + ") දැන් මුහුණේ දත්ත සේව් කරනවා...");
-
-        // 3. මුහුණේ දත්ත සේව් කරමු
         if(tempFaceDescriptor && savedPersonId) {
-            const facePayload = {
-                person_id: savedPersonId,
-                descriptor: Array.from(tempFaceDescriptor)
-            };
+            const facePayload = { person_id: savedPersonId, descriptor: Array.from(tempFaceDescriptor) };
             const { error: templateError } = await sb.from("face_templates").insert([facePayload]);
-            if(templateError) throw new Error("Face Template Error: " + templateError.message);
+            if(templateError) throw templateError;
             tempFaceDescriptor = null; 
         }
 
-        alert("පියවර 3/3: සියල්ල සාර්ථකයි!");
-        
         showAlert("Personnel Record Saved Successfully!", "success");
         el("personForm").classList.add("hidden");
-        await refreshPersonsAndTemplates(); // මේකෙන් තමයි ලිස්ට් එක අප්ඩේට් වෙන්නේ
+        refreshPersonsAndTemplates();
 
     } catch(e) {
         console.error("Save Error:", e);
-        // එරර් එකක් ආවොත් තිරයේ ලොකුවට පෙන්නනවා
-        alert("❌ ERROR: " + e.message); 
-        showAlert("Database Error. Check the pop-up message.", "danger");
+        showAlert("Database Secure Save Error: " + e.message, "danger");
     }
   });
 
-  // Tabs Navigation
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", (e) => {
       if (btn.classList.contains("tab-link")) return;
