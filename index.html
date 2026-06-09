@@ -447,6 +447,27 @@ const cameraSource = el("cameraSource");
 const radarCanvas = el("radarCanvas");
 const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
 
+  // EmailJS Init
+(function(){
+   emailjs.init("cVn06zo6_dMDXjpLl");
+})();
+
+async function sendDutyOfficerEmail(side, distance) {
+    const templateParams = {
+        perimeter_side: side,
+        distance: distance || "UNKNOWN",
+        officer_email: "hq2vir@gmail.com"
+    };
+
+    emailjs.send('service_qxi3ywv', 'template_gip78r3', templateParams)
+        .then(function(response) {
+           console.log("Email Sent Successfully!", response.status);
+        }, function(error) {
+           console.log("Email Failed...", error);
+        });
+}
+
+/* =========================
 /* =========================
    UI HELPERS & BROADCAST
 ========================= */
@@ -559,6 +580,7 @@ async function triggerPerimeterAlarm(side, distance) {
       gain.gain.setValueAtTime(1, globalAudioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.5);
       osc.start(); osc.stop(globalAudioCtx.currentTime + 0.5);
     } catch (e) {}
+    sendDutyOfficerEmail(side, distance); // මේක අනිවාර්යයෙන්ම දාන්න
   }
   const wallElement = document.getElementById("wall-" + side);
   if (wallElement) {
