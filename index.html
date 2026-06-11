@@ -465,7 +465,7 @@ async function sendDutyOfficerEmail(side, distance) {
         officer_email: "hq2vir@gmail.com"
     };
 
-    emailjs.send('service_qxi3ywv', 'template_gip78r3', templateParams)
+    emailjs.send('service_x7uxtks', 'template_fjrqmow', templateParams)
         .then(function(response) {
            console.log("⚡ [AI GUARDIAN] Tactical Email Transmitted Successfully!", response.status);
         }, function(error) {
@@ -840,7 +840,7 @@ function safeAddEvent(id, event, func) {
 document.addEventListener('DOMContentLoaded', () => {
   // Safe Initialization of EmailJS Framework inside DOM Flow
   if (typeof emailjs !== 'undefined') {
-      emailjs.init("cVn06zo6_dMDXjpLl");
+      emailjs.init("6dZq15zjjh_dDJvhG");
       console.log("✅ [AI GUARDIAN] EmailJS Core Engine Initialized.");
   }
 
