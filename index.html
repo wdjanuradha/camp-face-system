@@ -453,17 +453,16 @@ const radarCtx = radarCanvas ? radarCanvas.getContext("2d") : null;
    SAFE EMAILJS TRANSMISSION FEATURE
 ========================= */
 async function sendDutyOfficerEmail(side, distance) {
-    // Check if EmailJS SDK is securely loaded inside browser state
     if (typeof emailjs === 'undefined') {
-        console.warn("⚠️ EmailJS core framework not loaded yet. Retrying in background...");
+        console.warn("⚠️ EmailJS core framework not loaded yet.");
         return;
     }
 
     const templateParams = {
-        to_email: "hq2vir@gmail.com",
+        to_email: "hq2vir@gmail.com",        // EmailJS Template එකේ 'To Email' එකට මේක ගැලපෙනවා
+        officer_email: "hq2vir@gmail.com",   // Template එකේ ඇතුලේ තියෙනවා නම් මේක පාවිච්චි වේවි
         perimeter_side: side,
-        distance: distance || "UNKNOWN SECTOR TRIGGER",
-        officer_email: "hq2vir@gmail.com"
+        distance: distance || "UNKNOWN SECTOR TRIGGER"
     };
 
     emailjs.send('service_x7uxtks', 'template_fjrqmow', templateParams)
